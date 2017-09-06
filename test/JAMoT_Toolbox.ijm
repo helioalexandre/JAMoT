@@ -2,6 +2,7 @@
  * //////////////////Author - H lio Roque - Centro Nacional Investigaciones CardioVasculares, Madrid, Spain/////////////
  * /////////////////Contact - helio.alexandreduarte at cnic.es///////////////////////////////////////////////////////////////
  * 
+ * 06/09/2017 - Added the hability of redoing previous analysis using a analysis from a previous analysis
  * 05/09/2017 - Made changes to the get in line with the upcoming function of redoing an analysis by loading a preivous trac file
  *				Also transformed it to a dropdown menu liek BioVoxxel Toolbox (REFERENCE)			
  * 06/06/2017 - Added a function to be run by the T/Y where it determines the number triplet entries into all different arms - NEED REFERENCE
@@ -23,9 +24,9 @@
  * 				macros.
  * 23/05/2017 - v0.4 - Added the macro to track the mouse in a cube where there are objects that it might recognize or not. 
  * 				It is mainly based in the cube track macro but there is a new function to sort out if the mouse has its
- * 				head or body close to the object. Works with up to 5 objects. Should work with more. Other fucntions were adapated
+ * 				head or body close to the object. Works with up to 5 objects. Should work with more. Other fucntions were adapted
  * 				linTrack, heatmap, promptandgetchoice, getFileData, dialog1, to adjust to another option of display.
- * 				Also added a new common function, countLines, to count the lines of a text file separated by "\n"
+ * 				Also added a new common function, countLinesStartWith, to count the lines of a text file separated by "\n"
  * 22/05/2017 - Fixed the calculus of the pixel size to work properly in all macros! Also added the safe guard 
  * 				to not do this calculus if the image pixel is different from 1 in both X and Y. Mofified the 
  * 				dialog1 function to take an option as argument to provide different options for the different macros
@@ -49,7 +50,7 @@
  
  requires("1.50a");
  
- var filemenu = newMenu("Mouse trial Macros Menu Tool", newArray("Process Video", "Cube Tracker","Elevated Puzzle Tracker", "Swimming Pool Tracker", "Regions Tracker", "Y/T Tracker", "-"));
+ var filemenu = newMenu("Mouse trial Macros Menu Tool", newArray("Process Video", "Cube Tracker","Elevated Puzzle Tracker", "Swimming Pool Tracker", "Regions Tracker", "Y/T Tracker","Open Previous Analysis File", "-"));
  
  
  macro "Mouse trial Macros Menu Tool - C005D21D23D32D3eD3fD41D43D4dD4eD5cD5dD6cD6dD71D73D7dD7eD82D8eD8fD91D93CfffD00D01D02D03D04D05D06D07D08D09D0aD0bD0cD0dD0eD0fD10D11D12D13D1cD1dD1eD1fD20D22D2cD2dD2eD2fD30D31D33D3cD3dD40D42D4cD4fD50D51D52D53D5eD5fD60D61D62D63D6eD6fD70D72D7cD7fD80D81D83D8cD8dD90D92D9cD9dD9eD9fDa0Da1Da2Da3DacDadDaeDafDb0Db1Db2Db3DbcDbdDbeDbfDc0Dc1Dc2Dc3Dc4Dc5DcaDcbDccDcdDceDcfDd0Dd1Dd2Dd3Dd4DdbDdcDddDdeDdfDe0De1De2De3DecDedDeeDefDf0Df1Df2Df3DfcDfdDfeDffC00fD14D15D16D17D18D19D1aD1bD24D25D26D27D28D29D2aD2bD34D35D36D37D38D39D3aD3bD44D45D46D47D48D49D4aD4bD54D55D56D57D58D59D5aD5bD64D65D66D67D68D69D6aD6bD74D75D76D77D78D79D7aD7bD84D85D86D87D88D89D8aD8bD94D95D96D97D98D99D9aD9bDa4Da5Da6Da7Da8Da9DaaDabDb4Db5Db6Db7Db8Db9DbaDbbDc6Dc7Dc8Dc9Dd5Dd6Dd7Dd8Dd9DdaDe4De5De6De7De8De9DeaDebDf4Df5Df6Df7Df8Df9DfaDfb"{
@@ -61,6 +62,7 @@
  		else if(choice == "Swimming Pool Tracker") {MouseSwimTracker(); }
  		else if(choice == "Regions Tracker") {MouseRegionsTracker(); }
  		else if(choice == "Y/T Tracker") {MiceYTTracker(); }
+ 		else if(choice == "Open Previous Analysis File") {exit("Not yet..."); }
  	}
  		
  }
@@ -266,11 +268,11 @@ function MouseCubeTracker(){
 
 	//Get the threshold for getting the mouse spots
 	setAutoThreshold("Triangle");  
-	waitForUser("Please set the threshold carefully and press OK");
+	waitForUser("Please set the threshold carefully and press OK (Image>Adjust>Threshold).");
 	getThreshold(minth, maxth);
 	print(f, "Threshold\t"+minth+"\t"+maxth);
 	
-	if(dark)
+	if(darkR)
 		print(f, "DarkR\t" + darkA[0] +"\t"+ darkA[1]); 
 		
 	File.close(f);
@@ -279,6 +281,7 @@ function MouseCubeTracker(){
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	//analyse particles taking in consideration the reduction in fps if selected
+	setBatchMode("hide");
 	if(fps == 25)
 		run("Analyze Particles...", "size=15-Infinity include add stack");
 	else{
@@ -289,7 +292,7 @@ function MouseCubeTracker(){
 		}
 			
 	}
-
+	setBatchMode("show");
 	roiManager("Show All without labels");
 	roiManager("Show None");
 
@@ -333,7 +336,7 @@ function getParameters(fps,dir, imTitle){
 	displa = 0; moving = 0;
 	displaCenter = 0; centerTime=0; entriesCenter = 0; freezeCenter = 0; 
 	roiManager("Deselect");
-	
+	setBatchMode("hide");
 	for(i=0; i<roiManager("count");i++){
 		roiManager("Select", i);
 		List.setMeasurements();
@@ -407,7 +410,8 @@ function getParameters(fps,dir, imTitle){
 
 	}
 	run("Select None");
-
+	setBatchMode("show");
+	
 	run("Clear Results");
 	for(i=0; i<roiManager("count"); i++){
 		setResult("X Center",i, arrayX[i]);
@@ -645,6 +649,7 @@ function MiceElevatedPuzzleTracker(){
 	setBatchMode(true);
 
 	//deals with reduction of frame acquisition
+	setBatchMode("hide");
 	if(fps == 25)
 		run("Analyze Particles...", "size=15-Infinity include add stack");
 	else{
@@ -655,7 +660,7 @@ function MiceElevatedPuzzleTracker(){
 		}
 			
 	}
-
+	setBatchMode("show");
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	setBatchMode(false);
@@ -704,7 +709,7 @@ function getParametersET(fps, dir, imTitle){
 	closedAreaAve = 0; closeAreaCount=0;
 	check=0;
 	roiManager("Deselect");
-	setBatchMode(true);
+	setBatchMode("hide");
 	for(i=0; i<roiManager("count");i++){
 		roiManager("Select", i);
 		//smooth a bit the selection to eliminate tails and small bits on walls
@@ -793,7 +798,7 @@ function getParametersET(fps, dir, imTitle){
 			;
 	}
 	
-	setBatchMode(false);
+	setBatchMode("show");
 	run("Select None");
 	closedAreaAve = closedAreaAve/closeAreaCount;
 	nExplo = 0;
@@ -1003,6 +1008,7 @@ function MouseSwimTracker(){
 	
 	roiManager("Show All without labels");
 	roiManager("Show None");
+	setBatchMode("hide");
 	if(fps == 25)
 		run("Analyze Particles...", "size=7-Infinity include add stack");
 	else{
@@ -1013,7 +1019,7 @@ function MouseSwimTracker(){
 		}
 			
 	}
-
+	setBatchMode("show");
 	roiManager("Show All without labels");
 	roiManager("Show None");
 
@@ -1055,6 +1061,7 @@ function getParametersSM(fps,dir, imTitle){
 	
 	roiManager("Deselect");
 	
+	setBatchMode("hide");
 	for(i=0; i<roiManager("count");i++){
 		roiManager("Select", i);
 		List.setMeasurements();
@@ -1100,7 +1107,8 @@ function getParametersSM(fps,dir, imTitle){
 		}
 			
 	}
-
+	
+	setBatchMode("show");
 	run("Select None");
 
 	run("Clear Results");
@@ -1310,6 +1318,7 @@ function MouseRegionsTracker(){
 	
 	roiManager("Show All without labels");
 	roiManager("Show None");
+	setBatchMode("hide");
 	if(fps == 25)
 		run("Analyze Particles...", "size=7-Infinity include add stack");
 	else{
@@ -1320,7 +1329,7 @@ function MouseRegionsTracker(){
 		}
 			
 	}
-
+	setBatchMode("show");
 	roiManager("Show All without labels");
 	roiManager("Show None");
 
@@ -1368,6 +1377,7 @@ function getParametersRT(fps,dir, imTitle, n){
 	displa = 0;
 	roiManager("Deselect");
 	
+	setBatchMode("hide");
 	for(i=0, j = 0; i<roiManager("count");i++){
 		roiManager("Select", i);
 		List.setMeasurements();
@@ -1418,8 +1428,9 @@ function getParametersRT(fps,dir, imTitle, n){
 		}
 
 	}
+	
+	setBatchMode("show");
 	run("Select None");
-
 
 	run("Clear Results");
 	for(i=0, j=0; i<roiManager("count"); i++){
@@ -1756,7 +1767,7 @@ function getParametersTY(fps, dir, imTitle){
 	ordem = "";
 	
 	roiManager("Deselect");
-	setBatchMode(true);
+	setBatchMode("hide");
 	for(i=0; i<roiManager("count");i++){
 		roiManager("Select", i);
 		//smooth a bit the selection to eliminate tails and small bits on walls
@@ -1862,13 +1873,10 @@ function getParametersTY(fps, dir, imTitle){
 	
 
 	
-	setBatchMode(false);
+	setBatchMode("show");
 	run("Select None");
 
-
 	tripletStory = getTripletStat(ordem);
-	
-
 
 	run("Clear Results");
 	//Write the Spot statistics file
@@ -2170,7 +2178,7 @@ function lineTrack(imageID, dir, imTitle, option){
 	selectImage(imageID);
 	getDimensions(width, height, channels, slices, frames);
 	newImage("lineTrack", "8-bit black", width, height, 1);
-	
+	setBatchMode("show");
 	
 	if(option == 1) //Empty box
 		choice = promptandgetChoice(0, 1, 0, 0, 0);
@@ -2227,8 +2235,8 @@ function lineTrack(imageID, dir, imTitle, option){
 
 		//Regions option
 		else if(option == 4){
-			count = countLines(dir, imTitle, option);
-			for(k = 6; k < count; k++){
+			count = countLinesStartingWith(dir, imTitle, option, "Object");
+			for(k = 6; k < (6+count); k++){
 				array = getFileData(k, dir, imTitle, option);
 				drawOval(array[0], array[1], array[2], array[3]);
 			}
@@ -2281,13 +2289,16 @@ function heatMap(imageID, dir, imTitle, option){
 	//selectImage(ori);
 	if(x==0){
 		selectImage(heat);
+		setBatchMode("hide");
 		for(i=0; i<roiManager("count");i++){
 			roiManager("Select", i);
 			run("Add...", "value=1 slice");
 		}
+		setBatchMode("show");
 		
 	}else{
 		selectImage(heat);
+		setBatchMode("hide");
 		for(i=0; i<roiManager("count");i++){
 			roiManager("Select", i);
 			List.setMeasurements();
@@ -2300,6 +2311,7 @@ function heatMap(imageID, dir, imTitle, option){
 			}
 			
 		}
+		setBatchMode("show");
 	}
 	run("Select None");
 	run("Fire");
@@ -2355,8 +2367,8 @@ function heatMap(imageID, dir, imTitle, option){
 		}
 		//Regions option
 		else if(option == 4){
-			count = countLines(dir, imTitle, option);
-			for(k = 6; k < count; k++){
+			count = countLinesStartingWith(dir, imTitle, option, "Object");
+			for(k = 6; k < (6+count); k++){
 				array = getFileData(k, dir, imTitle, option);
 				drawOval(array[0], array[1], array[2], array[3]);
 			}
@@ -2378,7 +2390,7 @@ function promptandgetChoice(c1, c2, c3, c4, c5){
 	
 	Dialog.create("Options for line/heatmap");
 	if(c1){
-		strings = newArray("1-point", "4-points", "8-points", "Selection");
+		strings = newArray("Selection", "1-point", "4-points", "8-points");
 		Dialog.addChoice("HeatMap marker", strings);
 	}
 
@@ -2476,13 +2488,18 @@ function clearRegion(){
 }
 
 //Function to count the lines of a txt file separated by \n
-function countLines(dir, imTitle, option){
+function countLinesStartingWith(dir, imTitle, option, strBegin){
 	strTer = newArray(".cube.trac", ".cross.trac", ".swim.trac", ".objects.trac", ".TY.trac");
 	str = dir + imTitle + strTer[option-1];
 	filestring = File.openAsString(str);
 	rows = split(filestring, "\n");
-
-	return lengthOf(rows);
+	count = 0;
+	for(i=0; i< rows.length; i++){
+		if(startsWith(rows[i], strBegin))
+			count++;
+	}
+	
+	return count;
 	
 }
 
@@ -2546,6 +2563,510 @@ function getTripletStat(ordem){
 	temp[0] = count;
 	temp[1] = numbers.length - 2;
 	
+	return temp;
+	
+}
+
+/*Everything related with redoing analysis 
+is from here downwards!!
+/////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+///////////////////////////////////////////////////// */
+
+function openPreviousAnalysis(){
+
+	strTer = newArray(".cube.trac", ".cross.trac", ".swim.trac", ".objects.trac", ".TY.trac");
+	file = File.openDialog("Please select the output file of the previous analysis.")
+	roiManager("Reset");
+	
+	filename = File.name;
+	dir = File.directory;
+	sep = File.separator;
+	
+	//Open file as a string
+	filestring = File.openAsString(dir + sep + filename);
+	temp = getFileDataRedo(filestring);
+	
+	if(endsWith(filename,".trac")){
+		if(endsWith(filename, ".cube.trac")){
+			option = repeatAnalysisDialog();
+			cubeRedo(temp, option);
+		}else if(endsWith(filename, ".cross.trac")){
+			option = repeatAnalysisDialog();
+			crossRedo(temp, option);
+		}else if(endsWith(filename, ".objects.trac")){
+			option = repeatAnalysisDialog();
+			objectsRedo(temp, option);
+		}else if(endsWith(filename, ".swim.trac")){
+			option = repeatAnalysisDialog();
+			swimRedo(temp, option);
+		}else if(endsWith(filename, ".TY.trac")){
+			option = repeatAnalysisDialog();
+			tyRedo(temp, option);
+		}else
+			exit("Could not identify the type of analysis of this trac file");
+	}else
+		print("This file " + file + " does not appear to be a valid JAMoT file.");
+
+}
+
+
+function tyRedo(temp, option){
+	//Get the data from the file		
+	triX = newArray(4);
+	triY = newArray(3);
+	dir = temp[0];
+	iw = parseInt(temp[1]); ih = parseInt(temp[2]); inS = parseInt(temp[3]); 
+	gaus = parseInt(temp[4]);
+	imName = temp[5];
+	fps = parseInt(temp[7]);
+	triX[0] = parseInt(temp[9]); triX[1] = parseInt(temp[10]); triX[2] = parseInt(temp[11]);
+	triY[0] = parseInt(temp[13]); triY[1] = parseInt(temp[14]); triY[2] = parseInt(temp[15]);
+	pw = parseFloat(temp[17]); py = parseFloat(temp[18]);
+	count = 20;
+	while(temp[count]!= "TYregionY")
+		count++;
+	xp = newArray(count-20);
+	yp = newArray(count-20);
+	for(i = 0; i < count-20; i++){
+		xp[i] = temp[20+i];
+		yp[i] = temp[count+1+i];
+	}
+	jump = 20 + ((count-20)*2) + 1;
+	thrMin = parseInt(temp[jump+1]); thrMax = parseInt(temp[jump+2]);
+	drkMin = parseInt(temp[jump+4]); drkMax = parseInt(temp[jump+5]);
+	
+	if(option == 0){
+		//Open image
+		ignore = openFile(dir+imName, option);
+		
+		//Check for guassian blur
+		gausCheckRun(gaus);
+				
+		//set image parameters - pixel
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+pw+" pixel_height="+py+" voxel_depth=1");	
+		
+		//set bckgrd color
+		setBackgrdCo(thrMin);
+		//Make the bottom of the box and clear outside
+		makeSelection("polygon", xp, yp);
+		run("Clear Outside", "stack");
+		//Reduce intensity of the cage wall
+			
+		if(drkMin != drkMax)
+			darkRPorjection(imName, drkMin,drkMax);
+
+		//setThreshold and Analyse
+		setThrandAna(thrMin, thrMax, fps);
+		
+		//gets image ID
+		oriID=getImageID();
+		getParametersTY(fps, dir, imName);
+		dialog2(oriID, dir, imName, 5);
+		
+	}else{
+		//Open image file or create an empty one
+		if(!openFile(dir+imName, 1))
+			newImage("New "+imName, "8-bit black", iw, ih, inS);
+		
+		
+		//Open ROis or see if they exist!
+		if(File.exists(dir + imName + "ROIs.zip"))
+			roiManager("Open", dir + imName + "ROIs.zip");
+		else
+			exit("Roi큦 file appears to not exist!");
+		if(option == 1){
+			//Get data of the dectetions
+			getParametersTY(fps, dir, imName);
+		}
+		if(option == 2){
+			oriID = getImageID();
+			dialog2(oriID, dir, imName, 5);
+		}	
+		
+			
+			
+	}
+	
+}
+	
+
+function objectsRedo(temp, option){
+	//Get the data from the file		
+	box = newArray(4);
+	dir = temp[0];
+	iw = parseInt(temp[1]); ih = parseInt(temp[2]); inS = parseInt(temp[3]); 
+	gaus = parseInt(temp[4]);
+	imName = temp[5];
+	fps = parseInt(temp[7]);
+	box[0] = parseInt(temp[9]); box[1] = parseInt(temp[10]); box[2] = parseInt(temp[11]); box[3] = parseInt(temp[12]);
+	pw = parseFloat(temp[19]); py = parseFloat(temp[20]);
+	count = 0;
+	nRegions = 0;
+	while(temp[21 + count] != "Threshold"){
+		if(startsWith(temp[21 + count], "Object"))
+			nRegions++;
+		
+		count++;
+	}
+		
+	thrMin = parseInt(temp[21 + count + 1]); thrMax = parseInt(temp[21 + count + 2]);
+	drkMin = parseInt(temp[21 + count + 4]); drkMax = parseInt(temp[21 + count + 5]);
+	
+	if(option == 0){
+		//Open image
+		ignore = openFile(dir+imName, option);
+		
+		//Check for guassian blur
+		gausCheckRun(gaus);
+				
+		//set image parameters - pixel
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+pw+" pixel_height="+py+" voxel_depth=1");	
+		
+		//set bckgrd color
+		setBackgrdCo(thrMin);
+		//Make the bottom of the box and clear outside
+		makeRectangle(box[0], box[1], box[2], box[3]);
+		run("Enlarge...", "enlarge=15 pixel");
+		run("Clear Outside", "stack");
+		//Reduce intensity of the cage wall
+		run("Enlarge...", "enlarge=-15 pixel");
+		if(pw == 1 && py == 1)
+			run("Make Band...", "band=25");
+		else
+			run("Make Band...", "band=" + 25*pw);
+			
+		run("Gaussian Blur...", "sigma=10 stack");
+		
+		if(drkMin != drkMax)
+			darkRPorjection(imName, drkMin,drkMax);
+
+		//setThreshold and Analyse
+		setThrandAna(thrMin, thrMax, fps);
+		
+		//Get data of the dectetions
+		oriID=getImageID();
+		getParametersRT(fps, dir, imName, nRegions);
+		dialog2(oriID, dir, imName, 4);
+		
+	}else{
+		//Open image file or create an empty one
+		if(!openFile(dir+imName, 1))
+			newImage("New "+imName, "8-bit black", iw, ih, inS);
+		
+		
+		//Open ROis or see if they exist!
+		if(File.exists(dir + imName + "ROIs.zip"))
+			roiManager("Open", dir + imName + "ROIs.zip");
+		else
+			exit("Roi큦 file appears to not exist!");
+		if(option == 1){
+			//Get data of the dectetions
+			getParametersRT(fps, dir, imName, nRegions);
+		}
+		if(option == 2){
+			//oriID = getImageID();
+			dialog2(oriID, dir, imName, 4);
+		}	
+		
+			
+			
+	}
+	
+}
+
+
+function swimRedo(temp, option){
+	//Get the data from the file		
+	box = newArray(4);
+	dir = temp[0];
+	iw = parseInt(temp[1]); ih = parseInt(temp[2]); inS = parseInt(temp[3]); 
+	gaus = parseInt(temp[4]);
+	imName = temp[5];
+	fps = parseInt(temp[7]);
+	box[0] = parseInt(temp[9]); box[1] = parseInt(temp[10]); box[2] = parseInt(temp[11]); box[3] = parseInt(temp[12]);
+	pw = parseFloat(temp[14]); py = parseFloat(temp[15]);
+	
+	if(option == 0){
+		//open image
+		ignore = openFile(dir+imName, option);
+		
+		//Check for guassian blur
+		gausCheckRun(gaus);
+		
+		//set image parameters - pixel
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+pw+" pixel_height="+py+" voxel_depth=1");	
+		
+		//set bckgrd color
+		setBackgrdCo(thrMin);
+		
+		makeOval(box[0],box[1],box[2],box[3]);
+		run("Clear Outside", "stack");
+		
+		//setThreshold and Analyse
+		setThrandAna(thrMin, thrMax, fps);
+		
+		//Get data of the dectetions
+		oriID = getImageID;
+		getParametersSM(fps,dir, imTitle);
+		dialog2(oriID, dir, imTitle, 3);
+	}else{
+		//Open image file or create an empty one
+		if(!openFile(dir+imName, 1))
+			newImage("New "+imName, "8-bit black", iw, ih, inS);
+		
+		
+		//Open ROis or see if they exist!
+		if(File.exists(dir + imName + "ROIs.zip"))
+			roiManager("Open", dir + imName + "ROIs.zip");
+		else
+			exit("Roi큦 file appears to not exist!");
+		if(option == 1){
+			//Get data of the dectetions
+			getParametersSM(fps,dir, imTitle);
+		}
+		if(option == 2){
+			//oriID = getImageID();
+			dialog2(oriID, dir, imTitle, 3);
+		}	
+	}
+}
+
+
+
+function crossRedo(temp, option){
+	
+	//Get the data from the file		
+	box = newArray(4);
+	dir = temp[0];
+	iw = parseInt(temp[1]); ih = parseInt(temp[2]); inS = parseInt(temp[3]); 
+	gaus = parseInt(temp[4]);
+	imName = temp[5];
+	fps = parseInt(temp[7]);
+	box[0] = parseInt(temp[9]); box[1] = parseInt(temp[10]); box[2] = parseInt(temp[11]); box[3] = parseInt(temp[12]);
+	pw = parseFloat(temp[14]); py = parseFloat(temp[15]);
+	count = 17;
+	while(temp[count]!= "CrossRegionY")
+		count++;
+	xp = newArray(count-17);
+	yp = newArray(count-17);
+	for(i = 0; i < count-17; i++){
+		xp[i] = temp[17+i];
+		yp[i] = temp[count+1+i];
+	}
+	jump = 17 + ((count-17)*2) + 1;
+	thrMin = parseInt(temp[jump+1]); thrMax = parseInt(temp[jump+2]);
+	drkMin = parseInt(temp[jump+4]); drkMax = parseInt(temp[jump+5]);
+
+	if(option == 0){
+		//open image
+		ignore = openFile(dir+imName, option);
+		
+		//Check for guassian blur
+		gausCheckRun(gaus);
+		
+		//set image parameters - pixel
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+pw+" pixel_height="+py+" voxel_depth=1");	
+		
+		//set bckgrd color
+		setBackgrdCo(thrMin);
+		
+		makeSelection("polygon", xp, yp);
+		run("Clear Outside", "stack");
+		
+		if(drkMin != drkMax)
+			darkRPorjection(imName, drkMin,drkMax);
+		
+		//setThreshold and Analyse
+		setThrandAna(thrMin, thrMax, fps);
+		
+		//Get data of the dectetions
+		oriID = getImageID;
+		getParametersET(fps, dir, imTitle);
+		dialog2(oriID, dir, imTitle, 2);
+	}else{
+		//Open image file or create an empty one
+		if(!openFile(dir+imName, 1))
+			newImage("New "+imName, "8-bit black", iw, ih, inS);
+		
+		
+		//Open ROis or see if they exist!
+		if(File.exists(dir + imName + "ROIs.zip"))
+			roiManager("Open", dir + imName + "ROIs.zip");
+		else
+			exit("Roi큦 file appears to not exist!");
+		if(option == 1){
+			//Get data of the dectetions
+			getParametersET(fps, dir, imTitle);
+		}
+		if(option == 2){
+			//oriID = getImageID();
+			dialog2(oriID, dir, imTitle, 2); 
+		}	
+	}
+}
+
+
+
+function cubeRedo(temp, option){
+	
+	//Get the data from the file
+	box = newArray(4);
+	dir = temp[0];
+	iw = parseInt(temp[1]); ih = parseInt(temp[2]); inS = parseInt(temp[3]);
+	gaus = parseInt(temp[4]);
+	imName = temp[5];
+	fps = parseInt(temp[7]);
+	box[0] = parseInt(temp[9]); box[1] = parseInt(temp[10]); box[2] = parseInt(temp[11]); box[3] = parseInt(temp[12]);
+	pw = parseFloat(temp[19]); py = parseFloat(temp[20]);
+	thrMin = parseInt(temp[22]); thrMax = parseInt(temp[23]);
+	drkMin = parseInt(temp[25]); drkMax = parseInt(temp[26]);
+	
+	if(option == 0){
+		//Open image
+		ignore = openFile(dir+imName, option);
+		
+		//Check for guassian blur
+		gausCheckRun(gaus);
+				
+		//set image parameters - pixel
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+pw+" pixel_height="+py+" voxel_depth=1");	
+		
+		//set bckgrd color
+		setBackgrdCo(thrMin);
+		//Make the bottom of the box and clear outside
+		makeRectangle(box[0], box[1], box[2], box[3]);
+		run("Enlarge...", "enlarge=15 pixel");
+		run("Clear Outside", "stack");
+		//Reduce intensity of the cage wall
+		run("Enlarge...", "enlarge=-15 pixel");
+		if(pw == 1 && py == 1)
+			run("Make Band...", "band=25");
+		else
+			run("Make Band...", "band=" + 25*pw);
+			
+		run("Gaussian Blur...", "sigma=10 stack");
+		
+		if(drkMin!=drkMax)
+			darkRPorjection(imName, drkMin,drkMax);
+
+		//setThreshold and Analyse
+		setThrandAna(thrMin, thrMax, fps);
+		
+		//Get data of the dectetions
+		getParameters(fps, dir, imName);
+		oriID = getImageID();
+		dialog2(oriID, dir, imName, 1);
+		
+	}else{
+		//Open image file or create an empty one
+		if(!openFile(dir+imName, 1))
+			newImage("New "+imName, "8-bit black", iw, ih, inS);
+		
+		
+		//Open ROis or see if they exist!
+		if(File.exists(dir + imName + "ROIs.zip"))
+			roiManager("Open", dir + imName + "ROIs.zip");
+		else
+			exit("Roi큦 file appears to not exist!");
+		if(option == 1){
+			//Get data of the dectetions
+			getParameters(fps, dir, imName);
+		}
+		if(option == 2){
+			//oriID = getImageID();
+			dialog2(oriID, dir, imName, 1);
+		}	
+		
+			
+			
+	}
+}
+
+
+function setThrandAna(thrMin, thrMax, fps){
+
+		setThreshold(thrMin,thrMax);
+	
+		roiManager("Show All without labels");
+		roiManager("Show None");
+		setBatchMode("hide");
+		//analyse particles taking in consideration the reduction in fps if selected
+		if(fps == 25)
+			run("Analyze Particles...", "size=15-Infinity include add stack");
+		else{
+			
+			for(i = 1; i < nSlices; i = i + 100/fps){
+				setSlice(i);
+				run("Analyze Particles...", "size=15-Infinity include add slice");
+			}
+		}
+		setBatchMode("show");
+}
+
+function setBackgrdCo(thr){
+		if(thr < 50)
+			setBackgroundColor(255, 255, 255);
+		else
+			setBackgroundColor(0, 0, 0);
+			
+}
+
+
+function gausCheckRun(n){
+	if(n > 0)
+			run("Gaussian Blur...", "sigma="+n+" stack");
+}
+
+function openFile(str, option){
+	if(File.exists(str))
+		open(str);
+	else
+		if(option == 0)
+			exit("Image file "+str+" does not exist...");
+		else 
+			return 0;
+	
+	return 1;		
+}
+	
+/*Small dialog function to ask what do you want 
+to do when loading a previous analysis file*/
+function repeatAnalysisDialog(){
+
+	array1 = newArray("Repeat full analysis", "Repeat selection analysis only", "Redraw HeatMap and Line Track", "Just Load image and ROIs");
+	Dialog.create("Load previous analysis.");
+	Dialog.addMessage("What do you want to do?");
+	Dialog.addRadioButtonGroup("Please choose one", array1, 4, 1, "Repeat full analysis");
+	Dialog.show();
+	string = Dialog.getRadioButton();
+	count = 0;
+	while(string != array1[count])
+		count++;
+	
+	
+	return count;
+}
+
+/*Special get data from file function
+to put all data of a file into a array separting the file
+by tab*/
+function getFileDataRedo(filestring){
+
+	rows = split(filestring, "\n");
+	temp = newArray(100);
+	Array.fill(temp, 0);
+	count = 0;
+	for(i = 0; i < rows.length; i++){
+		columns = split(rows[i], "\t");
+		for(j = 0; j < columns.length;j++){
+			temp[count] = columns[j];
+			count++;
+		}
+
+	}
+			
+
 	return temp;
 	
 }
