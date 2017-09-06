@@ -2,6 +2,8 @@
  * //////////////////Author - H lio Roque - Centro Nacional Investigaciones CardioVasculares, Madrid, Spain/////////////
  * /////////////////Contact - helio.alexandreduarte at cnic.es///////////////////////////////////////////////////////////////
  * 
+ * 05/09/2017 - Made changes to the get in line with the upcoming function of redoing an analysis by loading a preivous trac file
+ *				Also transformed it to a dropdown menu liek BioVoxxel Toolbox (REFERENCE)			
  * 06/06/2017 - Added a function to be run by the T/Y where it determines the number triplet entries into all different arms - NEED REFERENCE
  * 06/06/2017 - Changed removeDarkR to recieve input from the user to start and end of average projection. Added warning messages to the effect
  * 01/06/2017 - Added extra number entries and options to dialog1 whose appearance depends on the macro calling it. This allows
@@ -45,10 +47,31 @@
  * 08/05/2017 - Mouse looking over the edge in EPM by area comparicion between open and close regions
  */
  
+ requires("1.50a");
+ 
+ var filemenu = newMenu("Mouse trial Macros Menu Tool", newArray("Process Video", "Cube Tracker","Elevated Puzzle Tracker", "Swimming Pool Tracker", "Regions Tracker", "Y/T Tracker", "-"));
+ 
+ 
+ macro "Mouse trial Macros Menu Tool - C005D21D23D32D3eD3fD41D43D4dD4eD5cD5dD6cD6dD71D73D7dD7eD82D8eD8fD91D93CfffD00D01D02D03D04D05D06D07D08D09D0aD0bD0cD0dD0eD0fD10D11D12D13D1cD1dD1eD1fD20D22D2cD2dD2eD2fD30D31D33D3cD3dD40D42D4cD4fD50D51D52D53D5eD5fD60D61D62D63D6eD6fD70D72D7cD7fD80D81D83D8cD8dD90D92D9cD9dD9eD9fDa0Da1Da2Da3DacDadDaeDafDb0Db1Db2Db3DbcDbdDbeDbfDc0Dc1Dc2Dc3Dc4Dc5DcaDcbDccDcdDceDcfDd0Dd1Dd2Dd3Dd4DdbDdcDddDdeDdfDe0De1De2De3DecDedDeeDefDf0Df1Df2Df3DfcDfdDfeDffC00fD14D15D16D17D18D19D1aD1bD24D25D26D27D28D29D2aD2bD34D35D36D37D38D39D3aD3bD44D45D46D47D48D49D4aD4bD54D55D56D57D58D59D5aD5bD64D65D66D67D68D69D6aD6bD74D75D76D77D78D79D7aD7bD84D85D86D87D88D89D8aD8bD94D95D96D97D98D99D9aD9bDa4Da5Da6Da7Da8Da9DaaDabDb4Db5Db6Db7Db8Db9DbaDbbDc6Dc7Dc8Dc9Dd5Dd6Dd7Dd8Dd9DdaDe4De5De6De7De8De9DeaDebDf4Df5Df6Df7Df8Df9DfaDfb"{
+ 	choice = getArgument();
+ 	if(choice != "-"){
+ 		if(choice == "Process Video") {ProcessVideo(); }
+ 		else if(choice == "Cube Tracker") {MouseCubeTracker(); }
+ 		else if(choice == "Elevated Puzzle Tracker") {MiceElevatedPuzzleTracker(); }
+ 		else if(choice == "Swimming Pool Tracker") {MouseSwimTracker(); }
+ 		else if(choice == "Regions Tracker") {MouseRegionsTracker(); }
+ 		else if(choice == "Y/T Tracker") {MiceYTTracker(); }
+ 	}
+ 		
+ }
+ 
+ 
+ 
+ 
 //This macro processess an decompressed or mjpeg avi 
 //open as a virtual stack and saves it as a sequence of images 
 //that it after opens as a virtual stack
-macro"Process Video Action Tool - C005D21D23D32D3eD3fD41D43D4dD4eD5cD5dD6cD6dD71D73D7dD7eD82D8eD8fD91D93CfffD00D01D02D03D04D05D06D07D08D09D0aD0bD0cD0dD0eD0fD10D11D12D13D1cD1dD1eD1fD20D22D2cD2dD2eD2fD30D31D33D3cD3dD40D42D4cD4fD50D51D52D53D5eD5fD60D61D62D63D6eD6fD70D72D7cD7fD80D81D83D8cD8dD90D92D9cD9dD9eD9fDa0Da1Da2Da3DacDadDaeDafDb0Db1Db2Db3DbcDbdDbeDbfDc0Dc1Dc2Dc3Dc4Dc5DcaDcbDccDcdDceDcfDd0Dd1Dd2Dd3Dd4DdbDdcDddDdeDdfDe0De1De2De3DecDedDeeDefDf0Df1Df2Df3DfcDfdDfeDffC00fD14D15D16D17D18D19D1aD1bD24D25D26D27D28D29D2aD2bD34D35D36D37D38D39D3aD3bD44D45D46D47D48D49D4aD4bD54D55D56D57D58D59D5aD5bD64D65D66D67D68D69D6aD6bD74D75D76D77D78D79D7aD7bD84D85D86D87D88D89D8aD8bD94D95D96D97D98D99D9aD9bDa4Da5Da6Da7Da8Da9DaaDabDb4Db5Db6Db7Db8Db9DbaDbbDc6Dc7Dc8Dc9Dd5Dd6Dd7Dd8Dd9DdaDe4De5De6De7De8De9DeaDebDf4Df5Df6Df7Df8Df9DfaDfb"{
+function ProcessVideo(){
 	
 	Dialog.create("Avi converter");
 	Dialog.addMessage("Convert the movie to an avi file ImageJ can open.\n It assumes ffmpeg.exe is in the ImageJ Macro\\toolsets folder.");
@@ -140,10 +163,10 @@ function pad(n) {
  * Macro to track the mice in an open cube of 38 cm by 38 cm
  * It will output several parameters related to displacement, velocity, etc.
  */
-macro"Mouse Cube Tracker Action Tool - C000D17D18D19D26D27D28D29D35D36D37D38D39D44D45D46D47D48D49D54D55D56D57D58D59D64D65D66D69D74D75D76D79D84D85D86D95D96D97D98D9bD9cD9dD9eD9fDa6Da7Da8Da9DabDafDb6Db7Db8Db9DbbDbfDc5Dc6Dc7Dc8Dc9Dd5Dd6Dd9DdbDe9DebDecDedDeeDefDfbCcccDb4C000D09D25D87Da5Dc4Dd4CfffD00D01D02D03D04D05D0cD0dD0eD0fD10D11D12D13D14D1dD1eD1fD20D21D22D23D2dD2eD2fD30D31D32D33D3dD3eD3fD40D41D42D4dD4eD4fD50D51D52D5dD5eD5fD60D61D62D6dD6eD6fD70D71D72D7dD7eD7fD80D81D82D8dD8eD8fD90D91D92D93Da0Da1Da2Da3DacDadDaeDb0Db1Db2Db3DbcDbdDbeDc0Dc1Dc2DcbDccDcdDceDcfDd0Dd1Dd2DdcDddDdeDdfDe0De1De2De3De4De5Df0Df1Df2Df3Df4Df5Df6DfcDfdDfeDffCeeeD1cD89Da4C888D2aD2cD3aD3bD4aD4bD5aD5bD6aD6bD7aDaaDbaDcaDdaDeaCdddD24D43D83D8aDd3De6Df7C444D08D0aD1aD34D77D94Dd7Df8CeeeD8cC888D07D53D63D67D73D7bCdddD15C222D1bD68De7Df9C777D2bD3cD4cD5cD6cD7cDd8CfffD06D8bDc3CaaaD0bD78D88D9aDfaC111D16D99Db5De8"{
+function MouseCubeTracker(){
 
 	
-	requires("1.50a");
+
 
 	checkAndSort();
 
@@ -507,10 +530,8 @@ function getDirection(dir, imTitle){
 //calculate the time spent in the closed arms vs open arms
 //it will also try to verify if the mouse was looking outside the
 //edge in the open arms
-macro"Mice Elevated Puzzle Tracker Action Tool - C000D17D18D19D26D27D28D29D35D36D37D38D39D44D45D46D47D48D49D54D55D56D57D58D59D64D65D66D69D74D75D76D79D84D85D86D95D96D97D98D9bD9cD9dD9eD9fDa6Da7Da8Da9DabDadDafDb6Db7Db8Db9DbbDbdDbfDc5Dc6Dc7Dc8Dc9Dd5Dd6Dd9DdbDe9DebDecDedDeeDefDfbCfffD00D01D02D03D04D05D0cD0dD0eD0fD10D11D12D13D14D1dD1eD1fD20D21D22D23D2dD2eD2fD30D31D32D33D3dD3eD3fD40D41D42D4dD4eD4fD50D51D52D5dD5eD5fD60D61D62D6dD6eD6fD70D71D72D7dD7eD7fD80D81D82D8dD8eD8fD90D91D92D93Da0Da1Da2Da3DacDaeDb0Db1Db2Db3DbcDbeDc0Dc1Dc2DcbDccDcdDceDcfDd0Dd1Dd2DdcDddDdeDdfDe0De1De2De3De4De5Df0Df1Df2Df3Df4Df5Df6DfcDfdDfeDffC222D1bD68De7Df9C000D87Dc4Dd4C888D07D63D7bC888D2aD2cD3aD3bD4aD4bD5aD5bD6aD6bD7aDaaDbaDcaDdaDeaC111D16D99Db5De8CdddD24D43D83D8aDd3De6Df7C666D1aD3cD4cD5cD6cD77Df8C111D09D25Da5CaaaD0bD78D88D9aDfaCeeeD06D1cD89D8bD8cDa4Dc3C333D08D0aD34D94Dd7C999D53D67D73C777D2bD7cDd8CcccD15Db4"{
+function MiceElevatedPuzzleTracker(){
 
-	
-requires("1.50a");
 	checkAndSort();
 	
 	//First clean up and setup the macro actions
@@ -874,8 +895,8 @@ function getDirectionET(){
  * Macro to track the mice in an open swim of 125cm diameter
  * It will output several parameters related to displacement, velocity, etc.
  */
-macro"Mouse Swim Tracker Action Tool - C000D17D18D19D26D27D28D29D35D36D37D38D39D44D45D46D47D48D49D54D55D56D57D58D59D64D65D66D69D74D75D76D79D84D85D86D95D96D97D98D9bD9cD9dD9fDa6Da7Da8Da9DabDadDafDb6Db7Db8Db9DbbDbdDbeDbfDc5Dc6Dc7Dc8Dc9Dd5Dd6Dd9DdbDe9DebDecDedDeeDefDfbCfffD00D01D02D03D04D05D0cD0dD0eD0fD10D11D12D13D14D1dD1eD1fD20D21D22D23D2dD2eD2fD30D31D32D33D3dD3eD3fD40D41D42D4dD4eD4fD50D51D52D5dD5eD5fD60D61D62D6dD6eD6fD70D71D72D7dD7eD7fD80D81D82D8dD8eD8fD90D91D92D93D9eDa0Da1Da2Da3DacDaeDb0Db1Db2Db3DbcDc0Dc1Dc2DcbDccDcdDceDcfDd0Dd1Dd2DdcDddDdeDdfDe0De1De2De3De4De5Df0Df1Df2Df3Df4Df5Df6DfcDfdDfeDffC222D1bD68De7Df9C000D87Dc4Dd4C888D07D63D7bC888D2aD2cD3aD3bD4aD4bD5aD5bD6aD6bD7aDaaDbaDcaDdaDeaC111D16D99Db5De8CdddD24D43D83D8aDd3De6Df7C666D1aD3cD4cD5cD6cD77Df8C111D09D25Da5CaaaD0bD78D88D9aDfaCeeeD06D1cD89D8bD8cDa4Dc3C333D08D0aD34D94Dd7C999D53D67D73C777D2bD7cDd8CcccD15Db4"{
-	requires("1.50a");
+function MouseSwimTracker(){
+	
 	checkAndSort();
 
 	//Select the directory of the open image to be analysed
@@ -909,6 +930,9 @@ macro"Mouse Swim Tracker Action Tool - C000D17D18D19D26D27D28D29D35D36D37D38D39D
 	print(f, dir + "\t" + getWidth() + "\t" + getHeight() + "\t" + nSlices + "\t" + gaus);
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
+	
+	if(gaus > 0)
+		run("Gaussian Blur...", "sigma="+gaus+" stack");
 
 	
 	getDimensions(width, height, channels, slices, frames);
@@ -1177,10 +1201,8 @@ function getQuadAndPlat(dir, imTitle){
  * Macro to track the mice in an open cube of 38 cm by 38 cm
  * It will output several parameters related to displacement, velocity, etc.
  */
-macro"Mouse Regions Tracker Action Tool - CfffD00D01D02D03D04D05D0cD0dD0eD0fD10D11D12D13D14D1dD1eD1fD20D21D22D23D2dD2eD2fD30D31D32D33D3dD3eD3fD40D41D42D4dD4eD4fD50D51D52D5dD5eD5fD60D61D62D6dD6eD6fD70D71D72D7dD7eD7fD80D81D82D8dD8eD8fD90D91D92D93Da0Da1Da2Da3DacDafDb0Db1Db2Db3DbeDc0Dc1Dc2DcbDccDcdDceDcfDd0Dd1Dd2DdcDddDdeDdfDe0De1De2De3De4De5Df0Df1Df2Df3Df4Df5Df6DfcDfdDfeDffC222D1bD68De7Df9C000D87DabDc4Dd4C888D07D63D7bC888D2aD2cD3aD3bD4aD4bD5aD5bD6aD6bD7aDaaDbaDcaDdaDeaC111D16D99Db5De8CdddD24D43D83D8aDd3De6Df7C666D1aD3cD4cD5cD6cD77DadDf8C111D09D25Da5CaaaD0bD78D88D9aDfaCeeeD06D1cD89D8bD8cDa4DbbDbdDc3C333D08D0aD34D94Dd7C999D53D67D73C777D2bD7cDd8CcccD15Db4"{
+function MouseRegionsTracker(){
 
-
-	requires("1.50a");
 	checkAndSort();
 	
 	//Select the directory of the open image to be analysed
@@ -1198,6 +1220,7 @@ macro"Mouse Regions Tracker Action Tool - CfffD00D01D02D03D04D05D0cD0dD0eD0fD10D
 	cubeH = choiceArray[3];
 	nRegions = choiceArray[4];
 	darkR = choiceArray[5];
+	gaus = choiceArray[6];
 
 	//Takes care of cases where tracking has been done already
 	//asks if you want to delete it or not
@@ -1209,10 +1232,12 @@ macro"Mouse Regions Tracker Action Tool - CfffD00D01D02D03D04D05D0cD0dD0eD0fD10D
 	}
 	//Save file to open later on
 	f = File.open(dir + imTitle + ".objects.trac");
-	print(f, dir);
+	print(f, dir + "\t" + getWidth + "\t" + getHeight + "\t" + nSlices + "\t" + gaus);
 	print(f, imTitle);
-	print(f, fps);
+	print(f, "FPS\t" + fps);
 
+	if(gaus > 0)
+		run("Gaussian Blur...", "sigma="+gaus+" stack");
 
 	getDimensions(width, height, channels, slices, frames);
 	makeRectangle(width/5, height/5,width/2,height/2);
@@ -1269,16 +1294,19 @@ macro"Mouse Regions Tracker Action Tool - CfffD00D01D02D03D04D05D0cD0dD0eD0fD10D
 		}
 	}
 
-	File.close(f);
+	
 
 	if(darkR)
-		removeDarkR(imTitle);
+		darKA = removeDarkR(imTitle);
 	
 	run("Select None");
 	setAutoThreshold("Triangle");
 	waitForUser("Please set the threshold carefully and press OK");
 	getThreshold(minth, maxth);
 	setThreshold(minth,maxth);
+	
+	print(f, "Threshold\t" + minth + "\t" + maxth);
+	print(f, "DarkR\t" + darKA[0] + "\t" + darKA[1]);
 	
 	roiManager("Show All without labels");
 	roiManager("Show None");
@@ -1297,10 +1325,9 @@ macro"Mouse Regions Tracker Action Tool - CfffD00D01D02D03D04D05D0cD0dD0eD0fD10D
 	roiManager("Show None");
 
 	roiManager("Save", dir + imTitle + "ROIs.zip");
-	//print(f, dir + imTitle + "ROIs.zip");
-
+	
 	//File operations done!
-
+	File.close(f);
 	run("Select None");
 
 	oriID=getImageID();
@@ -1554,9 +1581,9 @@ function sortRegions(xp, yp, xc, yc, headC, dir, imTitle, n){
 //Macro to evaluate the TY Puzzle mice 
 //It will be track the mouse in the cross like puzzle and
 //calculate the time spent in each arm and the first time it goes in each arm
-macro"Mice Y/T Tracker Action Tool - C000D17D18D19D26D27D28D29D35D36D37D38D39D44D45D46D47D48D49D54D55D56D57D58D59D64D65D66D69D74D75D76D79D84D85D86D95D96D97D98D9bDa6Da7Da8Da9DacDb6Db7Db8Db9DbdDbeDbfDc5Dc6Dc7Dc8Dc9DccDd5Dd6Dd9De9DebDecDedDeeDefDfbCfffD00D01D02D03D04D05D0cD0dD0eD0fD10D11D12D13D14D1dD1eD1fD20D21D22D23D2dD2eD2fD30D31D32D33D3dD3eD3fD40D41D42D4dD4eD4fD50D51D52D5dD5eD5fD60D61D62D6dD6eD6fD70D71D72D7dD7eD7fD80D81D82D8dD8eD8fD90D91D92D93D9cD9dD9eD9fDa0Da1Da2Da3DabDadDaeDafDb0Db1Db2Db3DbbDbcDc0Dc1Dc2DcbDcdDceDcfDd0Dd1Dd2DdcDddDdeDdfDe0De1De2De3De4De5Df0Df1Df2Df3Df4Df5Df6DfcDfdDfeDffC222D1bD68De7Df9C000D87Dc4Dd4C888D07D63D7bC888D2aD2cD3aD3bD4aD4bD5aD5bD6aD6bD7aDaaDbaDcaDdaDeaC111D16D99Db5De8CdddD24D43D83D8aDd3De6Df7C666D1aD3cD4cD5cD6cD77Df8C111D09D25Da5CaaaD0bD78D88D9aDfaCeeeD06D1cD89D8bD8cDa4Dc3C333D08D0aD34D94Dd7DdbC999D53D67D73C777D2bD7cDd8CcccD15Db4"{
+function MiceYTTracker(){
 
-	requires("1.50a");
+	
 	checkAndSort();
 	
 	//First clean up and setup the macro actions
@@ -1573,6 +1600,7 @@ macro"Mice Y/T Tracker Action Tool - C000D17D18D19D26D27D28D29D35D36D37D38D39D44
 	fps = temp[1];
 	armsD = temp[2];
 	darkR = temp[5];
+	gaus = temp[6];
 	
 	//Takes care of cases where tracking has been done already
 	//asks if you want to delete it or not
@@ -1585,9 +1613,9 @@ macro"Mice Y/T Tracker Action Tool - C000D17D18D19D26D27D28D29D35D36D37D38D39D44
 	
 	//Save file to open later on
 	f = File.open(dir + imTitle + ".TY.trac");
-	print(f, dir);
+	print(f, dir + "\t" + getWidth + "\t" + getHeight + "\t" + nSlices + "\t" + gaus);
 	print(f, imTitle);
-	print(f, fps);
+	print(f, "FPS\t" + fps);
 
 	//get dimensions of the image in px
 	getDimensions(width, height, channels, slices, frames);
@@ -1656,7 +1684,7 @@ macro"Mice Y/T Tracker Action Tool - C000D17D18D19D26D27D28D29D35D36D37D38D39D44
 	}
 
 	if(darkR){
-		removeDarkR(imTitle);
+		darKA = removeDarkR(imTitle);
 	}
 
 	//Asks for threshold to be set to be able to detect the mouse
@@ -1665,6 +1693,8 @@ macro"Mice Y/T Tracker Action Tool - C000D17D18D19D26D27D28D29D35D36D37D38D39D44
 	waitForUser("Set the threshold carefully. Open threshold window by Image>Adjust>Threshold");
 	getThreshold(minth, maxth);
 	setThreshold(minth,maxth);
+	print(f, "Threshold\t" + minth + "\t" + maxth);
+	print(f, "DarkR\t" + darKA[0] + "\t" + darKA[1]);
 
 	//Try to speed up things with batch mode but not sure it actually helps
 	setBatchMode(true);
