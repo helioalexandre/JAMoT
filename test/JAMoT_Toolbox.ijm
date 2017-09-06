@@ -53,7 +53,7 @@
  var filemenu = newMenu("Mouse trial Macros Menu Tool", newArray("Process Video", "Cube Tracker","Elevated Puzzle Tracker", "Swimming Pool Tracker", "Regions Tracker", "Y/T Tracker","Open Previous Analysis File", "-"));
  
  
- macro "Mouse trial Macros Menu Tool - C005D21D23D32D3eD3fD41D43D4dD4eD5cD5dD6cD6dD71D73D7dD7eD82D8eD8fD91D93CfffD00D01D02D03D04D05D06D07D08D09D0aD0bD0cD0dD0eD0fD10D11D12D13D1cD1dD1eD1fD20D22D2cD2dD2eD2fD30D31D33D3cD3dD40D42D4cD4fD50D51D52D53D5eD5fD60D61D62D63D6eD6fD70D72D7cD7fD80D81D83D8cD8dD90D92D9cD9dD9eD9fDa0Da1Da2Da3DacDadDaeDafDb0Db1Db2Db3DbcDbdDbeDbfDc0Dc1Dc2Dc3Dc4Dc5DcaDcbDccDcdDceDcfDd0Dd1Dd2Dd3Dd4DdbDdcDddDdeDdfDe0De1De2De3DecDedDeeDefDf0Df1Df2Df3DfcDfdDfeDffC00fD14D15D16D17D18D19D1aD1bD24D25D26D27D28D29D2aD2bD34D35D36D37D38D39D3aD3bD44D45D46D47D48D49D4aD4bD54D55D56D57D58D59D5aD5bD64D65D66D67D68D69D6aD6bD74D75D76D77D78D79D7aD7bD84D85D86D87D88D89D8aD8bD94D95D96D97D98D99D9aD9bDa4Da5Da6Da7Da8Da9DaaDabDb4Db5Db6Db7Db8Db9DbaDbbDc6Dc7Dc8Dc9Dd5Dd6Dd7Dd8Dd9DdaDe4De5De6De7De8De9DeaDebDf4Df5Df6Df7Df8Df9DfaDfb"{
+ macro "Mouse trial Macros Menu Tool - C000C111D98C111D88C111D89C111D86D99C111D87C111D85C111D8aD97C111D9aC222D79D8bC222D7aC222D96C222D84C222D78C222D7bC222D76D9bC222D95C222D77C333Da9C333D75C333D74C333D73Da8C333DaaC333D8cC333C444D83C444D7cDa7C444D6aC444D69C444D94C444C555D9cC555DabC555Da6C555D68C555D6bC555D66C555D72C555C666D67C666D65C666D64D7dDa5Db9C666D63C666D8dDb8C666DbaC666D82D93C666DacC666C777D6cC777D7eC777Da4Db7C777D9dDbbC777D59D7fC777D5aD62D6dDb6C777D6fC777D8eC777C888D6eD92DbcC888Da3DadDcaC888D57D58Db5Dc9C888D56Dc7C888D5bD8fDc8C888D9eDc6DcbC888D9fDaeDb4DbdDc5C888D53D55D71D91DccC888D81Da1Da2Dc1Dd8C888D54D5cDafDb1Db2Db3Dc0Dc2Dd0Dd1Dd6DdaDdbDdfDe0De8De9DeaC888D52D5fDc3Dd2Dd5Dd7Dd9C888D5dD90Da0Db0DbeDc4Dd3DdcDdeDefDf2C888D5eDbfDcdDcfDd4De1DebDfaC888D4aD61DddDe2Df0Df1Df5Df8C999D80DceDe3DeeDf3Df4Df9DfbDfdDfeC999D41D47D49De7DecDedDf6Df7DfcDffC999D40D42D46D4bD4cD4dD51De4C999D43D44D48D4eD4fD50D70De5De6C999D10D20D30D31D36D3cD45D60C999D17D32D3bD3fC999D21D22D26D2eD2fD34D37D39D3aD3dD3eC999D15D16D23D29D33C999D07D11D12D14D18D19D1eD1fD25D27D2aD2dD35D38C999D00D05D06D0fD1aD24D2bD2cC999D01D04D09D0cD13D1bD1cD1dD28C999D02D0aD0bD0eC999D08D0dC999D03"{
  	choice = getArgument();
  	if(choice != "-"){
  		if(choice == "Process Video") {ProcessVideo(); }
@@ -62,7 +62,7 @@
  		else if(choice == "Swimming Pool Tracker") {MouseSwimTracker(); }
  		else if(choice == "Regions Tracker") {MouseRegionsTracker(); }
  		else if(choice == "Y/T Tracker") {MiceYTTracker(); }
- 		else if(choice == "Open Previous Analysis File") {exit("Not yet..."); }
+ 		else if(choice == "Open Previous Analysis File") {openPreviousAnalysis(); }
  	}
  		
  }
@@ -2576,7 +2576,7 @@ is from here downwards!!
 function openPreviousAnalysis(){
 
 	strTer = newArray(".cube.trac", ".cross.trac", ".swim.trac", ".objects.trac", ".TY.trac");
-	file = File.openDialog("Please select the output file of the previous analysis.")
+	file = File.openDialog("Please select the output file of the previous analysis.");
 	roiManager("Reset");
 	
 	filename = File.name;
@@ -2765,7 +2765,7 @@ function objectsRedo(temp, option){
 			getParametersRT(fps, dir, imName, nRegions);
 		}
 		if(option == 2){
-			//oriID = getImageID();
+			oriID = getImageID();
 			dialog2(oriID, dir, imName, 4);
 		}	
 		
@@ -2785,7 +2785,8 @@ function swimRedo(temp, option){
 	imName = temp[5];
 	fps = parseInt(temp[7]);
 	box[0] = parseInt(temp[9]); box[1] = parseInt(temp[10]); box[2] = parseInt(temp[11]); box[3] = parseInt(temp[12]);
-	pw = parseFloat(temp[14]); py = parseFloat(temp[15]);
+	pw = parseFloat(temp[22]); py = parseFloat(temp[23]);
+	thrMin = parseInt(temp[25]); thrMax = parseInt(temp[26]);
 	
 	if(option == 0){
 		//open image
@@ -2808,8 +2809,9 @@ function swimRedo(temp, option){
 		
 		//Get data of the dectetions
 		oriID = getImageID;
-		getParametersSM(fps,dir, imTitle);
-		dialog2(oriID, dir, imTitle, 3);
+		getParametersSM(fps,dir, imName);
+		dialog2(oriID, dir, imName, 3);
+		
 	}else{
 		//Open image file or create an empty one
 		if(!openFile(dir+imName, 1))
@@ -2823,11 +2825,11 @@ function swimRedo(temp, option){
 			exit("Roi´s file appears to not exist!");
 		if(option == 1){
 			//Get data of the dectetions
-			getParametersSM(fps,dir, imTitle);
+			getParametersSM(fps,dir, imName);
 		}
 		if(option == 2){
-			//oriID = getImageID();
-			dialog2(oriID, dir, imTitle, 3);
+			oriID = getImageID();
+			dialog2(oriID, dir, imName, 3);
 		}	
 	}
 }
@@ -2882,8 +2884,8 @@ function crossRedo(temp, option){
 		
 		//Get data of the dectetions
 		oriID = getImageID;
-		getParametersET(fps, dir, imTitle);
-		dialog2(oriID, dir, imTitle, 2);
+		getParametersET(fps, dir, imName);
+		dialog2(oriID, dir, imName, 2);
 	}else{
 		//Open image file or create an empty one
 		if(!openFile(dir+imName, 1))
@@ -2897,11 +2899,11 @@ function crossRedo(temp, option){
 			exit("Roi´s file appears to not exist!");
 		if(option == 1){
 			//Get data of the dectetions
-			getParametersET(fps, dir, imTitle);
+			getParametersET(fps, dir, imName);
 		}
 		if(option == 2){
-			//oriID = getImageID();
-			dialog2(oriID, dir, imTitle, 2); 
+			oriID = getImageID();
+			dialog2(oriID, dir, imName, 2); 
 		}	
 	}
 }
@@ -2974,7 +2976,7 @@ function cubeRedo(temp, option){
 			getParameters(fps, dir, imName);
 		}
 		if(option == 2){
-			//oriID = getImageID();
+			oriID = getImageID();
 			dialog2(oriID, dir, imName, 1);
 		}	
 		
