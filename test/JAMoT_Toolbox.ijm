@@ -2,9 +2,12 @@
  * //////////////////Author - H lio Roque - Centro Nacional Investigaciones CardioVasculares, Madrid, Spain/////////////
  * /////////////////Contact - helio.alexandreduarte at cnic.es///////////////////////////////////////////////////////////////
  * 
+ * 08/09/2017 - Added an option in the menu to set preferences. These are set in the IJ_Prefs.txt file for later uses.
+ *				Preferences are also saved in the tracking files.
+ * 07/09/2017 - Added the function to do batch process of AVI files from one folder to another. 
  * 06/09/2017 - Added the hability of redoing previous analysis using a analysis from a previous analysis
  * 05/09/2017 - Made changes to the get in line with the upcoming function of redoing an analysis by loading a preivous trac file
- *				Also transformed it to a dropdown menu liek BioVoxxel Toolbox (REFERENCE)			
+ *				Also transformed it to a dropdown menu like BioVoxxel Toolbox (REFERENCE)			
  * 06/06/2017 - Added a function to be run by the T/Y where it determines the number triplet entries into all different arms - NEED REFERENCE
  * 06/06/2017 - Changed removeDarkR to recieve input from the user to start and end of average projection. Added warning messages to the effect
  * 01/06/2017 - Added extra number entries and options to dialog1 whose appearance depends on the macro calling it. This allows
@@ -50,22 +53,108 @@
  
  requires("1.50a");
  
- var filemenu = newMenu("Mouse trial Macros Menu Tool", newArray("Process Video", "Cube Tracker","Elevated Puzzle Tracker", "Swimming Pool Tracker", "Regions Tracker", "Y/T Tracker","Open Previous Analysis File", "-"));
+ var filemenu = newMenu("Mouse trial Macros Menu Tool", newArray("Batch Process Video Files", "Process Video", "Open Field Test","Elevated Plus Maize", "Watermaize Test", "Novel Object Recognition", "Y/T Maize","Fear Conditioning", "Open Previous Analysis File", "Preferences","-"));
+ var delFile = "Previous analysis file exists. Overwrite? Cancel will stop the macro.";
+ var setThr = "Please set the threshold carefully and press OK (Image>Adjust>Threshold).";
+ //General
+ var units = call("ij.Prefs.get", "JAMoT_Prefs.gen.units", "0");
+ var gauVal = call("ij.Prefs.get", "JAMoT_Prefs.gen.gauval", "0");
+ var dispVal = call("ij.Prefs.get", "JAMoT_Prefs.gen.dispVal", "0");
+ //Cube Maize
+ var solidity = call("ij.Prefs.get", "JAMoT_Prefs.cube.soli", "0");
+ var wCube = call("ij.Prefs.get", "JAMoT_Prefs.cube.width", "0");
+ var mCubeArea = call("ij.Prefs.get", "JAMoT_Prefs.cube.marea","0");
+ //Elevated Maize
+ var wElevated = call("ij.Prefs.get", "JAMoT_Prefs.elev.width", "0");
+ var mElevatedArea = call("ij.Prefs.get", "JAMoT_Prefs.elev.marea", "0");
+ var sElevated = call("ij.Prefs.get", "JAMoT_Prefs.elev.smooth", "0");
+ //Swimming Maize
+ var dSwimming = call("ij.Prefs.get", "JAMoT_Prefs.swim.dia", "0");
+ var mSwimmingArea = call("ij.Prefs.get", "JAMoT_Prefs.swim.marea", "0");
+ var poolWD = call("ij.Prefs.get", "JAMoT_Prefs.swim.poolWD", "0");
+ //T/Y Maize
+ var wTY = call("ij.Prefs.get", "JAMoT_Prefs.ty.width", "0");
+ var mTYArea = call("ij.Prefs.get", "JAMoT_Prefs.ty.marea", "0");
+ var sTY = call("ij.Prefs.get", "JAMoT_Prefs.ty.smooth", "0");
+ //Freezing test
+ var mFreezeArea = call("ij.Prefs.get", "JAMoT_Prefs.fre.marea", "0");
+ var sFreeze = call("ij.Prefs.get", "JAMoT_Prefs.fre.smooth", "0");
  
  
  macro "Mouse trial Macros Menu Tool - C000C111D98C111D88C111D89C111D86D99C111D87C111D85C111D8aD97C111D9aC222D79D8bC222D7aC222D96C222D84C222D78C222D7bC222D76D9bC222D95C222D77C333Da9C333D75C333D74C333D73Da8C333DaaC333D8cC333C444D83C444D7cDa7C444D6aC444D69C444D94C444C555D9cC555DabC555Da6C555D68C555D6bC555D66C555D72C555C666D67C666D65C666D64D7dDa5Db9C666D63C666D8dDb8C666DbaC666D82D93C666DacC666C777D6cC777D7eC777Da4Db7C777D9dDbbC777D59D7fC777D5aD62D6dDb6C777D6fC777D8eC777C888D6eD92DbcC888Da3DadDcaC888D57D58Db5Dc9C888D56Dc7C888D5bD8fDc8C888D9eDc6DcbC888D9fDaeDb4DbdDc5C888D53D55D71D91DccC888D81Da1Da2Dc1Dd8C888D54D5cDafDb1Db2Db3Dc0Dc2Dd0Dd1Dd6DdaDdbDdfDe0De8De9DeaC888D52D5fDc3Dd2Dd5Dd7Dd9C888D5dD90Da0Db0DbeDc4Dd3DdcDdeDefDf2C888D5eDbfDcdDcfDd4De1DebDfaC888D4aD61DddDe2Df0Df1Df5Df8C999D80DceDe3DeeDf3Df4Df9DfbDfdDfeC999D41D47D49De7DecDedDf6Df7DfcDffC999D40D42D46D4bD4cD4dD51De4C999D43D44D48D4eD4fD50D70De5De6C999D10D20D30D31D36D3cD45D60C999D17D32D3bD3fC999D21D22D26D2eD2fD34D37D39D3aD3dD3eC999D15D16D23D29D33C999D07D11D12D14D18D19D1eD1fD25D27D2aD2dD35D38C999D00D05D06D0fD1aD24D2bD2cC999D01D04D09D0cD13D1bD1cD1dD28C999D02D0aD0bD0eC999D08D0dC999D03"{
  	choice = getArgument();
- 	if(choice != "-"){
- 		if(choice == "Process Video") {ProcessVideo(); }
- 		else if(choice == "Cube Tracker") {MouseCubeTracker(); }
- 		else if(choice == "Elevated Puzzle Tracker") {MiceElevatedPuzzleTracker(); }
- 		else if(choice == "Swimming Pool Tracker") {MouseSwimTracker(); }
- 		else if(choice == "Regions Tracker") {MouseRegionsTracker(); }
- 		else if(choice == "Y/T Tracker") {MiceYTTracker(); }
- 		else if(choice == "Open Previous Analysis File") {openPreviousAnalysis(); }
+ 	
+ 	if(units == 0 && choice != "Preferences"){
+ 			showMessage("It appears this is the first time you run JAMoT.\n Please run Preferences from the menu before starting.");
+ 		exit();
+ 	}else{
+	 	if(choice != "-"){
+	 		if(choice == "Process Video") {ProcessVideo(); }
+	 		else if(choice == "Batch Process Video Files") {BatchProcessVideoFiles();}
+	 		else if(choice == "Open Field Test") {MouseCubeTracker(); }
+	 		else if(choice == "Elevated Plus Maize") {MiceElevatedPuzzleTracker(); }
+	 		else if(choice == "Watermaize Test") {MouseSwimTracker(); }
+	 		else if(choice == "Novel Object Recognition") {MouseRegionsTracker(); }
+	 		else if(choice == "Y/T Maize") {MiceYTTracker(); }
+	 		else if(choice == "Open Previous Analysis File") {openPreviousAnalysis(); }
+	 		else if(choice == "Preferences") {Preferences(); }
+	 		else if(choice == "Fear Conditioning"){fearConditioning();}
+	 	}
  	}
  		
  }
+ 
+ 
+ function BatchProcessVideoFiles(){
+		
+	showMessage("Batch AVI processing tool","<html>"+"<font size=2><center>This macro assumes that the file <br>"+"<font size=+2><center>ffmpeg.exe<br>"+"<font size=2><center>is in the directory of the files being processed!<br>" + "<font size=2><center>If you do not have ffmpeg installed please download it at<br>" + "<font size=2><font color=blue>https://ffmpeg.org/download.html<br><br>"+"<font size=2><font color=black> Also note that this macro does not support <b>SPACES</b> in the files/directories names!<br>");
+	
+	dir = getDirectory("Choose a Directory ");
+	
+	ffmpegPath = getDirectory("macros") + File.separator + "toolsets" + File.separator + "ffmpeg.exe";
+	
+	setBatchMode(true);
+	list = getFileList(dir);
+		
+	for(i=0; i < list.length; i++){
+		showProgress(i, list.length);
+		if(endsWith(list[i], "avi")){
+
+			//create string to run the ffmpeg command to convert the avi file to an uncompressed 
+			//avi file that can be open in ImageJ
+			string = ffmpegPath + " -loglevel quiet -i "+ dir + list[i] + " -f avi -vcodec mjpeg "+ dir + list[i] + ".converted.avi && echo off";
+			
+			os = getInfo("os.name");
+
+			//run the command on the command prompt to convert the avi file
+			if(startsWith(os, "Windows")){
+				exec("cmd /c "+ string);
+				print(string);
+			}
+			else
+				exec("sh -c "+ string);
+
+
+			run("AVI...", "open=" + dir + list[i] + ".converted.avi convert use");
+
+			title = getTitle();
+			id = getImageID();
+			saveAs("tiff", dir+list[i] +".converted.tif");
+	
+			File.delete(dir + list[i] + ".converted.avi");	
+			print("Converted " + list[i]);
+			close();	
+		
+		}
+
+	
+	}
+
+	setBatchMode(false);
+	exit("Processing terminated.");
+	
+}
+ 
  
  
  
@@ -87,8 +176,7 @@ function ProcessVideo(){
 		
 		path = File.openDialog("Select the AVI file to convert.");
 		if(File.exists(path + ".converted.avi")){
-			string = "File exists. Do you want to overwrite it? Cancel will stop the macro.";
-			showMessageWithCancel(string);
+			showMessageWithCancel(delFile);
 			File.delete(path + ".converted.avi");		
 		}
 		
@@ -131,7 +219,6 @@ function ProcessVideo(){
 		  if(!is("grayscale"))
 		  	run("8-bit");
 		  	
-		  run("Gaussian Blur...", "sigma=2 stack");
 		  saveAs("tif", dir+name+pad(i-1));
 		  close();
 		}
@@ -144,8 +231,9 @@ function ProcessVideo(){
 		if(!is("grayscale"))
 			run("8-bit");
 		  	
-		run("Gaussian Blur...", "sigma=2 stack");
 	}
+	
+	exit("Processing finished!");
 		
 }
 
@@ -166,9 +254,6 @@ function pad(n) {
  * It will output several parameters related to displacement, velocity, etc.
  */
 function MouseCubeTracker(){
-
-	
-
 
 	checkAndSort();
 
@@ -192,8 +277,7 @@ function MouseCubeTracker(){
 	//asks if you want to delete it or not
 	//This is for the future!
 	if(File.exists(dir + imTitle + ".cube.trac")){
-		string = "File exists. Do you want to overwrite it? Cancel will stop the macro.";
-		showMessageWithCancel(string);
+		showMessageWithCancel(delFile);
 		File.delete(dir + imTitle + ".cube.trac");		
 	}
 	
@@ -202,10 +286,14 @@ function MouseCubeTracker(){
 	print(f, dir + "\t" + getWidth() + "\t" +  getHeight() + "\t" + nSlices() +"\t"+ gaus);
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
-
-	if(gaus > 0)
+	
+	
+	if(gaus > 0){
+		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
-
+		
+	}
+	setBatchMode("show");
 	//Draw a rectangle for the user to adujst to the base of the cube
 	getDimensions(width, height, channels, slices, frames);
 	makeRectangle(width/5, height/5,width/2,height/2);
@@ -224,6 +312,7 @@ function MouseCubeTracker(){
 
 	//clears the outside of the box and 
 	//smooths the edges
+	setBatchMode("hide");
 	getPixelSize(unit, pw, ph);
 	if(is("Virtual Stack")){
 		close();
@@ -234,18 +323,20 @@ function MouseCubeTracker(){
 			setBackgroundColor(255, 255, 255);
 		else
 			setBackgroundColor(0, 0, 0);
-			
-		run("Enlarge...", "enlarge=15 pixel");
-		run("Clear Outside", "stack");
-		//Reduce intensity of the cage wall
-		run("Enlarge...", "enlarge=-15 pixel");
-		if(pw == 1 && ph == 1)
-			run("Make Band...", "band=25");
-		else
-			run("Make Band...", "band=" + 25*pw);
-			
-		run("Gaussian Blur...", "sigma=10 stack");
+		
+	
+	run("Enlarge...", "enlarge=15 pixel");
+	run("Clear Outside", "stack");
+	//Reduce intensity of the cage wall
+	run("Enlarge...", "enlarge=-15 pixel");
+	if(pw == 1 && ph == 1)
+		run("Make Band...", "band=25");
+	else
+		run("Make Band...", "band=" + 25*pw);
+		
+	run("Gaussian Blur...", "sigma=10 stack");
 	}
+	setBatchMode("show");
 	
 	//Checks if the pixel size is set and if not sets it from the 
 	//dimensions of the cube
@@ -253,29 +344,29 @@ function MouseCubeTracker(){
 		//Get pixel size from the width and heigth of cube
 		px = boxW/rectCoord[2]; py = boxH/rectCoord[3];
 		print(f, "Pixel size\t"+px+"\t"+py);
-		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+px+" pixel_height="+py+" voxel_depth=1");	
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit="+units+" pixel_width="+px+" pixel_height="+py+" voxel_depth=1");	
 	}else
 	{
 		print(f, "Pixel size\t"+pw+"\t"+ph);
 	}
 
 	
-	
-
 	//Remove dark regions if so selected
 	if(darkR)
 		darkA = removeDarkR(imTitle);
+	
 
 	//Get the threshold for getting the mouse spots
 	setAutoThreshold("Triangle");  
-	waitForUser("Please set the threshold carefully and press OK (Image>Adjust>Threshold).");
+	waitForUser(setThr);
 	getThreshold(minth, maxth);
 	print(f, "Threshold\t"+minth+"\t"+maxth);
 	
 	if(darkR)
-		print(f, "DarkR\t" + darkA[0] +"\t"+ darkA[1]); 
-		
-	File.close(f);
+		print(f, "DarkR\t" + darkA[0] +"\t"+ darkA[1]);
+	else 
+		print(f, "DarkR\t" + 0 +"\t"+ 0);
+	
 	setThreshold(minth,maxth);
 		
 	roiManager("Show All without labels");
@@ -283,35 +374,33 @@ function MouseCubeTracker(){
 	//analyse particles taking in consideration the reduction in fps if selected
 	setBatchMode("hide");
 	if(fps == 25)
-		run("Analyze Particles...", "size=15-Infinity include add stack");
+		run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add stack");
 	else{
 		
 		for(i = 1; i < nSlices; i = i + 100/fps){
 			setSlice(i);
-			run("Analyze Particles...", "size=15-Infinity include add slice");
+			run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add slice");
 		}
 			
 	}
+	
 	setBatchMode("show");
+	
 	roiManager("Show All without labels");
 	roiManager("Show None");
-
 	roiManager("Save", dir + imTitle + "ROIs.zip");
 	
+	writePreferences(f);
+	File.close(f);
 
 	//File operations done!
-
 	run("Select None");
 
-	oriID=getImageID();
-
 	//Get data of the dectetions
+	oriID=getImageID();
 	getParameters(fps, dir, imTitle);
-
 	dialog2(oriID, dir, imTitle, 1);
 
-	
-	
 }
 
 function getParameters(fps,dir, imTitle){
@@ -334,7 +423,7 @@ function getParameters(fps,dir, imTitle){
 	inRegion = newArray(roiManager("Count"));
 
 	displa = 0; moving = 0;
-	displaCenter = 0; centerTime=0; entriesCenter = 0; freezeCenter = 0; 
+	displaCenter = 0; centerTime=0; entriesCenter = 0; freezeCenter = 0; wallsTime=0;
 	roiManager("Deselect");
 	setBatchMode("hide");
 	for(i=0; i<roiManager("count");i++){
@@ -366,12 +455,14 @@ function getParameters(fps,dir, imTitle){
 		else
 			lookup[i] = "No";
 
-		if(angle[2]){
+		if(angle[2] == 1){
 			inRegion[i] = "In";
 			centerTime = centerTime + delay;
-		}
-		else
+		}else if(angle[2] == 2){
 			inRegion[i] = "Out";
+			wallsTime = wallsTime + delay;
+		}else
+			inRegion[i] = "Border";
 		
 		if(i==0){
 			displacement[i] = 0;
@@ -383,25 +474,25 @@ function getParameters(fps,dir, imTitle){
 			displacement[i] = calculateDistance(arrayX[i-1], arrayY[i-1], arrayX[i], arrayY[i]);
 			velocity[i] = displacement[i]/delay;
 
-			if(angle[2] && inRegion[i-1] == "Out")
+			if(angle[2] == 1 && inRegion[i-1] == "Out")
 				entriesCenter++;
 			
 			if(direction[i] == direction[i-1])
 				turndir[i] = "No";
 			else
 				turndir[i] = "Yes";
-
-			if(displacement[i] > 0.1){
+ 
+			if(displacement[i] > dispVal){
 				estado[i] = "Moving";
 				displa = displa + displacement[i];
 				moving = moving + delay;
-				if(angle[2]){
+				if(angle[2] == 1){
 					displaCenter = displaCenter + displacement[i];
 				}
 				
 			}else{
 				estado[i] = "Stopped";
-				if(angle[2]){
+				if(angle[2] == 1){
 					freezeCenter = freezeCenter + delay;
 				}
 			}
@@ -410,6 +501,7 @@ function getParameters(fps,dir, imTitle){
 
 	}
 	run("Select None");
+	
 	setBatchMode("show");
 	
 	run("Clear Results");
@@ -430,36 +522,54 @@ function getParameters(fps,dir, imTitle){
 	selectWindow("Results");
 	saveAs("text", dir+imTitle+".Spots.xls");
 	run("Clear Results"); 
-
-	setResult("Label", 0, "Total displacement"); 
-	setResult("Value", 0, displa);
-	setResult("Label", 1, "Displacement in Center"); 
-	setResult("Value", 1, displaCenter);
-	setResult("Label", 2, "Displacement Outer Region"); 
-	setResult("Value", 2,(displa - displaCenter));
-	setResult("Label", 3,"Total time"); 
-	setResult("Value",3, nSlices * delay);
-	setResult("Label", 4, "Time in center"); 
-	setResult("Value",4, centerTime);
-	setResult("Label", 5, "N. entries in center"); 
-	setResult("Value", 5, entriesCenter);
-	setResult("Label", 6, "Time freezed/not moving"); 
-	setResult("Value", 6,((nSlices * delay) - moving));
-	setResult("Label", 7, "Time freezed/not moving in center"); 
-	setResult("Value", 7,freezeCenter);
-	setResult("Label", 8, "Time freezed/not moving in outer region"); 
-	setResult("Value", 8,((nSlices * delay) - moving) - freezeCenter);
-	setResult("Label", 9, "Average displacement");
+	
+	i = 0;
+	setResult("Label", i, "Total displacement"); 
+	setResult("Value", i, displa);
+	i = i + 1;
+	setResult("Label", i, "Displacement in Center"); 
+	setResult("Value", i, displaCenter);
+	i = i + 1;
+	setResult("Label", i, "Displacement Outer+Border Regions"); 
+	setResult("Value", i,(displa - displaCenter));
+	i = i + 1;
+	setResult("Label", i,"Total time"); 
+	setResult("Value", i, nSlices * delay);
+	i = i + 1;
+	setResult("Label", i, "Time in center"); 
+	setResult("Value", i, centerTime);
+	i = i + 1;
+	setResult("Label", i, "N. entries in center"); 
+	setResult("Value", i, entriesCenter);
+	i = i + 1;
+	setResult("Label", i, "Time around walls"); 
+	setResult("Value", i, wallsTime);
+	i = i + 1;
+	setResult("Label", i, "Time at borders"); 
+	setResult("Value", i, ((nSlices * delay) - wallsTime - centerTime));
+	i = i + 1;
+	setResult("Label", i, "Time freezed/not moving"); 
+	setResult("Value", i,((nSlices * delay) - moving));
+	i = i + 1;
+	setResult("Label", i, "Time freezed/not moving in center"); 
+	setResult("Value", i,freezeCenter);
+	i = i + 1;
+	setResult("Label", i, "Time freezed/not moving in outer region"); 
+	setResult("Value", i,((nSlices * delay) - moving) - freezeCenter);
+	i = i + 1;
+	setResult("Label", i, "Average displacement");
 	Array.getStatistics(displacement, min,max,mean,dev);
-	setResult("Value", 9, mean);
-	setResult("Label", 10, "Average velocity");
+	setResult("Value", i, mean);
+	i = i + 1;
+	setResult("Label", i, "Average velocity");
 	Array.getStatistics(velocity, min,max,mean,dev);
-	setResult("Value", 10, mean);
+	setResult("Value", i, mean);
 
 	updateResults();
 	selectWindow("Results");
 	saveAs("text", dir+imTitle+".Track.xls");
 	run("Close");
+	//setBatchMode("show");
 
 }
 
@@ -495,18 +605,15 @@ function getDirection(dir, imTitle){
 			nInter = round(nInter - (nInter/3));
 		}while(lengthOf(maxlengths)==0)
 
-
-
-		
 		//Calculate the angle of the center to the head (max length)
 		angle[0] = calculateAngle2(xc, yc, xp[maxlengths[0]],yp[maxlengths[0]]);
 
 		//Tentative of finding out if the rat is rearing
-		if(List.getValue("Solidity")< 0.8 && ((xp[maxlengths[0]] < tempArray[0] || xp[maxlengths[0]] > tempArray[0]+tempArray[2]) && (yp[maxlengths[0]] < tempArray[1] || yp[maxlengths[0]]> tempArray[1]+tempArray[3])))
+		if(List.getValue("Solidity")< solidity && ((xp[maxlengths[0]] < tempArray[0] || xp[maxlengths[0]] > tempArray[0]+tempArray[2]) && (yp[maxlengths[0]] < tempArray[1] || yp[maxlengths[0]]> tempArray[1]+tempArray[3])))
 			angle[1] = 1;
 		
 		//find out if the rat is in the center or not
-		count = 0; in= 0;
+		count = 0; in= 0; out = 0;
 		for(i = 0; i < xp.length; i++){
 			//Count the points of the head out
 			if(length[i]>= (length[maxlengths[0]]-5))
@@ -514,10 +621,17 @@ function getDirection(dir, imTitle){
 			//Check if the coordinates are in the center or not
 			if(xp[i] >= tempArray2[0] && xp[i] <= (tempArray2[0] + tempArray2[2]) && yp[i] >= tempArray2[1] && yp[i] <= (tempArray2[1]+tempArray2[3]))
 				in++;
+				
+			else
+				out++;
 		}
-
+		
+		/*Find out if the rat is in the center or in the outer regions
+		or at the borders*/
 		if(in >= lengthOf(xp) - count)
 			angle[2] = 1;
+		else if(out >= lengthOf(xp) - count)
+			angle[2] = 2;
 
 		return angle;
 	 
@@ -543,8 +657,6 @@ function MiceElevatedPuzzleTracker(){
 	imTitle = getTitle();
 	rectRegions = newArray(4);
 	run("Set Measurements...", "limit redirect=None decimal=3");
-
-
 	
 	//Reduce the fps of acquisition
 	temp = dialog1(2);
@@ -559,8 +671,7 @@ function MiceElevatedPuzzleTracker(){
 	//asks if you want to delete it or not
 	//This is for the future!
 	if(File.exists(dir + imTitle + ".cross.trac")){
-		string = "File exists. Do you want to overwrite it? Cancel will stop the macro.";
-		showMessageWithCancel(string);
+		showMessageWithCancel(delFile);
 		File.delete(dir + imTitle + ".cross.trac");		
 	}
 	
@@ -570,22 +681,21 @@ function MiceElevatedPuzzleTracker(){
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 	
-	if(gaus > 0)
+	if(gaus > 0){
+		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
-
+		setBatchMode("show");
+	}
+	
 	//get dimensions of the image in px
 	getDimensions(width, height, channels, slices, frames);
 	makeRectangle(width/2.5, height/2.5,width/10,height/10);
 	waitForUser("Please adjust the rectangule to match the center of the box");
 	
-	
-
 	//get the dimensions of the square in the center of the cross
 	//this limits the lower bounds of the cross
 	getSelectionBounds(rectRegions[0], rectRegions[1], rectRegions[2], rectRegions[3]);
 	print(f,"BoxDimensions\t"+rectRegions[0]+"\t"+rectRegions[1]+"\t"+ rectRegions[2]+"\t"+rectRegions[3]);	
-
-
 
 	//Calculate the pixel size of the image for x and y
 	//And will later on put it in the image once I have the dimensions that 
@@ -595,9 +705,8 @@ function MiceElevatedPuzzleTracker(){
 		pixx = armsW/rectRegions[2]; pixy = armsH/rectRegions[3];
 		print(f, "Pixel size\t"+pixx+"\t"+pixy);	
 		//Set the pizel size once I figure out what value to give it!
-		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+pixx+" pixel_height="+pixy+" voxel_depth=1");
-	}
-	else 
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit="+units+" pixel_width="+pixx+" pixel_height="+pixy+" voxel_depth=1");
+	}else 
 		print(f, "Pixel size\t"+pw+"\t"+ph);	
 
 
@@ -618,6 +727,7 @@ function MiceElevatedPuzzleTracker(){
 
 	//Deals with the virtual stack if it is one
 	//This is necessary since several operations do not work on virtual stacks
+	setBatchMode("hide");
 	if(is("Virtual Stack")){
 		roiManager("Add");
 		close();
@@ -635,15 +745,19 @@ function MiceElevatedPuzzleTracker(){
 	if(darkR)
 		darKA = removeDarkR(imTitle);
 
-
+	setBatchMode("show");
 	//Asks for threshold to be set to be able to detect the mouse
 	//run("Threshold...");
 	setAutoThreshold("Yen");
-	waitForUser("Set the threshold carefully. Open threshold window by Image>Adjust>Threshold");
+	waitForUser(setThr);
 	getThreshold(minth, maxth);
 	setThreshold(minth,maxth);
 	print(f, "Threshold\t" + minth + "\t" + maxth);
-	print(f, "DarkR\t" + darKA[0] + "\t" + darKA[1]);
+	
+	if(darkR)
+		print(f, "DarkR\t" + darKA[0] + "\t" + darKA[1]);
+	else
+		print(f, "DarkR\t" + 0 + "\t" + 0);
 	
 	//Try to speed up things with batch mode but not sure it actually helps
 	setBatchMode(true);
@@ -651,12 +765,12 @@ function MiceElevatedPuzzleTracker(){
 	//deals with reduction of frame acquisition
 	setBatchMode("hide");
 	if(fps == 25)
-		run("Analyze Particles...", "size=15-Infinity include add stack");
+		run("Analyze Particles...", "size="+mElevatedArea+"-Infinity pixel include add stack");
 	else{
 		
 		for(i = 1; i < nSlices; i = i + 100/fps){
 			setSlice(i);
-			run("Analyze Particles...", "size=15-Infinity include add slice");
+			run("Analyze Particles...", "size="+mElevatedArea+"-Infinity pixel include add slice");
 		}
 			
 	}
@@ -669,15 +783,14 @@ function MiceElevatedPuzzleTracker(){
 	roiManager("Save", dir + imTitle + "ROIs.zip");
 	//print(f, dir + imTitle + "ROIs.zip");
 
+	writePreferences(f);
 	//File operations done!
 	File.close(f);
 	run("Select None");
 
 	//gets image ID
 	oriID=getImageID();
-	
 	getParametersET(fps, dir, imTitle);
-
 	dialog2(oriID, dir, imTitle, 2);
 	
 }
@@ -714,8 +827,8 @@ function getParametersET(fps, dir, imTitle){
 		roiManager("Select", i);
 		//smooth a bit the selection to eliminate tails and small bits on walls
 		//keeping the head - due to problems in the ilumination
-		run("Enlarge...", "enlarge=-3 pixel");
-		run("Enlarge...", "enlarge=3 pixel");
+		run("Enlarge...", "enlarge=-"+sElevated+" pixel");
+		run("Enlarge...", "enlarge="+sElevated+" pixel");
 		List.setMeasurements();
 
 		//Center coordinates of mouse
@@ -760,7 +873,7 @@ function getParametersET(fps, dir, imTitle){
 		}else{
 			displacement[i] = calculateDistance(arrayX[i-1], arrayY[i-1], arrayX[i], arrayY[i]);
 			velocity[i] = displacement[i]/delay;
-			if(displacement[i] > 0.1)
+			if(displacement[i] > dispVal)
 				displa = displa + displacement[i];
 					
 		}
@@ -812,7 +925,9 @@ function getParametersET(fps, dir, imTitle){
 		setResult("Velocity (cm/s)",i, velocity[i]);
 		setResult("In Closed region",i, closeArmsPosition[i]);
 		setResult("In Open region", i, openArmsPosition[i]);
-		if(i > 0 && openArmsPosition[i] == "In" && mouseArea[i] <= (closedAreaAve * 0.85)){
+		/*Attempt to check if the mouse is looking over the edge of open arms
+		by simply checking if he is in open arms and its area is less then 85% the closed arms area*/
+		if(i > 0 && openArmsPosition[i] == "In" && mouseArea[i] <= (closedAreaAve * 0.80)){
 			setResult("Looking over the edge", i, "True");
 			if(getResultString("Looking over the edge", i-1) == "NAN")
 				nExplo++;
@@ -843,6 +958,8 @@ function getParametersET(fps, dir, imTitle){
 	setResult("Value", 6, mean);
 	setResult("Label", 7, "Times of over the edge exploration"); 
 	setResult("Value", 7, nExplo);
+	setResult("Label", 8, "Time in central area");
+	setResult("Value", 8, (nSlices*delay)-closedTime-openTime);
 	
 	updateResults();
 	selectWindow("Results");
@@ -925,8 +1042,7 @@ function MouseSwimTracker(){
 	//asks if you want to delete it or not
 	//This is for the future!
 	if(File.exists(dir + imTitle + ".swim.trac")){
-		string = "File exists. Do you want to overwrite it? Cancel will stop the macro.";
-		showMessageWithCancel(string);
+		showMessageWithCancel(delFile);
 		File.delete(dir + imTitle + ".swim.trac");		
 	}
 	
@@ -936,9 +1052,11 @@ function MouseSwimTracker(){
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 	
-	if(gaus > 0)
+	if(gaus > 0){
+		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
-
+		setBatchMode("show");
+	}
 	
 	getDimensions(width, height, channels, slices, frames);
 	makeOval(50, 50,width/1.3,height/1.1);
@@ -949,7 +1067,7 @@ function MouseSwimTracker(){
 
 	boundx = rectCoord[0] + (rectCoord[2]/2);
 	boundy = rectCoord[1] + (rectCoord[3]/2);
-	print(f,"Diameter\t"+boundx+"\t"+boundy);
+	print(f,"Center Coordinates\t"+boundx+"\t"+boundy);
 
 	makeOval(50, 50,width/10,height/10);
 	waitForUser("Please adjust the oval to match the platform");
@@ -960,16 +1078,14 @@ function MouseSwimTracker(){
 	if(pw == 1 && ph ==1){
 		px = diameter/rectCoord[2]; py = diameter/rectCoord[3];
 		print(f, "Pixel size\t"+px+"\t"+py);	
-		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+px+" pixel_height="+py+" voxel_depth=1");
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit="+units+" pixel_width="+px+" pixel_height="+py+" voxel_depth=1");
 	}
 	else
 		print(f, "Pixel size\t"+pw+"\t"+ph);
 		
-	
-	
+		
+	setBatchMode("hide");
 	makeOval(rectCoord[0], rectCoord[1], rectCoord[2], rectCoord[3]);
-	
-	
 	if(is("Virtual Stack")){
 		close();
 		sortVirtual(dir, rectCoord, 3);
@@ -981,7 +1097,7 @@ function MouseSwimTracker(){
 
 		run("Clear Outside", "stack");
 	}
-
+	setBatchMode("show");
 	
 	if(rRegions){
 		for(i = 0; i < rRegions; i++){
@@ -1000,22 +1116,23 @@ function MouseSwimTracker(){
 	
 	//run("Threshold...");
 	setAutoThreshold("Triangle");
-	waitForUser("Please set the threshold carefully and press OK");
+	waitForUser(setThr);
 	getThreshold(minth, maxth);
 	setThreshold(minth,maxth);
 	
 	print(f, "Threshold\t" + minth + "\t" + maxth);
+	print(f, "Diameter of pool!\t" + diameter);
 	
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	setBatchMode("hide");
 	if(fps == 25)
-		run("Analyze Particles...", "size=7-Infinity include add stack");
+		run("Analyze Particles...", "size="+mSwimmingArea+"-Infinity pixel include add stack");
 	else{
 		
 		for(i = 1; i < nSlices; i = i + 100/fps){
 			setSlice(i);
-			run("Analyze Particles...", "size=7-Infinity include add slice");
+			run("Analyze Particles...", "size="+mSwimmingArea+"-Infinity pixel include add slice");
 		}
 			
 	}
@@ -1025,20 +1142,18 @@ function MouseSwimTracker(){
 
 	roiManager("Save", dir + imTitle + "ROIs.zip");
 	
-
+	writePreferences(f);
 	//File operations done!
 	File.close(f);
 	run("Select None");
 
 	oriID=getImageID();
-
-	getParametersSM(fps,dir, imTitle);
-
+	getParametersSM(fps,dir, imTitle, diameter);
 	dialog2(oriID, dir, imTitle, 3);
 	
 	
 }
-function getParametersSM(fps,dir, imTitle){
+function getParametersSM(fps,dir, imTitle, diameter){
 	//Get dealy between frames analyzed
 	if(fps != 25){
 		delay = 1/fps;
@@ -1052,13 +1167,13 @@ function getParametersSM(fps,dir, imTitle){
 	displacement = newArray(roiManager("Count"));
 	velocity = newArray(roiManager("Count"));
 	quadrant = newArray(roiManager("Count"));
-
+	border = newArray(roiManager("Count"));
 	flag = true;
 	
 	displa = 0; t2Plat = 0;
 	qTime1 = 0; qTime2 = 0; qTime3 = 0; qTime4 = 0;
 	qDis1 = 0; qDis2 = 0; qDis3 = 0; qDis4 = 0;
-	
+	bTime = 0;
 	roiManager("Deselect");
 	
 	setBatchMode("hide");
@@ -1068,14 +1183,18 @@ function getParametersSM(fps,dir, imTitle){
 		arrayX[i] = List.getValue("X");
 		arrayY[i] = List.getValue("Y");
 
-		angle = getQuadAndPlat(dir, imTitle);		
+		angle = getQuadAndPlat(dir, imTitle, diameter);		
 
 		quadrant[i] = angle[0];
 
 		if(i==0){
 			displacement[i] = 0;
 			velocity[i] = 0;
-			
+			if(angle[2] == 1){
+				bTime = bTime + delay;
+				border[i] = "Wall";
+			}else
+				border[i] = "Away";
 						
 		}else{
 			displacement[i] = calculateDistance(arrayX[i-1], arrayY[i-1], arrayX[i], arrayY[i]);
@@ -1100,8 +1219,14 @@ function getParametersSM(fps,dir, imTitle){
 				flag = 0;
 			}
 			
+			if(angle[2] == 1){
+				bTime = bTime + delay;
+				border[i] = "Wall";
+			}else
+				border[i] = "Away";
+			
 
-			if(displacement[i] > 0.1)				//--> Check this number to see when it is stopped!
+			if(displacement[i] > dispVal)				//--> Check this number to see when it is stopped!
 				displa = displa + displacement[i];
 
 		}
@@ -1113,11 +1238,12 @@ function getParametersSM(fps,dir, imTitle){
 
 	run("Clear Results");
 	for(i=0; i<roiManager("count"); i++){
-		setResult("X Center (cm)",i, arrayX[i]);
-		setResult("Y Center (cm)",i, arrayY[i]);
-		setResult("Displacement (cm)",i, displacement[i]);
-		setResult("Velocity (cm/s)",i, velocity[i]);
+		setResult("X Center ("+units+")",i, arrayX[i]);
+		setResult("Y Center ("+units+")",i, arrayY[i]);
+		setResult("Displacement ("+units+")",i, displacement[i]);
+		setResult("Velocity ("+units+"/s)",i, velocity[i]);
 		setResult("Quadrant position",i, quadrant[i]);
+		setResult("Close to border wall", i, border[i]);
 	}
 	updateResults();
 
@@ -1125,35 +1251,37 @@ function getParametersSM(fps,dir, imTitle){
 	saveAs("text", dir+imTitle+".Spots.xls");
 	run("Clear Results"); 
 
-	setResult("Label", 0, "Total displacement (cm)"); 
+	setResult("Label", 0, "Total displacement ("+units+")"); 
 	setResult("Value", 0, displa);
-	setResult("Label", 1, "Displacement (cm) in R1"); 
+	setResult("Label", 1, "Displacement ("+units+") in R1"); 
 	setResult("Value", 1, qDis1);
 	setResult("Label", 2, "Time (s) in R1"); 
 	setResult("Value", 2, qTime1);
-	setResult("Label", 3, "Displacement (cm) in R2"); 
+	setResult("Label", 3, "Displacement ("+units+") in R2"); 
 	setResult("Value",3, qDis2);
 	setResult("Label", 4, "Time (s) in R2"); 
 	setResult("Value",4, qTime2);
-	setResult("Label", 5, "Displacement (cm) in R3"); 
+	setResult("Label", 5, "Displacement ("+units+") in R3"); 
 	setResult("Value", 5, qDis3);
 	setResult("Label", 6, "Time (s) in R3"); 
 	setResult("Value", 6, qTime3);
-	setResult("Label", 7, "Displacement (cm) in R4"); 
+	setResult("Label", 7, "Displacement ("+units+") in R4"); 
 	setResult("Value", 7, qDis4);
 	setResult("Label", 8, "Time (s) in R4"); 
 	setResult("Value", 8, qTime4);
-	setResult("Label", 9, "Average displacement (cm)");
+	setResult("Label", 9, "Time close to poll wall");
+	setResult("Value", 9, bTime);
+	setResult("Label", 10, "Average displacement ("+units+")");
 	Array.getStatistics(displacement, min,max,mean,dev);
-	setResult("Value", 9, mean);
-	setResult("Label", 10, "Average velocity (cm/s)");
-	Array.getStatistics(velocity, min,max,mean,dev);
 	setResult("Value", 10, mean);
-	setResult("Label",11, "Time to find platform (s)");
+	setResult("Label", 11, "Average velocity ("+units+"/s)");
+	Array.getStatistics(velocity, min,max,mean,dev);
+	setResult("Value", 11, mean);
+	setResult("Label",12, "Time to find platform (s)");
 	if(t2Plat > 0)
-		setResult("Value",11, t2Plat);
+		setResult("Value",12, t2Plat);
 	else
-		setResult("Value",11, "Did not find Platform");
+		setResult("Value",12, "Did not find Platform");
 
 	updateResults();
 	selectWindow("Results");
@@ -1162,9 +1290,9 @@ function getParametersSM(fps,dir, imTitle){
 
 }
 
-function getQuadAndPlat(dir, imTitle){
+function getQuadAndPlat(dir, imTitle, diameter){
 	
-		angle = newArray(2);
+		angle = newArray(3);
 		Array.fill(angle, 0);
 		//Pool bounding box
 		tempArray = getFileData(4, dir, imTitle, 3);
@@ -1198,6 +1326,12 @@ function getQuadAndPlat(dir, imTitle){
 		//find out if the rat is in the platform or not
 		if(platDist <= ((tempArray2[2] + tempArray2[3])/4))
 			angle[1] = 1;
+		
+		//Check if the mouse is less then 10units from the wall	
+		borderDist = calculateDistance(xc, yc, tempArray[0], tempArray[1]);
+		toScaled(borderDist);
+		if(borderDist >= ((diameter/2) - poolWD))
+			angle[2] = 1;
 
 		return angle;
 	 
@@ -1234,8 +1368,7 @@ function MouseRegionsTracker(){
 	//asks if you want to delete it or not
 	//This is for the future!
 	if(File.exists(dir + imTitle + ".objects.trac")){
-		string = "File exists. Do you want to overwrite it? Cancel will stop the macro.";
-		showMessageWithCancel(string);
+		showMessageWithCancel(delFile);
 		File.delete(dir + imTitle + ".objects.trac");		
 	}
 	//Save file to open later on
@@ -1244,8 +1377,12 @@ function MouseRegionsTracker(){
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 
-	if(gaus > 0)
+	
+	if(gaus > 0){
+		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
+	}
+	setBatchMode("show");
 
 	getDimensions(width, height, channels, slices, frames);
 	makeRectangle(width/5, height/5,width/2,height/2);
@@ -1261,7 +1398,7 @@ function MouseRegionsTracker(){
 	boundy2 = (rectCoord[3]/5)*3;
 	print(f,"Region\t"+boundx+"\t"+boundy+"\t"+boundx2+"\t"+boundy2);	
 
-		
+	setBatchMode("hide");	
 	getPixelSize(unit, pw, ph);
 	if(is("Virtual Stack")){
 		close();
@@ -1280,13 +1417,13 @@ function MouseRegionsTracker(){
 		run("Gaussian Blur...", "sigma=10 stack");	
 	}
  
-	
+	setBatchMode("show");
 	//Get pixel size from the width and heigth of cube
 	
 	if(pw == 1 && ph == 1){
 		px = cubeW/rectCoord[2]; py = cubeH/rectCoord[3];
 		print(f, "Pixel size\t"+px+"\t"+py);	
-		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+px+" pixel_height="+py+" voxel_depth=1");
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit="+units+" pixel_width="+px+" pixel_height="+py+" voxel_depth=1");
 	}
 	else
 		print(f, "Pixel size\t"+pw+"\t"+ph);	
@@ -1309,23 +1446,26 @@ function MouseRegionsTracker(){
 	
 	run("Select None");
 	setAutoThreshold("Triangle");
-	waitForUser("Please set the threshold carefully and press OK");
+	waitForUser(setThr);
 	getThreshold(minth, maxth);
 	setThreshold(minth,maxth);
 	
 	print(f, "Threshold\t" + minth + "\t" + maxth);
-	print(f, "DarkR\t" + darKA[0] + "\t" + darKA[1]);
+	if(darkR)
+		print(f, "DarkR\t" + darKA[0] + "\t" + darKA[1]);
+	else
+		print(f, "DarkR\t" + 0 + "\t" + 0);
 	
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	setBatchMode("hide");
 	if(fps == 25)
-		run("Analyze Particles...", "size=7-Infinity include add stack");
+		run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add stack");
 	else{
 		
 		for(i = 1; i < nSlices; i = i + 100/fps){
 			setSlice(i);
-			run("Analyze Particles...", "size=7-Infinity include add slice");
+			run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add slice");
 		}
 			
 	}
@@ -1335,6 +1475,7 @@ function MouseRegionsTracker(){
 
 	roiManager("Save", dir + imTitle + "ROIs.zip");
 	
+	writePreferences(f);
 	//File operations done!
 	File.close(f);
 	run("Select None");
@@ -1534,15 +1675,9 @@ function getDirectionRT(dir, imTitle, n){
 			j++;
 			angle[j] = regAprox[1];
 		}
-				
-
-			
-		
-		
-
 
 		return angle;
-	 
+ 
 }
 
 //This functions works only in px
@@ -1593,17 +1728,14 @@ function sortRegions(xp, yp, xc, yc, headC, dir, imTitle, n){
 //It will be track the mouse in the cross like puzzle and
 //calculate the time spent in each arm and the first time it goes in each arm
 function MiceYTTracker(){
-
-	
+		
 	checkAndSort();
-	
+
 	//First clean up and setup the macro actions
 	dir = getDirectory("image");
 	imTitle = getTitle();
 	rectRegions = newArray(4);
 	run("Set Measurements...", "limit redirect=None decimal=3");
-
-
 	
 	//Reduce the fps of acquisition
 	temp = dialog1(5);
@@ -1617,8 +1749,7 @@ function MiceYTTracker(){
 	//asks if you want to delete it or not
 	//This is for the future!
 	if(File.exists(dir + imTitle + ".TY.trac")){
-		string = "File exists. Do you want to overwrite it? Cancel will stop the macro.";
-		showMessageWithCancel(string);
+		showMessageWithCancel(delFile);
 		File.delete(dir + imTitle + ".TY.trac");		
 	}
 	
@@ -1657,7 +1788,7 @@ function MiceYTTracker(){
 		pixx = armsD/dist; pixy = armsD/dist;
 		print(f, "Pixel size\t"+pixx+"\t"+pixy);	
 		//Set the pizel size 
-		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+pixx+" pixel_height="+pixy+" voxel_depth=1");
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit="+units+" pixel_width="+pixx+" pixel_height="+pixy+" voxel_depth=1");
 	}
 	else 
 		print(f, "Pixel size\t"+pw+"\t"+ph);	
@@ -1680,6 +1811,7 @@ function MiceYTTracker(){
 
 	//Deals with the virtual stack if it is one
 	//This is necessary since several operations do not work on virtual stacks
+	setBatchMode("hide");
 	if(is("Virtual Stack")){
 		roiManager("Add");
 		close();
@@ -1693,52 +1825,54 @@ function MiceYTTracker(){
 			
 		run("Clear Outside", "stack");
 	}
+	setBatchMode("show");
 
-	if(darkR){
+	if(darkR)
 		darKA = removeDarkR(imTitle);
-	}
-
+		
+	setBatchMode("show");
 	//Asks for threshold to be set to be able to detect the mouse
 	//run("Threshold...");
 	setAutoThreshold("Yen");
-	waitForUser("Set the threshold carefully. Open threshold window by Image>Adjust>Threshold");
+	waitForUser(setThr);
 	getThreshold(minth, maxth);
 	setThreshold(minth,maxth);
 	print(f, "Threshold\t" + minth + "\t" + maxth);
-	print(f, "DarkR\t" + darKA[0] + "\t" + darKA[1]);
+	if(darkR)
+		print(f, "DarkR\t" + darKA[0] + "\t" + darKA[1]);
+	else
+		print(f, "DarkR\t" + 0 + "\t" + 0 );
 
 	//Try to speed up things with batch mode but not sure it actually helps
-	setBatchMode(true);
-
 	//deals with reduction of frame acquisition
+	setBatchMode("hide");
 	if(fps == 25)
-		run("Analyze Particles...", "size=7-Infinity include add stack");
+		run("Analyze Particles...", "size="+mTYArea+"-Infinity pixel include add stack");
 	else{
 		
 		for(i = 1; i < nSlices; i = i + 100/fps){
 			setSlice(i);
-			run("Analyze Particles...", "size=7-Infinity include add slice");
+			run("Analyze Particles...", "size="+mTYArea+"-Infinity pixel include add slice");
 		}
 			
 	}
-
+	setBatchMode("show");
+	
 	roiManager("Show All without labels");
 	roiManager("Show None");
-	setBatchMode(false);
 
 	//Save the selection results
 	roiManager("Save", dir + imTitle + "ROIs.zip");
 	//print(f, dir + imTitle + "ROIs.zip");
-
+	
+	writePreferences(f);
 	//File operations done!
 	File.close(f);
 	run("Select None");
 
 	//gets image ID
 	oriID=getImageID();
-	
 	getParametersTY(fps, dir, imTitle);
-
 	dialog2(oriID, dir, imTitle, 5);
 	
 }
@@ -1772,10 +1906,10 @@ function getParametersTY(fps, dir, imTitle){
 		roiManager("Select", i);
 		//smooth a bit the selection to eliminate tails and small bits on walls
 		//keeping the head - due to problems in the ilumination
-		run("Enlarge...", "enlarge=-3 pixel");
-		run("Enlarge...", "enlarge=3 pixel");
+		run("Enlarge...", "enlarge=-"+sTY+" pixel");
+		run("Enlarge...", "enlarge="+sTY+" pixel");
 		List.setMeasurements();
-
+ 
 		//Center coordinates of mouse
 		arrayX[i] = List.getValue("X");
 		arrayY[i] = List.getValue("Y");
@@ -1795,7 +1929,7 @@ function getParametersTY(fps, dir, imTitle){
 		}else{
 			displacement[i] = calculateDistance(arrayX[i-1], arrayY[i-1], arrayX[i], arrayY[i]);
 			velocity[i] = displacement[i]/delay;
-			if(displacement[i] > 0.1)
+			if(displacement[i] > dispVal)
 				displa = displa + displacement[i];
 
 					
@@ -1926,7 +2060,8 @@ function getParametersTY(fps, dir, imTitle){
 	setResult("Value", 12, ordem);
 	setResult("Label", 13, "Different triplets");
 	setResult("Value", 13, tripletStory[0]);
-	setResult("Label", 14, "Total triplets + double");
+	/*TODO remove double comment*/
+	setResult("Label", 14, "Total triplets"); 
 	setResult("Value", 14, tripletStory[1]);
 
 	
@@ -1986,6 +2121,310 @@ function getDirectionTY(){
 	 
 }
 
+////////////////////////////
+//Fear Conditioning
+
+
+function fearConditioning(){
+
+	checkAndSort();
+
+	//Select the directory of the open image to be analysed
+	dir = getDirectory("image");
+	imTitle = getTitle();
+	rectCoord = newArray(4);
+
+	run("Set Measurements...", "limit redirect=None decimal=3");
+
+	//Reduce the fps of acquisition
+	temp = dialog1(6);
+	blaWhi = temp[0];
+	fps = temp[1];
+	boxW = temp[2];
+	boxH = temp[3];
+	darkR = temp[5];
+	gaus = temp[6];
+	
+	//Takes care of cases where tracking has been done already
+	//asks if you want to delete it or not
+	//This is for the future!
+	if(File.exists(dir + imTitle + ".free.trac")){
+		showMessageWithCancel(delFile);
+		File.delete(dir + imTitle + ".free.trac");		
+	}
+	
+	//Save file to open later on
+	f = File.open(dir + imTitle + ".free.trac");
+	print(f, dir + "\t" + getWidth() + "\t" +  getHeight() + "\t" + nSlices() +"\t"+ gaus);
+	print(f, imTitle);
+	print(f, "FPS\t" + fps);
+	
+	
+	if(gaus > 0){
+		setBatchMode("hide");
+		run("Gaussian Blur...", "sigma="+gaus+" stack");
+		
+	}
+	setBatchMode("show");
+	//Asks the user to draw the polygon that the box forms
+	run("Select None");
+	setTool("polygon");
+	waitForUser("Please make a polygon to match the cage bottom.");
+	getSelectionCoordinates(px, py);
+	stringx = "";
+	stringy = "";
+	for(i = 0; i < px.length; i++){
+		stringx = stringx + toString(px[i]) + "\t";
+		stringy = stringy + toString(py[i]) + "\t";
+	}
+	print(f, "BoxBottomX" + "\t"+stringx);	
+	print(f, "BoxBottomY" + "\t"+stringy);	
+	
+	setBatchMode("hide");
+	if(is("Virtual Stack")){
+		roiManager("Add");
+		close();
+		sortVirtual(dir, 0, 3);
+		roiManager("Reset");
+	}else{
+		if(!blaWhi)
+			setBackgroundColor(255, 255, 255);
+		else
+			setBackgroundColor(0, 0, 0);
+			
+		run("Clear Outside", "stack");
+	}
+	setBatchMode("show");
+	
+	//Remove dark regions if so selected
+	if(darkR)
+		darkA = removeDarkR(imTitle);
+	
+
+	//Get the threshold for getting the mouse spots
+	setAutoThreshold("Triangle");  
+	waitForUser(setThr);
+	getThreshold(minth, maxth);
+	print(f, "Threshold\t"+minth+"\t"+maxth);
+	
+	if(darkR)
+		print(f, "DarkR\t" + darkA[0] +"\t"+ darkA[1]);
+	else 
+		print(f, "DarkR\t" + 0 +"\t"+ 0);
+	
+	setThreshold(minth,maxth);
+		
+	roiManager("Show All without labels");
+	roiManager("Show None");
+	//analyse particles taking in consideration the reduction in fps if selected
+	setBatchMode("hide");
+	if(fps == 25)
+		run("Analyze Particles...", "size="+mFreezeArea+"-Infinity pixel include add stack");
+	else{
+		
+		for(i = 1; i < nSlices; i = i + 100/fps){
+			setSlice(i);
+			run("Analyze Particles...", "size="+mFreezeArea+"-Infinity pixel include add stack");
+		}
+			
+	}
+	
+	setBatchMode("show");
+	
+	roiManager("Show All without labels");
+	roiManager("Show None");
+	roiManager("Save", dir + imTitle + "ROIs.zip");
+	
+	writePreferences(f);
+	File.close(f);
+
+	//File operations done!
+	run("Select None");
+
+	//Get data of the dectetions
+	oriID=getImageID();
+	freezeCheck(fps, dir, imTitle);
+	dialog2(oriID, dir, imTitle, 6);
+
+}
+
+function freezeCheck(fps, dir, imTitle){
+	
+	delay = 1/fps;
+	run("Select None");
+	//getStatistics(imArea);
+	fre = newArray(roiManager("count")-1);
+	Array.fill(fre, 0);
+	freezeT = 0;
+	
+	sA = newArray(2);
+	setBatchMode("hide");
+	
+	for(i = 0; i <roiManager("count");i++){
+		roiManager("Select", i);
+		run("Fit Spline");
+		run("Enlarge...", "enlarge="+sFreeze+" pixel");
+		run("Enlarge...", "enlarge=-"+sFreeze+" pixel");
+		roiManager("Update");	
+	}
+	setBatchMode("show");
+	setBatchMode("hide");
+	
+	for(i = 0; i < roiManager("Count")-1; i++){
+		
+		 roiManager("Select", i);
+		 getStatistics(imArea);
+		 sA[0] = i; sA[1] = i+1;
+		 roiManager("Select", sA);
+		 roiManager("XOR");
+		 getStatistics(area);
+		 
+		 if(area <= imArea*0.05){
+		 	fre[i] = 1;
+		 	freezeT = freezeT + delay;		 	
+		 }
+		
+		
+	}
+
+	setBatchMode("show");
+	
+	run("Clear Results");
+	//Write the Spot statistics file
+	for(i=0; i<roiManager("count")-1; i++){
+		if(fre[i] == 0)
+			setResult("Freeze?",i, "No");
+		else
+			setResult("Freeze?",i, "Yes");
+	}
+	updateResults();
+
+	selectWindow("Results");
+	saveAs("text", dir+imTitle+".Spots.xls");
+	run("Close");
+	
+	print("Total freezing time: " + freezeT + "s.");
+	
+		
+}
+
+
+function Preferences(){
+	
+	Dialog.create("JAMoT Preferences");
+	//General preferences
+	Dialog.addMessage("General preferences");
+	Dialog.addChoice("Units of work", newArray("m", "cm", "mm","microns"), units);
+	Dialog.addNumber("Guassian blur to apply", gauVal);
+	Dialog.addNumber("Minimum displacement to consider a moving mouse (units)", dispVal);
+	//Cube and Objects Maizes
+	Dialog.addMessage("Cube Maize Preferences");
+	Dialog.addNumber("Rearing - Solidity (Cube only)", solidity);
+	Dialog.addNumber("Default width of box", wCube);
+	Dialog.addNumber("Mouse minimal area (pixels)", mCubeArea);
+	//Elevated Maize
+	Dialog.addMessage("Elevated Maize Preferences");
+	Dialog.addNumber("Width of arms", wElevated);
+	Dialog.addNumber("Mouse minimal area (pixels)", mElevatedArea);
+	Dialog.addNumber("Selection smoothing value (pixels)", sElevated);
+	//Swimming Maize
+	Dialog.addMessage("Swimming pool maize Preferences");
+	Dialog.addNumber("Pool diameter", dSwimming);
+	Dialog.addNumber("Mouse minimal area (pixels)", mSwimmingArea);
+	Dialog.addNumber("Distance to pool wall to count as at wall (units)", poolWD);
+	//T/Y Maize
+	Dialog.addMessage("T/Y Maize Preferences");
+	Dialog.addNumber("Arms width", wTY);
+	Dialog.addNumber("Mouse minimal area (pixels)", mTYArea);
+	Dialog.addNumber("Selection smoothing value (pixels)", sTY);
+	//Freeze test
+	Dialog.addMessage("Freezing Maize Parameters");
+	Dialog.addNumber("Mouse minimal area (pixels)", mFreezeArea);
+	Dialog.addNumber("Selection smoothing value (pixels)", sFreeze);
+	//Defaults
+	Dialog.addMessage("To use default parameters, check the box below.\n Above values will be ignored");
+	Dialog.addCheckbox("Revert to default settings", false);
+	Dialog.show();
+	
+	//General
+	unitsL = Dialog.getChoice();
+	gauValL = Dialog.getNumber();
+	dispValL = Dialog.getNumber();
+	//Cube Maize
+	solidityL = Dialog.getNumber();
+	wCubeL = Dialog.getNumber();
+	mCubeAreaL = Dialog.getNumber();
+	//Elevated Maize
+	wElevatedL = Dialog.getNumber();
+	mElevatedAreaL = Dialog.getNumber();
+	sElevatedL = Dialog.getNumber();
+	//Swimming Maize
+	dSwimmingL = Dialog.getNumber();
+	mSwimmingAreaL = Dialog.getNumber();
+	poolWDL = Dialog.getNumber();
+	//T/Y Maize
+	wTYL = Dialog.getNumber();
+	mTYAreaL = Dialog.getNumber();
+	sTYL = Dialog.getNumber();
+	//Freeze test
+	mFreezeAreaL = Dialog.getNumber();
+	sFreezeL = Dialog.getNumber();
+	//Default
+	default = Dialog.getCheckbox();
+	
+	if(!default){
+		//General
+		call("ij.Prefs.set", "JAMoT_Prefs.gen.units", unitsL);
+		call("ij.Prefs.set", "JAMoT_Prefs.gen.gauval", gauValL);
+		call("ij.Prefs.set", "JAMoT_Prefs.gen.dispVal", dispValL);
+		//Cube Maize
+		call("ij.Prefs.set", "JAMoT_Prefs.cube.soli", solidityL);
+		call("ij.Prefs.set", "JAMoT_Prefs.cube.width", wCubeL);
+		call("ij.Prefs.set", "JAMoT_Prefs.cube.marea", mCubeAreaL);
+		//Elevated Maize
+		call("ij.Prefs.set", "JAMoT_Prefs.elev.width", wElevatedL);
+		call("ij.Prefs.set", "JAMoT_Prefs.elev.marea", mElevatedAreaL);
+		call("ij.Prefs.set", "JAMoT_Prefs.elev.smooth", sElevatedL);
+		//Swimming Maize
+		call("ij.Prefs.set", "JAMoT_Prefs.swim.dia", dSwimmingL);
+		call("ij.Prefs.set", "JAMoT_Prefs.swim.marea", mSwimmingAreaL);
+		call("ij.Prefs.set", "JAMoT_Prefs.swim.poolWD", poolWDL);
+		//T/Y Maize
+		call("ij.Prefs.set", "JAMoT_Prefs.ty.width", wTYL);
+		call("ij.Prefs.set", "JAMoT_Prefs.ty.marea", mTYAreaL);
+		call("ij.Prefs.set", "JAMoT_Prefs.ty.smooth", sTYL);
+		//Freeze Maize
+		call("ij.Prefs.set", "JAMoT_Prefs.fre.marea", mFreezeAreaL);
+		call("ij.Prefs.set", "JAMoT_Prefs.fre.smooth", sFreezeL);
+	}else{
+		//defaultPrefs();
+		//General
+		call("ij.Prefs.set", "JAMoT_Prefs.gen.units", "cm");
+		call("ij.Prefs.set", "JAMoT_Prefs.gen.gauval", 2);
+		call("ij.Prefs.set", "JAMoT_Prefs.gen.dispVal", 0.1);
+		//Cube Maize
+		call("ij.Prefs.set", "JAMoT_Prefs.cube.soli", 0.8);
+		call("ij.Prefs.set", "JAMoT_Prefs.cube.width", 28);
+		call("ij.Prefs.set", "JAMoT_Prefs.cube.marea", 15);
+		//Elevated Maize
+		call("ij.Prefs.set", "JAMoT_Prefs.elev.width", 7);
+		call("ij.Prefs.set", "JAMoT_Prefs.elev.marea", 15);
+		call("ij.Prefs.set", "JAMoT_Prefs.elev.smooth", 3);
+		//Swimming Maize
+		call("ij.Prefs.set", "JAMoT_Prefs.swim.dia", 125);
+		call("ij.Prefs.set", "JAMoT_Prefs.swim.marea", 7);
+		call("ij.Prefs.set", "JAMoT_Prefs.swim.poolWD",10); 
+		//T/Y Maize
+		call("ij.Prefs.set", "JAMoT_Prefs.ty.width", 7);
+		call("ij.Prefs.set", "JAMoT_Prefs.ty.marea", 15);
+		call("ij.Prefs.set", "JAMoT_Prefs.ty.smooth", 3);
+		//Freeze maize
+		call("ij.Prefs.set", "JAMoT_Prefs.fre.marea", 5000);
+		call("ij.Prefs.set", "JAMoT_Prefs.fre.smooth", 10);
+	}
+	
+	exit("Please restart Fiji/ImageJ for changes to take effect.");
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2011,11 +2450,11 @@ function dialog1(option){
 	 * 2-width of box or diamter of pool or arms of Y
 	 * 3 - heigth of box
 	 * 4 remove regions in pool - regions to analyze in box
-	 * 5 - dark vader
+	 * 5 - Difference to average projection
 	 */
 	temp = newArray(7); 
 	Array.fill(temp, 0);
-	stringA = newArray("Box Track", "Elevated Puzzled", "Swim Test", "Regions Box", "T/Y Test");
+	stringA = newArray("OpenField Test", "Elevated Plus Puzzled", "Watermaize Test", "Novel Object Recognition Test", "Y/T Maize", "Fear Conditioning");
 	array1 = newArray("Black mice in white bckgrnd", "White mice in black bkgrnd");
 	array2 = newArray("25", "20", "15", "5");
 	array3 = newArray("Center Region", "Objects");
@@ -2030,15 +2469,15 @@ function dialog1(option){
 	//Specific dialog options for each macro
 	if(option == 1 || option == 2 || option == 4){
 		if(option == 2)
-			n = 8;
+			n = wElevated;
 		else 
-			n = 38;
+			n = wCube;
 		Dialog.addMessage("Measurements of box/central area of cross:");
-		Dialog.addNumber("Width (in cm)", n);
-		Dialog.addNumber("Height (in cm)", n);
+		Dialog.addNumber("Width (in (" + units+")", n);
+		Dialog.addNumber("Height (in (" + units+")", n);
 	}
 	if(option == 3){
-		Dialog.addNumber("Diameter of the pool (cm):", 125);
+		Dialog.addNumber("Diameter of the pool (in (" + units+"):", dSwimming);
 		Dialog.addMessage("Do you want to remove any region(s)? Leave zero if not.");
 		Dialog.addNumber("How many", 0);
 	}
@@ -2048,16 +2487,16 @@ function dialog1(option){
 	}
 
 	if(option == 5){
-		Dialog.addNumber("Width of arms (in cm):", 7);
+		Dialog.addNumber("Width of arms (in (" + units+"):", wTY);
 	}
 
 	if(option != 3){
-		Dialog.addMessage("Dark/White regions treatment?");
-		Dialog.addCheckbox("Dark/White Vader?", false);
+		Dialog.addMessage("Dark/White regions processing?");
+		Dialog.addCheckbox("Create difference to average projection?", false);
 	}
 
 	Dialog.addMessage(" ");
-	Dialog.addNumber("Guassian blur to apply to image (0 for not)", 2);
+	Dialog.addNumber("Guassian blur to apply to image (0 for not)", gauVal);
 
 
 	Dialog.show();
@@ -2181,13 +2620,15 @@ function lineTrack(imageID, dir, imTitle, option){
 	setBatchMode("show");
 	
 	if(option == 1) //Empty box
-		choice = promptandgetChoice(0, 1, 0, 0, 0);
+		choice = promptandgetChoice(0, 1, 0, 0, 0, 0);
 	else if(option == 2 || option == 5)//Cross and TY regions
-		choice = promptandgetChoice(0, 0, 0, 1, 0);
+		choice = promptandgetChoice(0, 0, 0, 1, 0, 0);
 	else if(option == 3) //Swimming
-		choice = promptandgetChoice(0, 1, 0, 0, 0);
-	else
-		choice = promptandgetChoice(0, 0, 0, 0, 1);
+		choice = promptandgetChoice(0, 0, 1, 0, 0, 0);
+	else if(option == 4) //Regions
+		choice = promptandgetChoice(0, 0, 0, 0, 1, 0);
+	else if(option== 6) //Fear 
+		choice = promptandgetChoice(0, 0, 0, 0, 0, 1);
 
 
 	if(choice[1]){
@@ -2206,7 +2647,9 @@ function lineTrack(imageID, dir, imTitle, option){
 		else{
 			if(option == 2)
 				n = 5;
-			else
+			else if(option == 6)
+				n = 3;
+			else if(option == 4)
 				n = 6;
 															
 			arrayx = getFileData(n, dir, imTitle, option);
@@ -2236,19 +2679,49 @@ function lineTrack(imageID, dir, imTitle, option){
 		//Regions option
 		else if(option == 4){
 			count = countLinesStartingWith(dir, imTitle, option, "Object");
-			for(k = 6; k < (6+count); k++){
+			for(k = 6, j = 1; k < (6+count); k++,j++){
 				array = getFileData(k, dir, imTitle, option);
 				drawOval(array[0], array[1], array[2], array[3]);
+				drawString(toString(j), (array[0]+array[2]/2)-3, array[1]+array[3]/2);
 			}
 		}
-		else ;
 		
+	}
+	
+	if(choice[3]){
+		setForegroundColor(255,255,255);
+		//Swimming option
+		if(option == 3){
+			setLineWidth(2);
+			array = getFileData(4, dir, imTitle, option);
+			drawLine(array[0]- 5, array[1], array[0] + 5, array[1]);
+			drawLine(array[0], array[1] - 5, array[0], array[1] + 5);
+			drawString("1", array[0] - 8, array[1]);
+			drawString("2", array[0] - 8, array[1] + 15);
+			drawString("3", array[0] + 2, array[1]);
+			drawString("4", array[0] + 2, array[1] + 15);
+			poolWDL = poolWD;
+			toUnscaled(poolWDL);
+			setLineWidth(1);
+			array = getFileData(3, dir, imTitle, option);
+			xc = array[0] + array[2]/2;
+			yc = array[1] + array[3]/2;
+			r = (array[2] + array[3])/4;
+			makeOval(array[0] + poolWDL, array[1] + poolWDL, array[2] - (poolWDL*2), array[3] - (poolWDL*2));
+			run("Area to Line");
+			getSelectionCoordinates(xp, yp);
+			for(i = 0; i < xp.length; i = i + 5){
+				makePoint(xp[i], yp[i]);
+				run("Draw", "slice");
+			}
+			run("Select None");	
+		}
 	}
 	
 	run("Set Measurements...", "centroid redirect=None decimal=3");
 	setLineWidth(2);
 	setForegroundColor(255, 255, 255); 
-	
+	setBatchMode("hide");
 	for(i=0;i<roiManager("count")-1;i++){
 		roiManager("Select", i);
 		List.setMeasurements();
@@ -2260,6 +2733,7 @@ function lineTrack(imageID, dir, imTitle, option){
 		y2 = List.getValue("Y");
 		drawLine(x1,y1,x2,y2);
 	}
+	setBatchMode("show");
 }
 
 
@@ -2268,13 +2742,15 @@ function heatMap(imageID, dir, imTitle, option){
 		
 		
 	if(option == 1) 								//Empty box
-		choice = promptandgetChoice(1, 1, 0, 0, 0);
+		choice = promptandgetChoice(1, 1, 0, 0, 0, 0);
 	else if(option == 2 || option == 5)				//Cross/TY region
-		choice = promptandgetChoice(1, 0, 0, 1, 0);
+		choice = promptandgetChoice(1, 0, 0, 1, 0, 0);
 	else if(option == 3)							//Swimming
-		choice = promptandgetChoice(1, 0, 1, 0, 0);
-	else 
-		choice = promptandgetChoice(1, 0, 0, 0, 1);
+		choice = promptandgetChoice(1, 0, 1, 0, 0, 0);
+	else if(option == 4)
+		choice = promptandgetChoice(1, 0, 0, 0, 1, 0);
+	else if(option == 6)							//Fear
+		choice = promptandgetChoice(1, 0, 0, 0, 0, 1);
 		
 	x = choice[0];
 
@@ -2341,6 +2817,8 @@ function heatMap(imageID, dir, imTitle, option){
 		else{
 			if(option == 5)
 				n = 6;
+			else if(option == 6)
+				n = 3;
 			else
 				n = 5;
 			arrayx = getFileData(n, dir, imTitle, option);
@@ -2368,14 +2846,44 @@ function heatMap(imageID, dir, imTitle, option){
 		//Regions option
 		else if(option == 4){
 			count = countLinesStartingWith(dir, imTitle, option, "Object");
-			for(k = 6; k < (6+count); k++){
+			for(k = 6, j = 1; k < (6+count); k++, j++){
 				array = getFileData(k, dir, imTitle, option);
 				drawOval(array[0], array[1], array[2], array[3]);
+				drawString(toString(j), (array[0]+array[2]/2)-3, array[1]+array[3]/2);
 			}
 		}
-		else ;
+
 	}
-		
+	
+	if(choice[3]){
+		setForegroundColor(255,255,255);
+		//Swimming option
+		if(option == 3){
+			setLineWidth(2);
+			array = getFileData(4, dir, imTitle, option);
+			drawLine(array[0]- 5, array[1], array[0] + 5, array[1]);
+			drawLine(array[0], array[1] - 5, array[0], array[1] + 5);
+			drawString("1", array[0] - 8, array[1]);
+			drawString("2", array[0] - 8, array[1] + 15);
+			drawString("3", array[0] + 2, array[1]);
+			drawString("4", array[0] + 2, array[1] + 15);
+			poolWDL = poolWD;
+			toUnscaled(poolWDL);
+			setLineWidth(1);
+			array = getFileData(3, dir, imTitle, option);
+			xc = array[0] + array[2]/2;
+			yc = array[1] + array[3]/2;
+			r = (array[2] + array[3])/4;
+			makeOval(array[0] + poolWDL, array[1] + poolWDL, array[2] - (poolWDL*2), array[3] - (poolWDL*2));
+			run("Area to Line");
+			getSelectionCoordinates(xp, yp);
+			for(i = 0; i < xp.length; i = i + 5){
+				makePoint(xp[i], yp[i]);
+				run("Draw", "slice");
+			}
+			run("Select None");	
+		}
+	}		
 }
 
 
@@ -2384,8 +2892,8 @@ function heatMap(imageID, dir, imTitle, option){
 ///////////////Dialog box
 //Provides options of drawing regions in the heatmap and 
 //trajectory map
-function promptandgetChoice(c1, c2, c3, c4, c5){
-	temp = newArray(3);
+function promptandgetChoice(c1, c2, c3, c4, c5, c6){
+	temp = newArray(4);
 	Array.fill(temp, 0);
 	
 	Dialog.create("Options for line/heatmap");
@@ -2404,6 +2912,7 @@ function promptandgetChoice(c1, c2, c3, c4, c5){
 	if(c3){
 		Dialog.addCheckbox("Draw pool region?", true);
 		Dialog.addCheckbox("Draw platform region?", true);
+		Dialog.addCheckbox("Number quadrants and draw border?", true);
 	}
 
 	//Case of cross puzzles
@@ -2415,6 +2924,9 @@ function promptandgetChoice(c1, c2, c3, c4, c5){
 		Dialog.addCheckbox("Draw box region?", true);
 		Dialog.addCheckbox("Draw regions?", true);
 	}
+	
+	if(c6)
+		Dialog.addCheckbox("Draw cube region", true);
 
 	Dialog.show();
 
@@ -2435,6 +2947,9 @@ function promptandgetChoice(c1, c2, c3, c4, c5){
 
 	if(c2 || c3 || c5)
 		temp[2] = Dialog.getCheckbox();
+	
+	if(c3)
+		temp[3] = Dialog.getCheckbox();
 
 	
 	return temp; 
@@ -2444,7 +2959,7 @@ function promptandgetChoice(c1, c2, c3, c4, c5){
 //Only in use for Mice_Track
 function getFileData(line, dir, imTitle, option){
 
-	strTer = newArray(".cube.trac", ".cross.trac", ".swim.trac", ".objects.trac", ".TY.trac");
+	strTer = newArray(".cube.trac", ".cross.trac", ".swim.trac", ".objects.trac", ".TY.trac", ".free.trac");
 	str = dir + imTitle + strTer[option-1];
 		
 	filestring = File.openAsString(str);
@@ -2489,7 +3004,7 @@ function clearRegion(){
 
 //Function to count the lines of a txt file separated by \n
 function countLinesStartingWith(dir, imTitle, option, strBegin){
-	strTer = newArray(".cube.trac", ".cross.trac", ".swim.trac", ".objects.trac", ".TY.trac");
+	strTer = newArray(".cube.trac", ".cross.trac", ".swim.trac", ".objects.trac", ".TY.trac", ".free.trac");
 	str = dir + imTitle + strTer[option-1];
 	filestring = File.openAsString(str);
 	rows = split(filestring, "\n");
@@ -2508,34 +3023,27 @@ function countLinesStartingWith(dir, imTitle, option, strBegin){
 function removeDarkR(imTitle){
 	temp = newArray(2);
 	run("Select None");
+	setBatchMode("show");
 	showMessage("Remove Dark regions","<html>"+"<font size=2><center>Please select the starting and end point<br>"+"<font size=2><center>of the stack to create a shading correction.<br>" + "<font size=2><center>Ideally you want frames where the mouse isn´t present yet (minimum 50 frames)<br>" + "<font size=2><center>If you have to use frames with mice in use as many as possible (>1000)<br><br>");
 	waitForUser("Please select the inital frame to start the averaging");
 	temp[0] = getSliceNumber();
 	waitForUser("Please select the final frame to start the averaging");
 	temp[1] = getSliceNumber();
 	darkRPorjection(imTitle, temp[0], temp[1]);
-	/*n = nSlices;
-	if(n > 2010){
-		start = round(n/2) - 999;
-		end = round(n/2) + 999;
-	}else{
-		start = 1;
-		end = nSlices;
-	}*/
+
 	
 	return temp;
 }
 
 function darkRPorjection(imTitle, min, max) {
-	setBatchMode(true);
+	setBatchMode("hide");
 	run("Z Project...", "start="+min+" stop="+max+" projection=[Average Intensity]");
 	projTile = getTitle();
 	imageCalculator("Difference create stack", imTitle, projTile);
 	close("\\Others");
 	run("Invert", "stack");
 	run("Gamma...", "value=5 stack");
-	setBatchMode(false);
-	
+	setBatchMode("show");
 }
 
 
@@ -2603,11 +3111,83 @@ function openPreviousAnalysis(){
 		}else if(endsWith(filename, ".TY.trac")){
 			option = repeatAnalysisDialog();
 			tyRedo(temp, option);
+		}else if(endsWith(filename, ".free.trac")){
+			option = repeatAnalysisDialog();
+			fearRedo(temp, option);
 		}else
 			exit("Could not identify the type of analysis of this trac file");
 	}else
 		print("This file " + file + " does not appear to be a valid JAMoT file.");
 
+}
+
+function fearRedo(temp, option){
+	//Get the data from the file		
+	dir = temp[0];
+	iw = parseInt(temp[1]); ih = parseInt(temp[2]); inS = parseInt(temp[3]); 
+	gaus = parseInt(temp[4]);
+	imName = temp[5];
+	fps = parseInt(temp[7]);
+	count = 9;
+	while(temp[count]!= "BoxBottomY")
+		count++;
+	xp = newArray(count-9);
+	yp = newArray(count-9);
+	for(i = 0; i < count-9; i++){
+		xp[i] = temp[9+i];
+		yp[i] = temp[count+1+i];
+	}
+	jump = 9 + ((count-9)*2) + 1;
+	thrMin = parseInt(temp[jump+1]); thrMax = parseInt(temp[jump+2]);
+	drkMin = parseInt(temp[jump+4]); drkMax = parseInt(temp[jump+5]);
+	temp2 = Array.slice(temp, jump+6, 100);
+	checkPreferences(temp2);
+	
+	if(option == 0){
+		//Open image
+		ignore = openFile(dir+imName, option);
+		
+		//Check for guassian blur
+		gausCheckRun(gaus);
+		
+		//set bckgrd color
+		setBackgrdCo(thrMin);
+			
+		if(drkMin != drkMax)
+			darkRPorjection(imName, drkMin,drkMax);
+
+		//setThreshold and Analyse
+		setThrandAna(thrMin, thrMax, fps,6);
+		
+		//gets image ID
+		oriID=getImageID();
+		freezeCheck(fps, dir, imName);
+		dialog2(oriID, dir, imName, 6);
+		
+	}else{
+		//Open image file or create an empty one
+		if(!openFile(dir+imName, 1))
+			newImage("New "+imName, "8-bit black", iw, ih, inS);
+		
+		
+		//Open ROis or see if they exist!
+		if(File.exists(dir + imName + "ROIs.zip"))
+			roiManager("Open", dir + imName + "ROIs.zip");
+		else
+			exit("Roi´s file appears to not exist!");
+		if(option == 1){
+			//Get data of the dectetions
+			freezeCheck(fps, dir, imName);
+		}
+		if(option == 2){
+			oriID = getImageID();
+			dialog2(oriID, dir, imName, 6);
+		}	
+		
+			
+			
+	}
+	
 }
 
 
@@ -2635,6 +3215,8 @@ function tyRedo(temp, option){
 	jump = 20 + ((count-20)*2) + 1;
 	thrMin = parseInt(temp[jump+1]); thrMax = parseInt(temp[jump+2]);
 	drkMin = parseInt(temp[jump+4]); drkMax = parseInt(temp[jump+5]);
+	temp2 = Array.slice(temp, jump+6, 100);
+	checkPreferences(temp2);
 	
 	if(option == 0){
 		//Open image
@@ -2657,7 +3239,7 @@ function tyRedo(temp, option){
 			darkRPorjection(imName, drkMin,drkMax);
 
 		//setThreshold and Analyse
-		setThrandAna(thrMin, thrMax, fps);
+		setThrandAna(thrMin, thrMax, fps,5);
 		
 		//gets image ID
 		oriID=getImageID();
@@ -2669,6 +3251,8 @@ function tyRedo(temp, option){
 		if(!openFile(dir+imName, 1))
 			newImage("New "+imName, "8-bit black", iw, ih, inS);
 		
+		//set image parameters - pixel
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+pw+" pixel_height="+py+" voxel_depth=1");	
 		
 		//Open ROis or see if they exist!
 		if(File.exists(dir + imName + "ROIs.zip"))
@@ -2712,6 +3296,8 @@ function objectsRedo(temp, option){
 		
 	thrMin = parseInt(temp[21 + count + 1]); thrMax = parseInt(temp[21 + count + 2]);
 	drkMin = parseInt(temp[21 + count + 4]); drkMax = parseInt(temp[21 + count + 5]);
+	temp2 = Array.slice(temp, 21+count+6, 100);
+	checkPreferences(temp2);
 	
 	if(option == 0){
 		//Open image
@@ -2742,7 +3328,7 @@ function objectsRedo(temp, option){
 			darkRPorjection(imName, drkMin,drkMax);
 
 		//setThreshold and Analyse
-		setThrandAna(thrMin, thrMax, fps);
+		setThrandAna(thrMin, thrMax, fps, 4);
 		
 		//Get data of the dectetions
 		oriID=getImageID();
@@ -2754,6 +3340,8 @@ function objectsRedo(temp, option){
 		if(!openFile(dir+imName, 1))
 			newImage("New "+imName, "8-bit black", iw, ih, inS);
 		
+		//set image parameters - pixel
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+pw+" pixel_height="+py+" voxel_depth=1");	
 		
 		//Open ROis or see if they exist!
 		if(File.exists(dir + imName + "ROIs.zip"))
@@ -2787,6 +3375,9 @@ function swimRedo(temp, option){
 	box[0] = parseInt(temp[9]); box[1] = parseInt(temp[10]); box[2] = parseInt(temp[11]); box[3] = parseInt(temp[12]);
 	pw = parseFloat(temp[22]); py = parseFloat(temp[23]);
 	thrMin = parseInt(temp[25]); thrMax = parseInt(temp[26]);
+	diameter = parseInt(temp[28]);
+	temp2 = Array.slice(temp, 29, 100);
+	checkPreferences(temp2);
 	
 	if(option == 0){
 		//open image
@@ -2805,11 +3396,11 @@ function swimRedo(temp, option){
 		run("Clear Outside", "stack");
 		
 		//setThreshold and Analyse
-		setThrandAna(thrMin, thrMax, fps);
+		setThrandAna(thrMin, thrMax, fps, 3);
 		
 		//Get data of the dectetions
 		oriID = getImageID;
-		getParametersSM(fps,dir, imName);
+		getParametersSM(fps,dir, imName, diameter);
 		dialog2(oriID, dir, imName, 3);
 		
 	}else{
@@ -2817,6 +3408,8 @@ function swimRedo(temp, option){
 		if(!openFile(dir+imName, 1))
 			newImage("New "+imName, "8-bit black", iw, ih, inS);
 		
+		//set image parameters - pixel
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+pw+" pixel_height="+py+" voxel_depth=1");	
 		
 		//Open ROis or see if they exist!
 		if(File.exists(dir + imName + "ROIs.zip"))
@@ -2859,6 +3452,9 @@ function crossRedo(temp, option){
 	jump = 17 + ((count-17)*2) + 1;
 	thrMin = parseInt(temp[jump+1]); thrMax = parseInt(temp[jump+2]);
 	drkMin = parseInt(temp[jump+4]); drkMax = parseInt(temp[jump+5]);
+	
+	temp2 = Array.slice(temp, jump+6, 100);
+	checkPreferences(temp2);
 
 	if(option == 0){
 		//open image
@@ -2880,7 +3476,7 @@ function crossRedo(temp, option){
 			darkRPorjection(imName, drkMin,drkMax);
 		
 		//setThreshold and Analyse
-		setThrandAna(thrMin, thrMax, fps);
+		setThrandAna(thrMin, thrMax, fps, 2);
 		
 		//Get data of the dectetions
 		oriID = getImageID;
@@ -2891,6 +3487,8 @@ function crossRedo(temp, option){
 		if(!openFile(dir+imName, 1))
 			newImage("New "+imName, "8-bit black", iw, ih, inS);
 		
+		//set image parameters - pixel
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+pw+" pixel_height="+py+" voxel_depth=1");	
 		
 		//Open ROis or see if they exist!
 		if(File.exists(dir + imName + "ROIs.zip"))
@@ -2923,6 +3521,8 @@ function cubeRedo(temp, option){
 	pw = parseFloat(temp[19]); py = parseFloat(temp[20]);
 	thrMin = parseInt(temp[22]); thrMax = parseInt(temp[23]);
 	drkMin = parseInt(temp[25]); drkMax = parseInt(temp[26]);
+	temp2 = Array.slice(temp,27,100);
+	checkPreferences(temp2);
 	
 	if(option == 0){
 		//Open image
@@ -2932,7 +3532,7 @@ function cubeRedo(temp, option){
 		gausCheckRun(gaus);
 				
 		//set image parameters - pixel
-		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit=cm pixel_width="+pw+" pixel_height="+py+" voxel_depth=1");	
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit="+units+" pixel_width="+pw+" pixel_height="+py+" voxel_depth=1");	
 		
 		//set bckgrd color
 		setBackgrdCo(thrMin);
@@ -2949,11 +3549,11 @@ function cubeRedo(temp, option){
 			
 		run("Gaussian Blur...", "sigma=10 stack");
 		
-		if(drkMin!=drkMax)
+		if(drkMin!= drkMax)
 			darkRPorjection(imName, drkMin,drkMax);
 
 		//setThreshold and Analyse
-		setThrandAna(thrMin, thrMax, fps);
+		setThrandAna(thrMin, thrMax, fps, 1);
 		
 		//Get data of the dectetions
 		getParameters(fps, dir, imName);
@@ -2965,6 +3565,8 @@ function cubeRedo(temp, option){
 		if(!openFile(dir+imName, 1))
 			newImage("New "+imName, "8-bit black", iw, ih, inS);
 		
+		//set image parameters - pixel
+		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit="+units+" pixel_width="+pw+" pixel_height="+py+" voxel_depth=1");	
 		
 		//Open ROis or see if they exist!
 		if(File.exists(dir + imName + "ROIs.zip"))
@@ -2986,21 +3588,31 @@ function cubeRedo(temp, option){
 }
 
 
-function setThrandAna(thrMin, thrMax, fps){
+function setThrandAna(thrMin, thrMax, fps, option){
 
 		setThreshold(thrMin,thrMax);
 	
 		roiManager("Show All without labels");
 		roiManager("Show None");
+		if(option == 1 || option == 4)
+			n = mCubeArea;
+		else if(option == 2)
+			n = mElevatedArea;
+		else if(option == 3)
+			n = mSwimmingArea;
+		else if(option == 5)
+			n = mTYArea;
+		else if(option == 6)
+			n = mFreezeArea;
 		setBatchMode("hide");
 		//analyse particles taking in consideration the reduction in fps if selected
 		if(fps == 25)
-			run("Analyze Particles...", "size=15-Infinity include add stack");
+			run("Analyze Particles...", "size="+n+"-Infinity pixel include add stack");
 		else{
 			
 			for(i = 1; i < nSlices; i = i + 100/fps){
 				setSlice(i);
-				run("Analyze Particles...", "size=15-Infinity include add slice");
+				run("Analyze Particles...", "size="+n+"-Infinity pixel include add slice");
 			}
 		}
 		setBatchMode("show");
@@ -3072,3 +3684,93 @@ function getFileDataRedo(filestring){
 	return temp;
 	
 }
+
+function writePreferences(file){
+	//General
+	print(file, "Preferences");
+	print(file, "Units of work\t" + units);
+	print(file, "Guassian blur to apply\t"+ gauVal);
+	print(file, "Minimum Displacement value (units)\t"+ dispVal);
+	//Cube and Objects Maizes
+	print(file, "Rearing - Solidity (Cube/Region only)\t"+ solidity);
+	print(file, "Default width of box\t"+ wCube);
+	print(file, "Mouse minimal area (pixels)\t"+ mCubeArea);
+	//Elevated Maize
+	print(file, "Width of arms\t"+ wElevated);
+	print(file, "Mouse minimal area (pixels)\t"+ mElevatedArea);
+	print(file, "Selection smoothing value (pixels)\t"+ sElevated);
+	//Swimming Maize
+	print(file, "Pool diameter\t"+ dSwimming);
+	print(file, "Mouse minimal area (pixels)\t"+ mSwimmingArea);
+	print(file, "Distance to pool Wall to consider at wall (units)\t"+ poolWD);
+	//T/Y Maize
+	print(file, "Arms width\t"+ wTY);
+	print(file, "Mouse minimal area (pixels)\t"+ mTYArea);
+	print(file, "Selection smoothing value (pixels)\t"+ sTY);
+	//Fear Conditioning
+	print(file, "Mouse minimal area (pixels)\t"+ mFreezeArea);
+	print(file, "Selection smoothing value (pixels)\t"+ sFreeze);
+	
+}
+
+function checkPreferences(array){
+	//General
+	i = 1;
+	print(array[i] + ": current is "+ units + ". Saved is: " + array[i+1]);
+	if(units!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis.");}
+	i = i + 2;
+	print(array[i] + ": current is "+ gauVal + ". Saved is: " + array[i+1]);
+	if(gauVal!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis.");}
+	i = i + 2;
+	print(array[i] + ": current is "+ dispVal + ". Saved is: " + array[i+1]);
+	if(dispVal!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis.");}
+	//Open/NOR
+	i = i + 2;
+	print(array[i] + ": current is "+ solidity + ". Saved is: " + array[i+1]);
+	if(solidity!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of OpenField/NOR.");}
+	i = i + 2;
+	print(array[i] + ": current is "+ wCube + ". Saved is: " + array[i+1]);
+	if(wCube!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of OpenField/NOR.");}
+	i = i + 2;
+	print(array[i] + ": current is "+ mCubeArea + ". Saved is: " + array[i+1]);
+	if(mCubeArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of OpenField/NOR.");}
+	//elevated
+	i = i + 2;
+	print(array[i] + ": current is "+ wElevated + ". Saved is: " + array[i+1]);
+	if(wElevated!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus Maize.");}
+	i = i + 2;
+	print(array[i] + ": current is "+ mElevatedArea + ". Saved is: " + array[i+1]);
+	if(mElevatedArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus Maize.");}
+	i = i + 2;
+	print(array[i] + ": current is "+ sElevated + ". Saved is: " + array[i+1]);
+	if(sElevated!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus Maize.");}
+	//Watermaize
+	i = i + 2;
+	print(array[i] + ": current is "+ dSwimming + ". Saved is: " + array[i+1]);
+	if(dSwimming!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of WaterMaize.");}
+	i = i + 2;
+	print(array[i] + ": current is "+ mSwimmingArea + ". Saved is: " + array[i+1]);
+	if(mSwimmingArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of WaterMaize.");}
+	i = i + 2;
+	print(array[i] + ": current is "+ poolWD + ". Saved is: " + array[i+1]);
+	if(poolWD!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of WaterMaize.");}
+	//TY Maize
+	i = i + 2;
+	print(array[i] + ": current is "+  wTY + ". Saved is: " + array[i+1]);
+	if( wTY!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of T/Y Maize.");}
+	i = i + 2;
+	print(array[i] + ": current is "+  mTYArea + ". Saved is: " + array[i+1]);
+	if( mTYArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of T/Y Maize.");}
+	i = i + 2;
+	print(array[i] + ": current is "+  sTY + ". Saved is: " + array[i+1]);
+	if( sTY!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of T/Y Maize.");}
+	//Fear Conditioning
+	i = i + 2;
+	print(array[i] + ": current is "+  mFreezeArea + ". Saved is: " + array[i+1]);
+	if( mFreezeArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Fear Conditioning.");}
+	i = i + 2;
+	print(array[i] + ": current is "+  sFreeze + ". Saved is: " + array[i+1]);
+	if( sFreeze!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Fear Conditioning.");}
+			
+}
+
