@@ -2,54 +2,8 @@
  * //////////////////Author - H lio Roque - Centro Nacional Investigaciones CardioVasculares, Madrid, Spain/////////////
  * /////////////////Contact - helio.alexandreduarte at cnic.es///////////////////////////////////////////////////////////////
  * 
- * 08/09/2017 - Added an option in the menu to set preferences. These are set in the IJ_Prefs.txt file for later uses.
- *				Preferences are also saved in the tracking files.
- * 07/09/2017 - Added the function to do batch process of AVI files from one folder to another. 
- * 06/09/2017 - Added the hability of redoing previous analysis using a analysis from a previous analysis
- * 05/09/2017 - Made changes to the get in line with the upcoming function of redoing an analysis by loading a preivous trac file
- *				Also transformed it to a dropdown menu like BioVoxxel Toolbox (REFERENCE)			
- * 06/06/2017 - Added a function to be run by the T/Y where it determines the number triplet entries into all different arms - NEED REFERENCE
- * 06/06/2017 - Changed removeDarkR to recieve input from the user to start and end of average projection. Added warning messages to the effect
- * 01/06/2017 - Added extra number entries and options to dialog1 whose appearance depends on the macro calling it. This allows
- * 				to size of the arenas to be inputted by the user so that these are not fixed values. Some bug elimination.
- * 				Also changed the way the macros deal with white mice in dark background. Now instead of inverting they just
- * 				clear the outisde region in the adequete color for the bkgrnd.
- * 30/05/2017 - Started to changed the sortVirtual() function to work better with all the macros and function to all cases
- * 				or put warnings when this is not the case. SO that in the future I can change all of it to work in any case.
- * 29/05/2017 - Added removeDarkR(); to try and work with the dark regions due to uneven illumination.
- * 				This is only in effect to the cube, cube with objects and the T/Y puzzles.
- * 26/05/2017 - Fixed an array comparison error in getParametersRT that was leading to huge counts of heads at the regions
- * 				Maybe this will mean no need to smooth this array
- * 26/05/2017 - v0.5 - Added the TY puzzle macro. this is mostly the cross region macro modified so it calculates the 
- * 				arms positions and times. Already implemented the smoothing alrothim counting algorithm 
- * 25/05/2017 - Changed the method of calculation of the ET puzzle to make a moving average (interval of 9) across the 
- * 				whole array of 0,1,2 values to eliminate entries of single frames. This needs to be applied to all 
- * 				macros.
- * 23/05/2017 - v0.4 - Added the macro to track the mouse in a cube where there are objects that it might recognize or not. 
- * 				It is mainly based in the cube track macro but there is a new function to sort out if the mouse has its
- * 				head or body close to the object. Works with up to 5 objects. Should work with more. Other fucntions were adapted
- * 				linTrack, heatmap, promptandgetchoice, getFileData, dialog1, to adjust to another option of display.
- * 				Also added a new common function, countLinesStartWith, to count the lines of a text file separated by "\n"
- * 22/05/2017 - Fixed the calculus of the pixel size to work properly in all macros! Also added the safe guard 
- * 				to not do this calculus if the image pixel is different from 1 in both X and Y. Mofified the 
- * 				dialog1 function to take an option as argument to provide different options for the different macros
- * 				and be ready to insert the Regions macro.
- * 19/05/2017 - Changed the getDirection function to not mixed px and units - all in px now. this does not affect the
- * 				displa and vel calculations.
- * 15-18/05/2017 - General changes to organization of the macros, mainly so that all share the small functions to reduce code.
- * 				Mostly changing the getFileData and lineTrack and heatMap to work with the different macros. 
- * 11/05/2017 - Made line and heatmap end up with 8-bit images, scaling the heatmap accordingly to the max value 
- * 				of the map and not regions (8-bit, 10-bit or 12-bit) * 				
- * 11/05/2017 - IMPORTANT - Changed the getDirections method to work in metric units and not mix pixels and metric units!
- * 				This was screwing up some calculatinos I believe! Also made getDirections of EP to get coordinates from file.
- * 11/05/2017 - Fix the conversion of string to float instead of int in getFileData
- * 10/05/2017 - Added a warning message to PVAT about spaces and ffmpeg.exe
- * 				Also converted PVAT to a batch processing tool
- * 09/05/2017 - Added the possibility of using ffmpeg direclty from the converter macro - only tested in Windows.
- * 				Assumes ffmpeg.exe is in the macro\toolset folder
- * 				Also deals with virtual stacks taking into consideration the memory used by ImageJ
- * 08/05/2017 - Mouse looking over the edge in EPM by area comparicion between open and close regions
  */
+ 
  
  requires("1.50a");
  
@@ -247,8 +201,7 @@ function pad(n) {
 
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /*
  * Macro to track the mice in an open cube of 38 cm by 38 cm
  * It will output several parameters related to displacement, velocity, etc.
@@ -272,6 +225,7 @@ function MouseCubeTracker(){
 	boxH = temp[3];
 	darkR = temp[5];
 	gaus = temp[6];
+	stagger = temp[7];
 	
 	//Takes care of cases where tracking has been done already
 	//asks if you want to delete it or not
@@ -372,20 +326,37 @@ function MouseCubeTracker(){
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	//analyse particles taking in consideration the reduction in fps if selected
-	setBatchMode("hide");
-	if(fps == 25)
-		run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add stack");
-	else{
 		
-		for(i = 1; i < nSlices; i = i + 100/fps){
-			setSlice(i);
-			run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add slice");
+	makeAnalysis(stagger, fps, mCubeArea);
+	
+/*	if(stagger == 0){
+		if(fps == 25)
+			run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add stack");
+		else{
+			for(i = 1; i < nSlices; i = i + 100/fps){
+				setSlice(i);
+				run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add slice");
+			}
 		}
-			
-	}
-	
-	setBatchMode("show");
-	
+	}else{
+		waitForUser("Please select starting frame for ROI analysis");
+		s = getSliceNumber();
+		waitForUser("Please select ending frame for ROI analysis");
+		e = getSliceNumber();
+		if(fps == 25){
+			for(i = s; i < e; i = i++){
+				setSlice(i);
+				run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add slice");
+			}
+		
+		}else{
+			for(i = s; i < e; i = i + 100/fps){
+				setSlice(i);
+				run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add slice");
+			}
+		}
+	}*/
+		
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	roiManager("Save", dir + imTitle + "ROIs.zip");
@@ -666,6 +637,7 @@ function MiceElevatedPuzzleTracker(){
 	armsH = temp[3];
 	darkR = temp[5];
 	gaus = temp[6];
+	stagger = temp[7];
 	
 	//Takes care of cases where tracking has been done already
 	//asks if you want to delete it or not
@@ -759,12 +731,9 @@ function MiceElevatedPuzzleTracker(){
 	else
 		print(f, "DarkR\t" + 0 + "\t" + 0);
 	
-	//Try to speed up things with batch mode but not sure it actually helps
-	setBatchMode(true);
-
-	//deals with reduction of frame acquisition
-	setBatchMode("hide");
-	if(fps == 25)
+	
+	makeAnalysis(stagger, fps, mElevatedArea);
+	/*if(fps == 25)
 		run("Analyze Particles...", "size="+mElevatedArea+"-Infinity pixel include add stack");
 	else{
 		
@@ -773,11 +742,11 @@ function MiceElevatedPuzzleTracker(){
 			run("Analyze Particles...", "size="+mElevatedArea+"-Infinity pixel include add slice");
 		}
 			
-	}
-	setBatchMode("show");
+	}*/
+
 	roiManager("Show All without labels");
 	roiManager("Show None");
-	setBatchMode(false);
+
 
 	//Save the selection results
 	roiManager("Save", dir + imTitle + "ROIs.zip");
@@ -1037,6 +1006,7 @@ function MouseSwimTracker(){
 	rRegions = temp[4];
 	darkR = temp[5];	
 	gaus = temp[6];
+	stagger = temp[7];
 	
 	//Takes care of cases where tracking has been done already
 	//asks if you want to delete it or not
@@ -1125,8 +1095,9 @@ function MouseSwimTracker(){
 	
 	roiManager("Show All without labels");
 	roiManager("Show None");
-	setBatchMode("hide");
-	if(fps == 25)
+	
+	makeAnalysis(stagger, fps, mSwimmingArea);
+/*	if(fps == 25)
 		run("Analyze Particles...", "size="+mSwimmingArea+"-Infinity pixel include add stack");
 	else{
 		
@@ -1135,8 +1106,7 @@ function MouseSwimTracker(){
 			run("Analyze Particles...", "size="+mSwimmingArea+"-Infinity pixel include add slice");
 		}
 			
-	}
-	setBatchMode("show");
+	}*/
 	roiManager("Show All without labels");
 	roiManager("Show None");
 
@@ -1363,6 +1333,7 @@ function MouseRegionsTracker(){
 	nRegions = choiceArray[4];
 	darkR = choiceArray[5];
 	gaus = choiceArray[6];
+	stagger = choiceArray[7];
 
 	//Takes care of cases where tracking has been done already
 	//asks if you want to delete it or not
@@ -1458,8 +1429,10 @@ function MouseRegionsTracker(){
 	
 	roiManager("Show All without labels");
 	roiManager("Show None");
-	setBatchMode("hide");
-	if(fps == 25)
+
+	
+	makeAnalysis(stagger, fps, mCubeArea);
+/*	if(fps == 25)
 		run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add stack");
 	else{
 		
@@ -1468,8 +1441,8 @@ function MouseRegionsTracker(){
 			run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add slice");
 		}
 			
-	}
-	setBatchMode("show");
+	}*/
+
 	roiManager("Show All without labels");
 	roiManager("Show None");
 
@@ -1744,6 +1717,7 @@ function MiceYTTracker(){
 	armsD = temp[2];
 	darkR = temp[5];
 	gaus = temp[6];
+	stagger = temp[7];
 	
 	//Takes care of cases where tracking has been done already
 	//asks if you want to delete it or not
@@ -1845,8 +1819,9 @@ function MiceYTTracker(){
 
 	//Try to speed up things with batch mode but not sure it actually helps
 	//deals with reduction of frame acquisition
-	setBatchMode("hide");
-	if(fps == 25)
+
+	makeAnalysis(stagger, fps, mTYArea);
+/*	if(fps == 25)
 		run("Analyze Particles...", "size="+mTYArea+"-Infinity pixel include add stack");
 	else{
 		
@@ -1855,8 +1830,7 @@ function MiceYTTracker(){
 			run("Analyze Particles...", "size="+mTYArea+"-Infinity pixel include add slice");
 		}
 			
-	}
-	setBatchMode("show");
+	}*/
 	
 	roiManager("Show All without labels");
 	roiManager("Show None");
@@ -2144,6 +2118,7 @@ function fearConditioning(){
 	boxH = temp[3];
 	darkR = temp[5];
 	gaus = temp[6];
+	stagger = temp[7];
 	
 	//Takes care of cases where tracking has been done already
 	//asks if you want to delete it or not
@@ -2218,19 +2193,8 @@ function fearConditioning(){
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	//analyse particles taking in consideration the reduction in fps if selected
-	setBatchMode("hide");
-	if(fps == 25)
-		run("Analyze Particles...", "size="+mFreezeArea+"-Infinity pixel include add stack");
-	else{
-		
-		for(i = 1; i < nSlices; i = i + 100/fps){
-			setSlice(i);
-			run("Analyze Particles...", "size="+mFreezeArea+"-Infinity pixel include add stack");
-		}
-			
-	}
-	
-	setBatchMode("show");
+
+	makeAnalysis(stagger, fps, mFreezeArea);
 	
 	roiManager("Show All without labels");
 	roiManager("Show None");
@@ -2330,7 +2294,7 @@ function freezeCheck(fps, dir, imTitle){
 		roiManager("XOR");
 		getStatistics(area);
 		fre[i] = area; 
-		if(area <= 500 /*(imArea*0.03)*/){
+		if(area <= 500){
 			count++;
 		}else{
 			if(count > fps/2){
@@ -2343,7 +2307,7 @@ function freezeCheck(fps, dir, imTitle){
 			}else
 				count = 0;
 		}
-				 	
+		 		 	
 	}
 		
 
@@ -2354,13 +2318,14 @@ function freezeCheck(fps, dir, imTitle){
 	selectWindow("Results");
 	saveAs("text", dir+imTitle+".Spots.xls");
 	run("Close");
-	Array.show(fre);
+
 	
 	print("Total freezing time: " + freezeT + "s.");
 
 }
 
 
+/*Dialog function for setting the preferences for all macro main functions*/
 function Preferences(){
 	
 	Dialog.create("JAMoT Preferences");
@@ -2503,8 +2468,10 @@ function dialog1(option){
 	 * 3 - heigth of box
 	 * 4 remove regions in pool - regions to analyze in box
 	 * 5 - Difference to average projection
+	 * 6 - Gaussian blur to apply to stack
+	 * 7 - Stagger analysis of ROIs defined by user
 	 */
-	temp = newArray(7); 
+	temp = newArray(8); 
 	Array.fill(temp, 0);
 	stringA = newArray("OpenField Test", "Elevated Plus Puzzled", "Watermaize Test", "Novel Object Recognition Test", "Y/T Maize", "Fear Conditioning");
 	array1 = newArray("Black mice in white bckgrnd", "White mice in black bkgrnd");
@@ -2549,6 +2516,8 @@ function dialog1(option){
 
 	Dialog.addMessage(" ");
 	Dialog.addNumber("Guassian blur to apply to image (0 for not)", gauVal);
+	Dialog.addMessage(" ");
+	Dialog.addCheckbox("Define start and end for ROI analysis?", false);
 
 
 	Dialog.show();
@@ -2575,11 +2544,19 @@ function dialog1(option){
 	//T/Y
 	if(option==5)
 		temp[2] = Dialog.getNumber();
-	//all but pool	
-	if(option != 3 && Dialog.getCheckbox)
+	//all but pool - Difference
+	if(option!=3){
+		if(Dialog.getCheckbox)
 		temp[5] = 1;
-
+	}	
+	//Gaus blur level
 	temp[6] = Dialog.getNumber();
+	//Define ROI analysis
+	if(Dialog.getCheckbox)
+		temp[7] = 1;
+	else
+		temp[7] = 0;
+		
 	return temp;
 
 }
@@ -2605,6 +2582,50 @@ function dialog2(imageID, dir, imTitle, option){
 		lineTrack(imageID, dir, imTitle, option);
 	
 }
+
+//Sort out the analysis of the ROIs for the movies
+function makeAnalysis(flag, fps, area){
+	
+	if(flag == 0){
+		setBatchMode("hide");
+		if(fps == 25)
+			run("Analyze Particles...", "size="+area+"-Infinity pixel include add stack");
+		else{
+			for(i = 1; i < nSlices; i = i + 100/fps){
+				setSlice(i);
+				run("Analyze Particles...", "size="+area+"-Infinity pixel include add slice");
+			}
+		}
+		setBatchMode("show");
+	}else{
+		waitForUser("Please select starting frame for ROI analysis");
+		s = getSliceNumber();
+		waitForUser("Please select ending frame for ROI analysis");
+		e = getSliceNumber();
+		
+		setBatchMode("hide");
+		if(fps == 25){
+			for(i = s; i < e; i++){
+				setSlice(i);
+				run("Analyze Particles...", "size="+area+"-Infinity pixel include add slice");
+			}
+		
+		}else{
+			for(i = s; i < e; i = i + 100/fps){
+				setSlice(i);
+				run("Analyze Particles...", "size="+area+"-Infinity pixel include add slice");
+			}
+		}
+		setBatchMode("show");
+	}
+	
+	
+	
+	
+}
+
+
+
 
 
 //Function to sort the virtual stack and clear outside
