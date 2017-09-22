@@ -2200,7 +2200,8 @@ function fearConditioning(){
 	if(darkR)
 		darkA = removeDarkR(imTitle);
 	
-
+	run("Gaussian Blur...", "sigma="+gaus+" stack");
+	
 	//Get the threshold for getting the mouse spots
 	setAutoThreshold("Triangle");  
 	waitForUser(setThr);
@@ -2250,17 +2251,22 @@ function fearConditioning(){
 
 function freezeCheck(fps, dir, imTitle){
 	
+	//Weigths for a AI approach tentative for deetrmining when the mouse is stopped
+	/*w = newArray(2.177, -1.502, -1.687, -0.139, -1.837, -0.289);
+	wH = newArray(4.377, 4.227);*/
 	delay = 1/fps;
 	run("Select None");
-	//getStatistics(imArea);
 	fre = newArray(roiManager("count")-1);
 	Array.fill(fre, 0);
 	freezeT = 0;
+	count = 0;
 	
 	sA = newArray(2);
 	setBatchMode("hide");
 	
-	for(i = 0; i <roiManager("count");i++){
+	//AI approach tentative 
+/*	for(i = 0; i <roiManager("count");i++){
+		showProgress(i,roiManager("Count"));
 		roiManager("Select", i);
 		run("Fit Spline");
 		run("Enlarge...", "enlarge="+sFreeze+" pixel");
@@ -2270,42 +2276,88 @@ function freezeCheck(fps, dir, imTitle){
 	setBatchMode("show");
 	setBatchMode("hide");
 	
-	for(i = 0; i < roiManager("Count")-1; i++){
-		
-		 roiManager("Select", i);
-		 getStatistics(imArea);
-		 sA[0] = i; sA[1] = i+1;
-		 roiManager("Select", sA);
-		 roiManager("XOR");
-		 getStatistics(area);
-		 
-		 if(area <= imArea*0.05){
-		 	fre[i] = 1;
-		 	freezeT = freezeT + delay;		 	
-		 }
-		
-		
+	xm = newArray(roiManager("count"));
+	ym = newArray(roiManager("count"));
+	area = newArray(roiManager("count"));
+	xmF = newArray(roiManager("count")-fps);
+	ymF = newArray(roiManager("count")-fps);
+	areaF = newArray(roiManager("count")-fps);
+	result = newArray(roiManager("count")-fps);
+	for(i = 0; i < roiManager("count"); i++){
+		showProgress(i,roiManager("Count"));
+		roiManager("Select", i);
+		List.setMeasurements();
+		xm[i] = List.get("XM");
+		ym[i] = List.get("YM");
+		area[i] = List.get("Area");
 	}
+	
+	seq = Array.getSequence(fps);
+	for(i = 0; i < xm.length-fps; i++){
+		showProgress(i,xm.length-fps);
+		Fit.doFit("Straight Line", seq, Array.slice(xm, i, i+25));
+		xmF[i] = Fit.p(1);
+		Fit.doFit("Straight Line", seq, Array.slice(ym, i, i+25));
+		ymF[i] = Fit.p(1);
+		Fit.doFit("Straight Line", seq, Array.slice(area, i, i+25));
+		areaF[i] = Fit.p(1);
+	}
+	
+	count = 0;
+	for(i = 0; i < xm.length-fps; i++){
+		showProgress(i,xm.length-fps);
+		h1 = (xmF[i] * w[0]) + (ymF * w[2]) + (areaF * w[4]);
+		h2 = (xmF[i] * w[1]) + (ymF * w[3]) + (areaF * w[5]);
+		
+		result[i] = (h1 * wH[0]) + (h2 * wH[1]); 
+		if(result[i] >= -0.1 && result[i] <= 0.1)
+			count++;
+		else{
+			if(count >2)
+				freezeT = freezeT + (count * delay) + 1;
+			else
+				count = 0;
+		}
+	}
+	
+	Array.show("Results", xm ,ym ,area, xmF, ymF, areaF, result);*/
+	
+	
+	for(i = 0, j = 0; i < roiManager("Count")-1; i++){
+		showProgress(i,roiManager("Count"));
+		sA[0] = i; sA[1] = i+1;
+		roiManager("Select", sA);
+		roiManager("XOR");
+		getStatistics(area);
+		fre[i] = area; 
+		if(area <= 500 /*(imArea*0.03)*/){
+			count++;
+		}else{
+			if(count > fps/2){
+				setResult("Freeze start frame", j, getSliceNumber() - count);
+				setResult("Freeze finished frame", j, getSliceNumber());
+				setResult("Time frozen", j , delay * count);
+				freezeT = freezeT + (count*delay);
+				count = 0;	
+				j++;
+			}else
+				count = 0;
+		}
+				 	
+	}
+		
 
 	setBatchMode("show");
-	
-	run("Clear Results");
-	//Write the Spot statistics file
-	for(i=0; i<roiManager("count")-1; i++){
-		if(fre[i] == 0)
-			setResult("Freeze?",i, "No");
-		else
-			setResult("Freeze?",i, "Yes");
-	}
+
 	updateResults();
 
 	selectWindow("Results");
 	saveAs("text", dir+imTitle+".Spots.xls");
 	run("Close");
+	Array.show(fre);
 	
 	print("Total freezing time: " + freezeT + "s.");
-	
-		
+
 }
 
 
@@ -3714,6 +3766,7 @@ function writePreferences(file){
 }
 
 function checkPreferences(array){
+	print("Checking current vs. selected run preferences...");
 	//General
 	i = 1;
 	print(array[i] + ": current is "+ units + ". Saved is: " + array[i+1]);
