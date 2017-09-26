@@ -14,12 +14,13 @@
  var units = call("ij.Prefs.get", "JAMoT_Prefs.gen.units", "0");
  var gauVal = call("ij.Prefs.get", "JAMoT_Prefs.gen.gauval", "0");
  var dispVal = call("ij.Prefs.get", "JAMoT_Prefs.gen.dispVal", "0");
- //Cube Maize
+ //Open Field
  var solidity = call("ij.Prefs.get", "JAMoT_Prefs.cube.soli", "0");
  var wCube = call("ij.Prefs.get", "JAMoT_Prefs.cube.width", "0");
  var mCubeArea = call("ij.Prefs.get", "JAMoT_Prefs.cube.marea","0");
  //Elevated Maize
  var wElevated = call("ij.Prefs.get", "JAMoT_Prefs.elev.width", "0");
+ var lElevated = call("ij.Prefs.get", "JAMoT_Prefs.elev.length", "0");
  var mElevatedArea = call("ij.Prefs.get", "JAMoT_Prefs.elev.marea", "0");
  var sElevated = call("ij.Prefs.get", "JAMoT_Prefs.elev.smooth", "0");
  //Swimming Maize
@@ -311,7 +312,7 @@ function MouseCubeTracker(){
 	
 
 	//Get the threshold for getting the mouse spots
-	setAutoThreshold("Triangle");  
+	setAutoThreshold("Minimum");  
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
 	print(f, "Threshold\t"+minth+"\t"+maxth);
@@ -329,34 +330,6 @@ function MouseCubeTracker(){
 		
 	makeAnalysis(stagger, fps, mCubeArea);
 	
-/*	if(stagger == 0){
-		if(fps == 25)
-			run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add stack");
-		else{
-			for(i = 1; i < nSlices; i = i + 100/fps){
-				setSlice(i);
-				run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add slice");
-			}
-		}
-	}else{
-		waitForUser("Please select starting frame for ROI analysis");
-		s = getSliceNumber();
-		waitForUser("Please select ending frame for ROI analysis");
-		e = getSliceNumber();
-		if(fps == 25){
-			for(i = s; i < e; i = i++){
-				setSlice(i);
-				run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add slice");
-			}
-		
-		}else{
-			for(i = s; i < e; i = i + 100/fps){
-				setSlice(i);
-				run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add slice");
-			}
-		}
-	}*/
-		
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	roiManager("Save", dir + imTitle + "ROIs.zip");
@@ -398,6 +371,8 @@ function getParameters(fps,dir, imTitle){
 	roiManager("Deselect");
 	setBatchMode("hide");
 	for(i=0; i<roiManager("count");i++){
+		showProgress(i  , roiManager("count"));
+		showStatus("Analysing Detections...");
 		roiManager("Select", i);
 		List.setMeasurements();
 		arrayX[i] = List.getValue("X");
@@ -477,6 +452,8 @@ function getParameters(fps,dir, imTitle){
 	
 	run("Clear Results");
 	for(i=0; i<roiManager("count"); i++){
+		showProgress(i, roiManager("count"));
+		showStatus("Writing results...");
 		setResult("X Center",i, arrayX[i]);
 		setResult("Y Center",i, arrayY[i]);
 		setResult("Displacement (cm)",i, displacement[i]);
@@ -584,11 +561,14 @@ function getDirection(dir, imTitle){
 			angle[1] = 1;
 		
 		//find out if the rat is in the center or not
-		count = 0; in= 0; out = 0;
+		count = false; in= 0; out = 0;
 		for(i = 0; i < xp.length; i++){
-			//Count the points of the head out
-			if(length[i]>= (length[maxlengths[0]]-5))
-				count++;
+			
+			//Check if its the head that is out			
+			if(xp[maxlengths[0]] >= tempArray2[0] && xp[maxlengths[0]] <= (tempArray2[0] + tempArray2[2]) && yp[maxlengths[0]] >= tempArray2[1] && yp[maxlengths[0]] <= (tempArray2[1]+tempArray2[3]))
+				count = true;			
+			
+			
 			//Check if the coordinates are in the center or not
 			if(xp[i] >= tempArray2[0] && xp[i] <= (tempArray2[0] + tempArray2[2]) && yp[i] >= tempArray2[1] && yp[i] <= (tempArray2[1]+tempArray2[3]))
 				in++;
@@ -599,9 +579,9 @@ function getDirection(dir, imTitle){
 		
 		/*Find out if the rat is in the center or in the outer regions
 		or at the borders*/
-		if(in >= lengthOf(xp) - count)
+		if(in >= (lengthOf(xp)*0.8) && count)
 			angle[2] = 1;
-		else if(out >= lengthOf(xp) - count)
+		else //if(out >= lengthOf(xp) - count)
 			angle[2] = 2;
 
 		return angle;
@@ -634,7 +614,7 @@ function MiceElevatedPuzzleTracker(){
 	blaWhi = temp[0];
 	fps = temp[1];
 	armsW = temp[2];
-	armsH = temp[3];
+	armsL = temp[3];
 	darkR = temp[5];
 	gaus = temp[6];
 	stagger = temp[7];
@@ -662,7 +642,7 @@ function MiceElevatedPuzzleTracker(){
 	//get dimensions of the image in px
 	getDimensions(width, height, channels, slices, frames);
 	makeRectangle(width/2.5, height/2.5,width/10,height/10);
-	waitForUser("Please adjust the rectangule to match the center of the box");
+	waitForUser("Please adjust the rectangule to match the center of the maize.");
 	
 	//get the dimensions of the square in the center of the cross
 	//this limits the lower bounds of the cross
@@ -674,18 +654,18 @@ function MiceElevatedPuzzleTracker(){
 	//it represents in reality
 	getPixelSize(unit, pw, ph);
 	if(pw == 1 && ph == 1){
-		pixx = armsW/rectRegions[2]; pixy = armsH/rectRegions[3];
-		print(f, "Pixel size\t"+pixx+"\t"+pixy);	
+		pixx = armsW/rectRegions[2]; pixy = armsW/rectRegions[3];
+		print(f, "Pixel size\t"+pw+"\t"+ph +"\t" + armsL);	
 		//Set the pizel size once I figure out what value to give it!
 		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit="+units+" pixel_width="+pixx+" pixel_height="+pixy+" voxel_depth=1");
 	}else 
-		print(f, "Pixel size\t"+pw+"\t"+ph);	
+		print(f, "Pixel size\t"+pw+"\t"+ph +"\t" + armsL);	
 
 
 	//Asks the user to draw the polygon that the cross forms to clear outside ot if
 	run("Select None");
 	setTool("polygon");
-	waitForUser("Please make a polygon to match the cross");
+	waitForUser("Please make a polygon to match the maize base.");
 	getSelectionCoordinates(px, py);
 	stringx = "";
 	stringy = "";
@@ -711,6 +691,7 @@ function MiceElevatedPuzzleTracker(){
 		else
 			setBackgroundColor(0, 0, 0);
 		
+		run("Enlarge...", "enlarge=30 pixel");
 		run("Clear Outside", "stack");
 	}
 
@@ -720,7 +701,7 @@ function MiceElevatedPuzzleTracker(){
 	setBatchMode("show");
 	//Asks for threshold to be set to be able to detect the mouse
 	//run("Threshold...");
-	setAutoThreshold("Yen");
+	setAutoThreshold("Minimum");
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
 	setThreshold(minth,maxth);
@@ -733,16 +714,7 @@ function MiceElevatedPuzzleTracker(){
 	
 	
 	makeAnalysis(stagger, fps, mElevatedArea);
-	/*if(fps == 25)
-		run("Analyze Particles...", "size="+mElevatedArea+"-Infinity pixel include add stack");
-	else{
-		
-		for(i = 1; i < nSlices; i = i + 100/fps){
-			setSlice(i);
-			run("Analyze Particles...", "size="+mElevatedArea+"-Infinity pixel include add slice");
-		}
-			
-	}*/
+
 
 	roiManager("Show All without labels");
 	roiManager("Show None");
@@ -759,7 +731,7 @@ function MiceElevatedPuzzleTracker(){
 
 	//gets image ID
 	oriID=getImageID();
-	getParametersET(fps, dir, imTitle);
+	getParametersET(fps, dir, imTitle, armsL);
 	dialog2(oriID, dir, imTitle, 2);
 	
 }
@@ -767,7 +739,7 @@ function MiceElevatedPuzzleTracker(){
 
 //Main calculus function. Gets the selections for each slice and 
 //pumps out the details relevant to the test
-function getParametersET(fps, dir, imTitle){
+function getParametersET(fps, dir, imTitle, armsL){
 	if(fps != 25){
 		delay = 1/fps;
 	}else
@@ -784,6 +756,7 @@ function getParametersET(fps, dir, imTitle){
 	mouseArea = newArray(roiManager("Count"));
 	angles = newArray(roiManager("Count"));
 	anglesA = newArray(roiManager("Count"));
+	explo = newArray(roiManager("Count"));
 
 	displa = 0; 
 	openTime = 0; closedTime=0; 
@@ -793,6 +766,8 @@ function getParametersET(fps, dir, imTitle){
 	roiManager("Deselect");
 	setBatchMode("hide");
 	for(i=0; i<roiManager("count");i++){
+		showProgress(i, roiManager("count"));
+		showStatus("Analyzing detections...");
 		roiManager("Select", i);
 		//smooth a bit the selection to eliminate tails and small bits on walls
 		//keeping the head - due to problems in the ilumination
@@ -807,15 +782,14 @@ function getParametersET(fps, dir, imTitle){
 
 		//angle is an array which provides several properties to setup
 		//information. 
-		angle = getDirectionET();		
-		angles[i] = angle;
+		angle = getDirectionET(armsL);		
+		angles[i] = angle[0];
 
-		if(angle==0){
+		if(angle[0]==0){
 			closeArmsPosition[i] = "Out";
 			openArmsPosition[i] = "Out";
-
 			
-		}else if(angle == 1){
+		}else if(angle[0] == 1){
 			closeArmsPosition[i] = "In";
 			closedAreaAve = closedAreaAve + mouseArea[i];
 			closeAreaCount++;
@@ -846,9 +820,15 @@ function getParametersET(fps, dir, imTitle){
 				displa = displa + displacement[i];
 					
 		}
+		
+		if(angle[1] == 1 && i >= 1)
+			explo[i] = "Yes";
+		else
+			explo[i] = "No";
 			
 	}
-
+	
+	//smoothing the entries in arms by a moving average of window 7
 	r = 7;
 	for(j=r; j<lengthOf(angles)-r;j++){
 		count0 = 0; count1 = 0; count2=0;
@@ -883,25 +863,29 @@ function getParametersET(fps, dir, imTitle){
 	setBatchMode("show");
 	run("Select None");
 	closedAreaAve = closedAreaAve/closeAreaCount;
-	nExplo = 0;
+	nExplo = 0; count = 0;
 
 	run("Clear Results");
 	//Write the Spot statistics file
 	for(i=0; i<roiManager("count"); i++){
+		showProgress(i, roiManager("count"));
+		showStatus("Writing results...");
 		setResult("X Center",i, arrayX[i]);
 		setResult("Y Center",i, arrayY[i]);
 		setResult("Displacement (cm)",i, displacement[i]);
 		setResult("Velocity (cm/s)",i, velocity[i]);
 		setResult("In Closed region",i, closeArmsPosition[i]);
 		setResult("In Open region", i, openArmsPosition[i]);
-		/*Attempt to check if the mouse is looking over the edge of open arms
-		by simply checking if he is in open arms and its area is less then 85% the closed arms area*/
-		if(i > 0 && openArmsPosition[i] == "In" && mouseArea[i] <= (closedAreaAve * 0.80)){
-			setResult("Looking over the edge", i, "True");
-			if(getResultString("Looking over the edge", i-1) == "NAN")
+		setResult("Exploring", i, explo[i]);
+		if(explo[i] == "Yes"){
+			count++;
+			if(count == 5){
 				nExplo++;
-		}else 
-			setResult("Looking over the edge", i, "NAN");
+			}		 
+		}else if(explo[i] == "No" && count > 0)
+			count = 0;
+				
+				
 	}
 	updateResults();
 
@@ -943,40 +927,88 @@ function getParametersET(fps, dir, imTitle){
 //This function works in pixels only
 //that doesn t matter for this case as it only matters 
 //where it is or not!
-function getDirectionET(){
+function getDirectionET(armsL){
+	
+	angle = newArray(2);
+	Array.fill(angle, 0);
+	//Get the coordinates of the selection
+	getSelectionCoordinates(xp, yp);
+	List.setMeasurements();
 
-		//Get the coordinates of the selection
-		getSelectionCoordinates(xp, yp);
-
-
-		//Get central box parameters
-		rectRegions = getFileData(3, dir, imTitle, 2);
-
-		//Get pixel size
-		tempArray = getFileData(4, dir, imTitle, 2);
+	//Get central box parameters
+	rectRegions = getFileData(3, dir, imTitle, 2);
+		
+	//Center mass of the selection
+	xc = List.getValue("X");
+	yc = List.getValue("Y");
+	toUnscaled(xc, yc);
 
 				
-		//find out if the rat is closed or open arms
-		countOpen = 0; countClose= 0;
-		for(i = 0; i < xp.length; i++){
-			if(yp[i] <= rectRegions[1] || yp[i] > (rectRegions[1] + rectRegions[3]))
-				countClose++;
-			else if(xp[i] <= rectRegions[0] || xp[i] > (rectRegions[0] + rectRegions[2]))
-				countOpen++;
-			else
-				;
+	//find out if the rat is closed or open arms
+	flag = true; countOpen = 0; countClose= 0;
+	for(i = 0; i < xp.length; i++){
+		if(yc <= rectRegions[1] - rectRegions[3] || yc >= rectRegions[1] + (rectRegions[2]*2)){
+			angle[0] = 1;
+			flag = false;
+		}else if(flag && (xp[i] >= rectRegions[0] && xp[i] <= (rectRegions[0] + rectRegions[2])) && ( yp[i] <= rectRegions[1] || yp[i] > (rectRegions[1] + rectRegions[3])))
+			countClose++;
+		else if(xc <= rectRegions[0]-rectRegions[2] || xc >= (rectRegions[0] + (rectRegions[2]*2))){
+			angle[0] = 2;
+			flag = false;
 		}
-
-
-		if(countClose >= lengthOf(xp)*0.9)
-			angle = 1;
-		else if(countOpen >= lengthOf(xp)*0.9)
-			angle = 2;
+		else if(flag && (xp[i] <= rectRegions[0] || xp[i] >= (rectRegions[0] + rectRegions[2])))
+			countOpen++;
 		else
-			angle = 0;
+			;
+	}
+
+
+	if(flag && countClose >= lengthOf(xp)*0.8)
+		angle[0] = 1;
+	else if(flag && countOpen >= lengthOf(xp)*0.8)
+		angle[0] = 2;
+	else if(flag)
+		angle[0] = 0;
+		
+		
+	//New array for the lengths of center to the perimeter of the selection
+	length = newArray(xp.length);
+	//Fill the array with the distances
+	for(i = 0; i < xp.length; i++){
+		length[i]= calculateDistance(xc,yc,xp[i],yp[i]);
+	}
+
+	//Get the maxs and mins of the length array
+	nInter = 10;
+	do{
+		maxlengths = Array.findMaxima(length, nInter);
+		minlengths = Array.findMinima(length, nInter);
+		nInter = round(nInter - (nInter/3));
+	}while(lengthOf(maxlengths)==0)
+
+	armL = armsL;
+	toUnscaled(armL);
+	
+	//Check if the head of the mouse is out of the open arms fronteirs
+	count = false;
+	if(xp[maxlengths[0]] < rectRegions[0] || xp[maxlengths[0]] > rectRegions[0] + rectRegions[2])
+		if((yp[maxlengths[0]] < rectRegions[1] || yp[maxlengths[0]] > (rectRegions[1]+rectRegions[3]) || xp[maxlengths[0]] < (rectRegions[0] - armL) || xp[maxlengths[0]] > (rectRegions[0] + rectRegions[1] + armL)))	
+			count = true;
+	
+	//find out if the rat exploring or not
+	in= 0;
+	if(count){
+	
+		for(i = 0; i < xp.length; i++){
+			if(angle[0] != 1 && (yp[i]< rectRegions[1] || yp[i] > (rectRegions[1]+rectRegions[3]) || xp[i] < (rectRegions[0] - armL) || xp[i] > (rectRegions[0] + rectRegions[2] + armL)))
+				in++;
+			}
+	}
+	if(in >= 10 && count)
+		angle[1] = 1;
 
 	
-		return angle;
+	return angle;
 	 
 }
 
@@ -1148,6 +1180,8 @@ function getParametersSM(fps,dir, imTitle, diameter){
 	
 	setBatchMode("hide");
 	for(i=0; i<roiManager("count");i++){
+		showProgress(i, roiManager("count"));
+		showStatus("Analysing detections...");
 		roiManager("Select", i);
 		List.setMeasurements();
 		arrayX[i] = List.getValue("X");
@@ -1208,6 +1242,8 @@ function getParametersSM(fps,dir, imTitle, diameter){
 
 	run("Clear Results");
 	for(i=0; i<roiManager("count"); i++){
+		showProgress(i, roiManager("count"));
+		showStatus("Writing results...");
 		setResult("X Center ("+units+")",i, arrayX[i]);
 		setResult("Y Center ("+units+")",i, arrayY[i]);
 		setResult("Displacement ("+units+")",i, displacement[i]);
@@ -1493,6 +1529,8 @@ function getParametersRT(fps,dir, imTitle, n){
 	
 	setBatchMode("hide");
 	for(i=0, j = 0; i<roiManager("count");i++){
+		showProgress(i, roiManager("count"));
+		showStatus("Analysing detections...");
 		roiManager("Select", i);
 		List.setMeasurements();
 		arrayX[i] = List.getValue("X");
@@ -1548,6 +1586,8 @@ function getParametersRT(fps,dir, imTitle, n){
 
 	run("Clear Results");
 	for(i=0, j=0; i<roiManager("count"); i++){
+		showProgress(i, roiManager("count"));
+		showStatus("Writing results...");
 		setResult("X Center",i, arrayX[i]);
 		setResult("Y Center",i, arrayY[i]);
 		setResult("Displacement (cm)",i, displacement[i]);
@@ -1877,6 +1917,8 @@ function getParametersTY(fps, dir, imTitle){
 	roiManager("Deselect");
 	setBatchMode("hide");
 	for(i=0; i<roiManager("count");i++){
+		showProgress(i, roiManager("count"));
+		showStatus("Analysing detections...");
 		roiManager("Select", i);
 		//smooth a bit the selection to eliminate tails and small bits on walls
 		//keeping the head - due to problems in the ilumination
@@ -1989,6 +2031,8 @@ function getParametersTY(fps, dir, imTitle){
 	run("Clear Results");
 	//Write the Spot statistics file
 	for(i=0; i<roiManager("count"); i++){
+		showProgress(i, roiManager("count"));
+		showStatus("Writing results...");
 		setResult("Slice", i, slices[i]);
 		setResult("X Center",i, arrayX[i]);
 		setResult("Y Center",i, arrayY[i]);
@@ -2289,6 +2333,7 @@ function freezeCheck(fps, dir, imTitle){
 	
 	for(i = 0, j = 0; i < roiManager("Count")-1; i++){
 		showProgress(i,roiManager("Count"));
+		showStatus("Analysing detections...");
 		sA[0] = i; sA[1] = i+1;
 		roiManager("Select", sA);
 		roiManager("XOR");
@@ -2335,13 +2380,14 @@ function Preferences(){
 	Dialog.addNumber("Guassian blur to apply", gauVal);
 	Dialog.addNumber("Minimum displacement to consider a moving mouse (units)", dispVal);
 	//Cube and Objects Maizes
-	Dialog.addMessage("Cube Maize Preferences");
+	Dialog.addMessage("Open Field Preferences");
 	Dialog.addNumber("Rearing - Solidity (Cube only)", solidity);
 	Dialog.addNumber("Default width of box", wCube);
 	Dialog.addNumber("Mouse minimal area (pixels)", mCubeArea);
 	//Elevated Maize
 	Dialog.addMessage("Elevated Maize Preferences");
 	Dialog.addNumber("Width of arms", wElevated);
+	Dialog.addNumber("Length of arms", lElevated);
 	Dialog.addNumber("Mouse minimal area (pixels)", mElevatedArea);
 	Dialog.addNumber("Selection smoothing value (pixels)", sElevated);
 	//Swimming Maize
@@ -2373,6 +2419,7 @@ function Preferences(){
 	mCubeAreaL = Dialog.getNumber();
 	//Elevated Maize
 	wElevatedL = Dialog.getNumber();
+	lElevatedL = Dialog.getNumber();
 	mElevatedAreaL = Dialog.getNumber();
 	sElevatedL = Dialog.getNumber();
 	//Swimming Maize
@@ -2400,6 +2447,7 @@ function Preferences(){
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.marea", mCubeAreaL);
 		//Elevated Maize
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.width", wElevatedL);
+		call("ij.Prefs.set", "JAMoT_Prefs.elev.length", lElevatedL);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.marea", mElevatedAreaL);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.smooth", sElevatedL);
 		//Swimming Maize
@@ -2425,6 +2473,7 @@ function Preferences(){
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.marea", 15);
 		//Elevated Maize
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.width", 7);
+		call("ij.Prefs.set", "JAMoT_Prefs.elev.length", 19.5);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.marea", 15);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.smooth", 3);
 		//Swimming Maize
@@ -2486,15 +2535,18 @@ function dialog1(option){
 	Dialog.addRadioButtonGroup("Frames per second (25 is all)", array2, 1, 4, "25");
 	
 	//Specific dialog options for each macro
-	if(option == 1 || option == 2 || option == 4){
-		if(option == 2)
-			n = wElevated;
-		else 
-			n = wCube;
-		Dialog.addMessage("Measurements of box/central area of cross:");
-		Dialog.addNumber("Width (in (" + units+")", n);
-		Dialog.addNumber("Height (in (" + units+")", n);
+	if(option == 1 || option == 4){
+		Dialog.addMessage("Measurements of box base:");
+		Dialog.addNumber("Width (in " + units+")", wCube);
+		Dialog.addNumber("Height (in " + units+")", wCube);
 	}
+	
+	if(option == 2){
+		Dialog.addMessage("Measurements of central area/arms of cross:");
+		Dialog.addNumber("Width - Height of arms (in " + units+")", wElevated);
+		Dialog.addNumber("Length of arms (in " + units+")", lElevated);
+	}			
+
 	if(option == 3){
 		Dialog.addNumber("Diameter of the pool (in (" + units+"):", dSwimming);
 		Dialog.addMessage("Do you want to remove any region(s)? Leave zero if not.");
@@ -2506,7 +2558,7 @@ function dialog1(option){
 	}
 
 	if(option == 5){
-		Dialog.addNumber("Width of arms (in (" + units+"):", wTY);
+		Dialog.addNumber("Width of arms (in " + units+"):", wTY);
 	}
 
 	if(option != 3){
@@ -3512,23 +3564,23 @@ function crossRedo(temp, option){
 	imName = temp[5];
 	fps = parseInt(temp[7]);
 	box[0] = parseInt(temp[9]); box[1] = parseInt(temp[10]); box[2] = parseInt(temp[11]); box[3] = parseInt(temp[12]);
-	pw = parseFloat(temp[14]); py = parseFloat(temp[15]);
-	count = 17;
+	pw = parseFloat(temp[14]); py = parseFloat(temp[15]); armsL = parseFloat(temp[16]);
+	count = 18;
 	while(temp[count]!= "CrossRegionY")
 		count++;
-	xp = newArray(count-17);
-	yp = newArray(count-17);
-	for(i = 0; i < count-17; i++){
-		xp[i] = temp[17+i];
+	xp = newArray(count-18);
+	yp = newArray(count-18);
+	for(i = 0; i < count-18; i++){
+		xp[i] = temp[18+i];
 		yp[i] = temp[count+1+i];
 	}
-	jump = 17 + ((count-17)*2) + 1;
+	jump = 18 + ((count-18)*2) + 1;
 	thrMin = parseInt(temp[jump+1]); thrMax = parseInt(temp[jump+2]);
 	drkMin = parseInt(temp[jump+4]); drkMax = parseInt(temp[jump+5]);
 	
 	temp2 = Array.slice(temp, jump+6, 100);
 	checkPreferences(temp2);
-
+	
 	if(option == 0){
 		//open image
 		ignore = openFile(dir+imName, option);
@@ -3553,7 +3605,8 @@ function crossRedo(temp, option){
 		
 		//Get data of the dectetions
 		oriID = getImageID;
-		getParametersET(fps, dir, imName);
+		toUnscaled(armsL);
+		getParametersET(fps, dir, imName, armsL);
 		dialog2(oriID, dir, imName, 2);
 	}else{
 		//Open image file or create an empty one
@@ -3570,7 +3623,8 @@ function crossRedo(temp, option){
 			exit("Roi´s file appears to not exist!");
 		if(option == 1){
 			//Get data of the dectetions
-			getParametersET(fps, dir, imName);
+			toUnscaled(armsL);
+			getParametersET(fps, dir, imName, armsL );
 		}
 		if(option == 2){
 			oriID = getImageID();
@@ -3770,6 +3824,7 @@ function writePreferences(file){
 	print(file, "Mouse minimal area (pixels)\t"+ mCubeArea);
 	//Elevated Maize
 	print(file, "Width of arms\t"+ wElevated);
+	print(file, "Length of arms\t"+ lElevated);
 	print(file, "Mouse minimal area (pixels)\t"+ mElevatedArea);
 	print(file, "Selection smoothing value (pixels)\t"+ sElevated);
 	//Swimming Maize
@@ -3812,6 +3867,9 @@ function checkPreferences(array){
 	i = i + 2;
 	print(array[i] + ": current is "+ wElevated + ". Saved is: " + array[i+1]);
 	if(wElevated!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus Maize.");}
+	i = i + 2;
+	print(array[i] + ": current is "+ lElevated + ". Saved is: " + array[i+1]);
+	if(lElevated!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus Maize.");}
 	i = i + 2;
 	print(array[i] + ": current is "+ mElevatedArea + ". Saved is: " + array[i+1]);
 	if(mElevatedArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus Maize.");}
