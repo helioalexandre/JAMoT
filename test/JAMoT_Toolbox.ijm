@@ -1,5 +1,5 @@
 /*
- * //////////////////Author - H lio Roque - Centro Nacional Investigaciones CardioVasculares, Madrid, Spain/////////////
+ * //////////////////Author - Helio Roque - Centro Nacional Investigaciones CardioVasculares, Madrid, Spain/////////////
  * /////////////////Contact - helio.alexandreduarte at cnic.es///////////////////////////////////////////////////////////////
  * 
  */
@@ -59,7 +59,11 @@
  		
  }
  
- 
+ /*Batch mode for processing AVI files that Fiji can´t open into AVI files that it can open
+ opening then and saving them as tif files. this requires space and time as each frame becomes a
+ tiff image so a 100Mb AVi file turns into a 3.5Gb Tiff stack
+ It requires FFMPEG.EXE in the toolset folder
+ */
  function BatchProcessVideoFiles(){
 		
 	showMessage("Batch AVI processing tool","<html>"+"<font size=2><center>This macro assumes that the file <br>"+"<font size=+2><center>ffmpeg.exe<br>"+"<font size=2><center>is in the directory of the files being processed!<br>" + "<font size=2><center>If you do not have ffmpeg installed please download it at<br>" + "<font size=2><font color=blue>https://ffmpeg.org/download.html<br><br>"+"<font size=2><font color=black> Also note that this macro does not support <b>SPACES</b> in the files/directories names!<br>");
@@ -75,8 +79,8 @@
 		showProgress(i, list.length);
 		if(endsWith(list[i], "avi")){
 
-			//create string to run the ffmpeg command to convert the avi file to an uncompressed 
-			//avi file that can be open in ImageJ
+			/*create string to run the ffmpeg command to convert the avi file to an uncompressed 
+			avi file that can be open in ImageJ*/
 			string = ffmpegPath + " -loglevel quiet -i "+ dir + list[i] + " -f avi -vcodec mjpeg "+ dir + list[i] + ".converted.avi && echo off";
 			
 			os = getInfo("os.name");
@@ -89,13 +93,15 @@
 			else
 				exec("sh -c "+ string);
 
-
+			//Open the new AVI file convert it to 8bit and use virtual stack
 			run("AVI...", "open=" + dir + list[i] + ".converted.avi convert use");
 
 			title = getTitle();
 			id = getImageID();
+			//Save a Tiff stack of the new AVI file
 			saveAs("tiff", dir+list[i] +".converted.tif");
-	
+			
+			//Delete intermediate AVI file
 			File.delete(dir + list[i] + ".converted.avi");	
 			print("Converted " + list[i]);
 			close();	
@@ -110,102 +116,87 @@
 	
 }
  
- 
- 
- 
- 
-//This macro processess an decompressed or mjpeg avi 
-//open as a virtual stack and saves it as a sequence of images 
-//that it after opens as a virtual stack
+ /*Convert AVI file that Fiji can´t open into AVI files that it can open
+ opening then and saving it as tif files. This requires space and time as each frame becomes a
+ tiff image so a 100Mb AVi file turns into a 3.5Gb Tiff stack
+ It requires FFMPEG.EXE in the toolset folder
+ */
 function ProcessVideo(){
+	//Explain the needs of the function
+	showMessage("AVI processing tool","<html>"+"<font size=2><center>This step requires <br>"+"<font size=+2><center>ffmpeg.exe<br>"+"<font size=2><center>in the directory of ImageJ/macros/toolset!<br>" + "<font size=2><center>If you do not have ffmpeg installed please download it at<br>" + "<font size=2><font color=blue>https://ffmpeg.org/download.html<br><br>"+"<font size=2><font color=black> Also note that this macro does not support <b>SPACES</b> in the files/directories names!<br>");
 	
-	Dialog.create("Avi converter");
-	Dialog.addMessage("Convert the movie to an avi file ImageJ can open.\n It assumes ffmpeg.exe is in the ImageJ Macro\\toolsets folder.");
-	Dialog.addCheckbox("Do you want/need to convert this file?", true);
-	Dialog.show();
-
-	if(Dialog.getCheckbox()){
-		showMessage("AVI processing tool","<html>"+"<font size=2><center>This step requires <br>"+"<font size=+2><center>ffmpeg.exe<br>"+"<font size=2><center>in the directory of ImageJ/macros/toolset!<br>" + "<font size=2><center>If you do not have ffmpeg installed please download it at<br>" + "<font size=2><font color=blue>https://ffmpeg.org/download.html<br><br>"+"<font size=2><font color=black> Also note that this macro does not support <b>SPACES</b> in the files/directories names!<br>");
-		
-		pathFFmpeg = getDirectory("macros") + File.separator + "toolsets" + File.separator + "ffmpeg.exe";
-		
-		path = File.openDialog("Select the AVI file to convert.");
-		if(File.exists(path + ".converted.avi")){
-			showMessageWithCancel(delFile);
-			File.delete(path + ".converted.avi");		
-		}
-		
-		string = pathFFmpeg + " -loglevel quiet -i "+ path +" -f avi -vcodec mjpeg "+ path + ".converted.avi && echo off";
-		
-		os = getInfo("os.name");
-		
-		if(startsWith(os, "Windows")){
-			exec("cmd /c "+ string);
-			
-		}
-		else
-			exec("sh -c " + string);
-		
-		if(parseInt(IJ.maxMemory()) >= 4194304000)					//Memory in bytes!!
-			run("AVI...", "open=" + path + ".converted.avi convert");
-		else
-			run("AVI...", "open=" + path + ".converted.avi convert use");
+	//Get the ffmpeg.exe path and check if file is present
+	pathFFmpeg = getDirectory("macros") + File.separator + "toolsets" + File.separator + "ffmpeg.exe";
+	if(!File.exists(pathFFmepg))
+		exit("ffmpeg.exe file not present in the macros/toolset folder!"); 
+	
+	//Get target file and check if converted already exists and asks to delete it
+	path = File.openDialog("Select the AVI file to convert.");
+	if(File.exists(path + ".converted.avi")){
+		showMessageWithCancel(delFile);
+		File.delete(path + ".converted.avi");		
 	}
 	
+	//Make string to run ffmepg command and run it on system dependent manner
+	string = pathFFmpeg + " -loglevel quiet -i "+ path +" -f avi -vcodec mjpeg "+ path + ".converted.avi && echo off";
+	
+	os = getInfo("os.name");
+	
+	if(startsWith(os, "Windows")){
+		exec("cmd /c "+ string);
+		
+	}
+	else
+		exec("sh -c " + string);
+	
+	//check the memory available to ImageJ and decide to open in virtual or not
+	if(parseInt(IJ.maxMemory()) >= 4194304000)					//Memory in bytes!!
+		run("AVI...", "open=" + path + ".converted.avi convert");
+	else
+		run("AVI...", "open=" + path + ".converted.avi convert use");
+
+	//confirm that you have a stack
 	if (nSlices==1) exit("Stack required");
+	
 	
 	id = getImageID;
 	name = getTitle();
-	if(is("Virtual Stack")){
-		waitForUser("Please have a look at the stack to check for 1st and last slice and then press OK");
-		dir = getDirectory("Choose Destination Directory for images.");
-		Dialog.create("Slice numbers");
-		Dialog.addNumber("First Slice", 1);
-		Dialog.addNumber("Last Slice", nSlices)
-		Dialog.show();
-		first = Dialog.getNumber();
-		last = Dialog.getNumber();
-		setBatchMode(true);
-		for (i=first; i<= last; i++) {
-		  showProgress(i, last);
-		  selectImage(id);
-		  setSlice(i);
-		  run("Duplicate...", "title=temp");
-		  if(!is("grayscale"))
-		  	run("8-bit");
-		  	
-		  saveAs("tif", dir+name+pad(i-1));
-		  close();
-		}
-		setBatchMode(false);
-			
-		close();
-		run("Image Sequence...", "open=["+dir+name+pad(first)+".tif] sort use");
-		
-	}else{
-		if(!is("grayscale"))
-			run("8-bit");
-		  	
-	}
+	//Trim stack down if necessary
+	waitForUser("Please have a look at the stack to check for 1st and last slice and then press OK");
+	Dialog.create("Slice numbers");
+	Dialog.addNumber("First Slice", 1);
+	Dialog.addNumber("Last Slice", nSlices)
+	Dialog.show();
+	first = Dialog.getNumber();
+	last = Dialog.getNumber();
+	//Get directory to save image to 
+	dir = getDirectory("Choose Destination for image.");
+	
+	//If needed remove slices from the beginning and the end
+	setBatchMode("hide");
+	if(first > 1)
+		run("Slice Remover", "first=1 last="+first+" increment=1");
+	
+	if(last < nSlices)
+		run("Slice Remover", "first="+last+" last="+nSlices+" increment=1");
+	
+	//Save tiff stack		
+	saveAs("tiff", dir+name +".converted.tif");
+	//Show and close
+	setBatchMode("show");
+	close();
 	
 	exit("Processing finished!");
 		
-}
-
-//Pad a number by n ammounts of zeros!
-function pad(n) {
-	str = toString(n);
-	while (lengthOf(str)<5)
-	  str = "0" + str;
-	return str;
 }
 
 
 
 
 /*
- * Macro to track the mice in an open cube of 38 cm by 38 cm
- * It will output several parameters related to displacement, velocity, etc.
+ Function for Open Field analysis. Its main job its to determine if the mouse is in the center
+ of the cube or in the walls region. It also outputs several parameters related to displacement, velocity, etc.
+ including direction of head and if its rearing or not. These are trial parameters.
  */
 function MouseCubeTracker(){
 
@@ -215,10 +206,10 @@ function MouseCubeTracker(){
 	dir = getDirectory("image");
 	imTitle = getTitle();
 	rectCoord = newArray(4);
-
+	//Clear measurements selection and limit them to threshold
 	run("Set Measurements...", "limit redirect=None decimal=3");
 
-	//Reduce the fps of acquisition
+	//Parameters from Dialog1
 	temp = dialog1(1);
 	blaWhi = temp[0];
 	fps = temp[1];
@@ -228,33 +219,35 @@ function MouseCubeTracker(){
 	gaus = temp[6];
 	stagger = temp[7];
 	
-	//Takes care of cases where tracking has been done already
-	//asks if you want to delete it or not
-	//This is for the future!
+	/* Takes care of cases where an analysis file exists already
+	asks if you want to delete it or not */
 	if(File.exists(dir + imTitle + ".cube.trac")){
 		showMessageWithCancel(delFile);
 		File.delete(dir + imTitle + ".cube.trac");		
 	}
 	
-	//Save file to open later on
+	/*Create a new Analysis file. It is very important not to change the order that
+	instructions get writen to this file as that will screw up the function
+	to redo previous analysis*/
 	f = File.open(dir + imTitle + ".cube.trac");
-	print(f, dir + "\t" + getWidth() + "\t" +  getHeight() + "\t" + nSlices() +"\t"+ gaus);
+	print(f, dir + "\t" + getWidth() + "\t" +  getHeight() + "\t" + nSlices() +"\t"+ gaus); 
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 	
-	
+	//Run guassian blur if so selected in Dialog1
 	if(gaus > 0){
 		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
 		
 	}
 	setBatchMode("show");
-	//Draw a rectangle for the user to adujst to the base of the cube
+	
+	//Draw a rectangle for the user to adujst to the base of the box
 	getDimensions(width, height, channels, slices, frames);
 	makeRectangle(width/5, height/5,width/2,height/2);
 	waitForUser("Please adjust the rectangule to match the bottom of the box");
 
-	//Gets the dimensions and prints them to a file
+	//Gets the dimensions of the rectangle and prints them to a file
 	getSelectionBounds(rectCoord[0], rectCoord[1], rectCoord[2], rectCoord[3]);
 	print(f,"BoxDimensions\t"+rectCoord[0]+"\t"+rectCoord[1]+"\t"+ rectCoord[2]+"\t"+rectCoord[3]);	
 
@@ -269,20 +262,25 @@ function MouseCubeTracker(){
 	//smooths the edges
 	setBatchMode("hide");
 	getPixelSize(unit, pw, ph);
-	if(is("Virtual Stack")){
+	
+	/*Removed this VS reference to make my life easier*/
+	/*if(is("Virtual Stack")){
 		close();
 		sortVirtual(dir, rectCoord, 1, blaWhi);
-	}else{
-		//Accounts for white or black mice
-		if(!blaWhi)
-			setBackgroundColor(255, 255, 255);
-		else
-			setBackgroundColor(0, 0, 0);
+	}else{*/
 		
-	
+	//Changes the backgrnd color to match black or white mice
+	if(!blaWhi)
+		setBackgroundColor(255, 255, 255);
+	else
+		setBackgroundColor(0, 0, 0);
+		
+	//Clear outside the stack 
 	run("Enlarge...", "enlarge=15 pixel");
 	run("Clear Outside", "stack");
-	//Reduce intensity of the cage wall
+	
+	/*Reduce intensity of the cage wall
+	Taking in consideration the pixel size*/
 	run("Enlarge...", "enlarge=-15 pixel");
 	if(pw == 1 && ph == 1)
 		run("Make Band...", "band=25");
@@ -293,15 +291,14 @@ function MouseCubeTracker(){
 	}
 	setBatchMode("show");
 	
-	//Checks if the pixel size is set and if not sets it from the 
-	//dimensions of the cube
+	/*Checks if the pixel size is set and if not sets it from the 
+	//dimensions of the cube*/
 	if(pw == 1 && ph == 1){
 		//Get pixel size from the width and heigth of cube
 		px = boxW/rectCoord[2]; py = boxH/rectCoord[3];
 		print(f, "Pixel size\t"+px+"\t"+py);
 		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit="+units+" pixel_width="+px+" pixel_height="+py+" voxel_depth=1");	
-	}else
-	{
+	}else{
 		print(f, "Pixel size\t"+pw+"\t"+ph);
 	}
 
@@ -311,29 +308,35 @@ function MouseCubeTracker(){
 		darkA = removeDarkR(imTitle);
 	
 
-	//Get the threshold for getting the mouse spots
+	/*Set autothreshold method with Minum and get the input from the user
+	regarding it. Also save the threshold to file*/
 	setAutoThreshold("Minimum");  
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
 	print(f, "Threshold\t"+minth+"\t"+maxth);
 	
+	/*If remove dark regions was selected save the parameters to file
+	This is here to maintain the order of the file to enable previous analysis to function*/
 	if(darkR)
 		print(f, "DarkR\t" + darkA[0] +"\t"+ darkA[1]);
 	else 
 		print(f, "DarkR\t" + 0 +"\t"+ 0);
 	
+	//Actually set threshold
 	setThreshold(minth,maxth);
 		
 	roiManager("Show All without labels");
 	roiManager("Show None");
-	//analyse particles taking in consideration the reduction in fps if selected
-		
+	
+	//analyse particles function	
 	makeAnalysis(stagger, fps, mCubeArea);
 	
+	//Save ROIs to a file in the folder of the image
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	roiManager("Save", dir + imTitle + "ROIs.zip");
 	
+	//Write preferences to the file of the analysis
 	writePreferences(f);
 	File.close(f);
 
@@ -347,15 +350,20 @@ function MouseCubeTracker(){
 
 }
 
+/*This function goes through the ROIs, creates and fills arrays with the
+result of the ROI analysis and then prints them to 2 files with the individual
+results and a summary of the results*/
 function getParameters(fps,dir, imTitle){
+	//Determine the delay between ROIs
 	if(fps != 25){
 		delay = 1/fps;
 	}else
 		delay = 1/25;
 	
-	//delay = 0.04;
+
 	run("Set Measurements...", "centroid redirect=None decimal=3");
 	
+	/*Create arrays to hold the individual parameters of each ROI*/
 	arrayX = newArray(roiManager("Count"));
 	arrayY = newArray(roiManager("Count"));
 	displacement = newArray(roiManager("Count"));
@@ -365,11 +373,14 @@ function getParameters(fps,dir, imTitle){
 	estado = newArray(roiManager("Count"));
 	lookup = newArray(roiManager("Count"));
 	inRegion = newArray(roiManager("Count"));
-
+	
+	/*count and sum variables for the individual parameters*/
 	displa = 0; moving = 0;
 	displaCenter = 0; centerTime=0; entriesCenter = 0; freezeCenter = 0; wallsTime=0;
 	roiManager("Deselect");
 	setBatchMode("hide");
+	
+	/*Main loop to go trough all the ROIs and get the stats*/
 	for(i=0; i<roiManager("count");i++){
 		showProgress(i  , roiManager("count"));
 		showStatus("Analysing Detections...");
@@ -377,8 +388,10 @@ function getParameters(fps,dir, imTitle){
 		List.setMeasurements();
 		arrayX[i] = List.getValue("X");
 		arrayY[i] = List.getValue("Y");
-
-		angle = getDirection(dir, imTitle);			
+		
+		//Get result from magic function
+		angle = getDirection(dir, imTitle);	
+		/*Determine where the mouse is looking  by determining the angle from the head to the center of mass*/		
 		if((angle[0] >= 0 && angle[0] < 22.5) || (angle[0] < 0 && angle[0] >= -22.5))
 			direction[i] = "Rigth";
 		else if(angle[0] >= 22.5 && angle[0] < 67.5)
@@ -395,12 +408,14 @@ function getParameters(fps,dir, imTitle){
 			direction[i] = "Down";
 		else 
 			direction[i] = "Down rigth";
-
+		
+		//Rearing - attempet
 		if(angle[1])
 			lookup[i] = "Yes";
 		else
 			lookup[i] = "No";
-
+		
+		//In central region or not
 		if(angle[2] == 1){
 			inRegion[i] = "In";
 			centerTime = centerTime + delay;
@@ -410,6 +425,7 @@ function getParameters(fps,dir, imTitle){
 		}else
 			inRegion[i] = "Border";
 		
+		/*Displacement / Velocity / Entries in center / Stopped*/	
 		if(i==0){
 			displacement[i] = 0;
 			velocity[i] = 0;
@@ -450,6 +466,7 @@ function getParameters(fps,dir, imTitle){
 	
 	setBatchMode("show");
 	
+	/*Write results to tables both to single spots as the summary*/
 	run("Clear Results");
 	for(i=0; i<roiManager("count"); i++){
 		showProgress(i, roiManager("count"));
@@ -521,16 +538,18 @@ function getParameters(fps,dir, imTitle){
 
 }
 
+/*Get individual parameters for the ROI of mice in OpenField*/
 function getDirection(dir, imTitle){
-	
+		
+		//Results array
 		angle = newArray(3);
 		Array.fill(angle, 0);
-		//Box region
+		//Get box region from file
 		tempArray = getFileData(3, dir, imTitle, 1);
-		//Center region
+		//Get center region from file
 		tempArray2 = getFileData(4, dir, imTitle, 1);
 		
-		//Get the coordinates of the selection
+		//Get the coordinate arrays of the selection
 		getSelectionCoordinates(xp, yp);
 		List.setMeasurements();
 		
@@ -538,14 +557,15 @@ function getDirection(dir, imTitle){
 		xc = List.getValue("X");
 		yc = List.getValue("Y");
 		toUnscaled(xc, yc);
-		//New array for the lengths of center to the perimeter of the selection
+		//New array for the distances of center to the perimeter of the selection
 		length = newArray(xp.length);
 		//Fill the array with the distances
 		for(i = 0; i < xp.length; i++){
 			length[i]= calculateDistance(xc,yc,xp[i],yp[i]);
 		}
 
-		//Get the maxs and mins of the length array
+		/*Get the maxs and mins of the length array
+		Max distance should be head (in most cases) minimal distances are curves of behind*/
 		nInter = 10;
 		do{
 			maxlengths = Array.findMaxima(length, nInter);
@@ -577,11 +597,11 @@ function getDirection(dir, imTitle){
 				out++;
 		}
 		
-		/*Find out if the rat is in the center or in the outer regions
+		/*Fill in if the rat is in the center or in the outer regions
 		or at the borders*/
 		if(in >= (lengthOf(xp)*0.8) && count)
 			angle[2] = 1;
-		else //if(out >= lengthOf(xp) - count)
+		else 
 			angle[2] = 2;
 
 		return angle;
@@ -589,27 +609,22 @@ function getDirection(dir, imTitle){
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-//Macro to evaluate the Elevated Puzzle mice proof
-//It will be track the mouse in the cross like puzzle and
-//calculate the time spent in the closed arms vs open arms
-//it will also try to verify if the mouse was looking outside the
-//edge in the open arms
+/*Function to evaluate the Elevated Maize mice proof
+It will be track the mouse in the maize and
+calculate the time spent in the closed arms vs open arms
+it will also try to verify if the mouse was looking outside the
+edge in the open arms (exploring)*/
 function MiceElevatedPuzzleTracker(){
 
 	checkAndSort();
 	
-	//First clean up and setup the macro actions
+	//First clean up and setup the function actions
 	dir = getDirectory("image");
 	imTitle = getTitle();
 	rectRegions = newArray(4);
 	run("Set Measurements...", "limit redirect=None decimal=3");
 	
-	//Reduce the fps of acquisition
+	//Get the parameters of the Dialog1
 	temp = dialog1(2);
 	blaWhi = temp[0];
 	fps = temp[1];
@@ -619,20 +634,22 @@ function MiceElevatedPuzzleTracker(){
 	gaus = temp[6];
 	stagger = temp[7];
 	
-	//Takes care of cases where tracking has been done already
-	//asks if you want to delete it or not
-	//This is for the future!
+	 /* Takes care of cases where an analysis file exists already
+	asks if you want to delete it or not */
 	if(File.exists(dir + imTitle + ".cross.trac")){
 		showMessageWithCancel(delFile);
 		File.delete(dir + imTitle + ".cross.trac");		
 	}
 	
-	//Save file to open later on
+	/*Create a new Analysis file. It is very important not to change the order that
+	instructions get writen to this file as that will screw up the function
+	to redo previous analysis*/
 	f = File.open(dir + imTitle + ".cross.trac");
 	print(f, dir + "\t" + getWidth() + "\t" + getHeight() + "\t" + nSlices() + "\t" + gaus);
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 	
+	//Run guassian blur if so selected in Dialog1
 	if(gaus > 0){
 		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
@@ -644,19 +661,17 @@ function MiceElevatedPuzzleTracker(){
 	makeRectangle(width/2.5, height/2.5,width/10,height/10);
 	waitForUser("Please adjust the rectangule to match the center of the maize.");
 	
-	//get the dimensions of the square in the center of the cross
-	//this limits the lower bounds of the cross
+	/*get the dimensions of the square in the center of the cross
+	This limits the lower bounds of the cross*/
 	getSelectionBounds(rectRegions[0], rectRegions[1], rectRegions[2], rectRegions[3]);
 	print(f,"BoxDimensions\t"+rectRegions[0]+"\t"+rectRegions[1]+"\t"+ rectRegions[2]+"\t"+rectRegions[3]);	
 
-	//Calculate the pixel size of the image for x and y
-	//And will later on put it in the image once I have the dimensions that 
-	//it represents in reality
+	/*Checks if the pixel size is set and if not sets it from the 
+	dimensions of the width of the arms (gotten from cross center*/
 	getPixelSize(unit, pw, ph);
 	if(pw == 1 && ph == 1){
 		pixx = armsW/rectRegions[2]; pixy = armsW/rectRegions[3];
 		print(f, "Pixel size\t"+pw+"\t"+ph +"\t" + armsL);	
-		//Set the pizel size once I figure out what value to give it!
 		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit="+units+" pixel_width="+pixx+" pixel_height="+pixy+" voxel_depth=1");
 	}else 
 		print(f, "Pixel size\t"+pw+"\t"+ph +"\t" + armsL);	
@@ -669,6 +684,7 @@ function MiceElevatedPuzzleTracker(){
 	getSelectionCoordinates(px, py);
 	stringx = "";
 	stringy = "";
+	//Writes polygon coordinates to the analysis file
 	for(i = 0; i < px.length; i++){
 		stringx = stringx + toString(px[i]) + "\t";
 		stringy = stringy + toString(py[i]) + "\t";
@@ -677,42 +693,45 @@ function MiceElevatedPuzzleTracker(){
 	print(f, "CrossRegionY" + "\t"+stringy);	
 	
 
-	//Deals with the virtual stack if it is one
-	//This is necessary since several operations do not work on virtual stacks
+	/*Removed this VS reference to make my life easier*/
 	setBatchMode("hide");
-	if(is("Virtual Stack")){
+	/*if(is("Virtual Stack")){
 		roiManager("Add");
 		close();
 		sortVirtual(dir, 0, 3, blaWhi);
-		roiManager("Reset");
-	}else{
-		if(!blaWhi)
-			setBackgroundColor(255, 255, 255);
-		else
-			setBackgroundColor(0, 0, 0);
-		
-		run("Enlarge...", "enlarge=30 pixel");
-		run("Clear Outside", "stack");
-	}
+		roiManager("Reset");*/
+	
+	//Changes the backgrnd color to match black or white mice
+	if(!blaWhi)
+		setBackgroundColor(255, 255, 255);
+	else
+		setBackgroundColor(0, 0, 0);
+	
+	//Clear outside 30 pixels away from the polygon
+	run("Enlarge...", "enlarge=30 pixel");
+	run("Clear Outside", "stack");
 
+	//Remove dark regions if so selected
 	if(darkR)
 		darKA = removeDarkR(imTitle);
 
 	setBatchMode("show");
-	//Asks for threshold to be set to be able to detect the mouse
-	//run("Threshold...");
+	/*Set autothreshold method with Minum and get the input from the user
+	regarding it. Also save the threshold to file*/
 	setAutoThreshold("Minimum");
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
 	setThreshold(minth,maxth);
 	print(f, "Threshold\t" + minth + "\t" + maxth);
 	
+	/*If remove dark regions was selected save the parameters to file
+	This is here to maintain the order of the file to enable previous analysis to function*/
 	if(darkR)
 		print(f, "DarkR\t" + darKA[0] + "\t" + darKA[1]);
 	else
 		print(f, "DarkR\t" + 0 + "\t" + 0);
 	
-	
+	//analyse particles function
 	makeAnalysis(stagger, fps, mElevatedArea);
 
 
@@ -720,16 +739,17 @@ function MiceElevatedPuzzleTracker(){
 	roiManager("Show None");
 
 
-	//Save the selection results
+	//Save ROIs to a file in the folder of the image
 	roiManager("Save", dir + imTitle + "ROIs.zip");
-	//print(f, dir + imTitle + "ROIs.zip");
-
+	
+	//Write preferences to the file of the analysis
 	writePreferences(f);
+	
 	//File operations done!
 	File.close(f);
 	run("Select None");
-
-	//gets image ID
+	
+	//Get data of the detections
 	oriID=getImageID();
 	getParametersET(fps, dir, imTitle, armsL);
 	dialog2(oriID, dir, imTitle, 2);
@@ -737,9 +757,11 @@ function MiceElevatedPuzzleTracker(){
 }
 
 
-//Main calculus function. Gets the selections for each slice and 
-//pumps out the details relevant to the test
+/*This function goes through the ROIs, creates and fills arrays with the
+result of the ROI analysis and then prints them to 2 files with the individual
+results and a summary of the results*/
 function getParametersET(fps, dir, imTitle, armsL){
+	//Determine the delay between ROIs
 	if(fps != 25){
 		delay = 1/fps;
 	}else
@@ -747,6 +769,7 @@ function getParametersET(fps, dir, imTitle, armsL){
 
 	run("Set Measurements...", "area centroid redirect=None decimal=3");
 	
+	/*Create arrays to hold the individual parameters of each ROI*/
 	arrayX = newArray(roiManager("Count"));
 	arrayY = newArray(roiManager("Count"));
 	displacement = newArray(roiManager("Count"));
@@ -757,7 +780,8 @@ function getParametersET(fps, dir, imTitle, armsL){
 	angles = newArray(roiManager("Count"));
 	anglesA = newArray(roiManager("Count"));
 	explo = newArray(roiManager("Count"));
-
+	
+	/*count and sum variables for the individual parameters*/
 	displa = 0; 
 	openTime = 0; closedTime=0; 
 	entriesOpen = 0; entriesClose = 0;
@@ -765,6 +789,7 @@ function getParametersET(fps, dir, imTitle, armsL){
 	check=0;
 	roiManager("Deselect");
 	setBatchMode("hide");
+	/*Main loop to go trough all the ROIs and get the stats*/
 	for(i=0; i<roiManager("count");i++){
 		showProgress(i, roiManager("count"));
 		showStatus("Analyzing detections...");
@@ -780,8 +805,8 @@ function getParametersET(fps, dir, imTitle, armsL){
 		arrayY[i] = List.getValue("Y");
 		mouseArea[i] = List.getValue("Area");
 
-		//angle is an array which provides several properties to setup
-		//information. 
+		/*angle is an array which provides several properties to setup
+		information.*/ 
 		angle = getDirectionET(armsL);		
 		angles[i] = angle[0];
 
@@ -866,7 +891,7 @@ function getParametersET(fps, dir, imTitle, armsL){
 	nExplo = 0; count = 0;
 
 	run("Clear Results");
-	//Write the Spot statistics file
+	/*Write results to tables both to single spots as the summary*/
 	for(i=0; i<roiManager("count"); i++){
 		showProgress(i, roiManager("count"));
 		showStatus("Writing results...");
@@ -922,20 +947,16 @@ function getParametersET(fps, dir, imTitle, armsL){
 }
 
 
-
-
-//This function works in pixels only
-//that doesn t matter for this case as it only matters 
-//where it is or not!
+/*Get individual parameters for the ROI of mice in EM*/
 function getDirectionET(armsL){
-	
+	//Results array
 	angle = newArray(2);
 	Array.fill(angle, 0);
 	//Get the coordinates of the selection
 	getSelectionCoordinates(xp, yp);
 	List.setMeasurements();
 
-	//Get central box parameters
+	//Get central box parameters from file
 	rectRegions = getFileData(3, dir, imTitle, 2);
 		
 	//Center mass of the selection
@@ -978,7 +999,8 @@ function getDirectionET(armsL){
 		length[i]= calculateDistance(xc,yc,xp[i],yp[i]);
 	}
 
-	//Get the maxs and mins of the length array
+	/*Get the maxs and mins of the length array
+		Max distance should be head (in most cases) minimal distances are curves of behind*/
 	nInter = 10;
 	do{
 		maxlengths = Array.findMaxima(length, nInter);
@@ -1012,17 +1034,17 @@ function getDirectionET(armsL){
 	 
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /*
- * Macro to track the mice in an open swim of 125cm diameter
- * It will output several parameters related to displacement, velocity, etc.
+ Function for WaterMaize analysis. Its main job its to determine in which quadrant the
+ is, if its at the walss or not and if it finds the platform. It also outputs velocity and 
+ displacement.
  */
 function MouseSwimTracker(){
 	
 	checkAndSort();
 
-	//Select the directory of the open image to be analysed
+	//Get the directory of the open image to be analysed
 	dir = getDirectory("image");
 	imTitle = getTitle();
 	rectCoord = newArray(4);
@@ -1030,7 +1052,7 @@ function MouseSwimTracker(){
 	
 	run("Set Measurements...", "limit redirect=None decimal=3");
 
-	//Reduce the fps of acquisition
+	//Get the parameters of the Dialog1
 	temp = dialog1(3);
 	blaWhi = temp[0];
 	fps = temp[1];
@@ -1040,42 +1062,49 @@ function MouseSwimTracker(){
 	gaus = temp[6];
 	stagger = temp[7];
 	
-	//Takes care of cases where tracking has been done already
-	//asks if you want to delete it or not
-	//This is for the future!
+	 /* Takes care of cases where an analysis file exists already
+	asks if you want to delete it or not */
 	if(File.exists(dir + imTitle + ".swim.trac")){
 		showMessageWithCancel(delFile);
 		File.delete(dir + imTitle + ".swim.trac");		
 	}
 	
-	//Save file to open later on
+	/*Create a new Analysis file. It is very important not to change the order that
+	instructions get writen to this file as that will screw up the function
+	to redo previous analysis*/
 	f = File.open(dir + imTitle + ".swim.trac");
 	print(f, dir + "\t" + getWidth() + "\t" + getHeight() + "\t" + nSlices + "\t" + gaus);
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 	
+	//Run guassian blur if so selected in Dialog1
 	if(gaus > 0){
 		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
 		setBatchMode("show");
 	}
 	
+	//Draw an oval for the user to adujst to the base of the pool
 	getDimensions(width, height, channels, slices, frames);
 	makeOval(50, 50,width/1.3,height/1.1);
 	waitForUser("Please adjust the oval to match the circunference of the pool.");
-
+	//Gets the dimensions of the oval and prints them to a file
 	getSelectionBounds(rectCoord[0], rectCoord[1], rectCoord[2], rectCoord[3]);
 	print(f,"OvalDimensions\t"+rectCoord[0]+"\t"+rectCoord[1]+"\t"+ rectCoord[2]+"\t"+rectCoord[3]);	
 
 	boundx = rectCoord[0] + (rectCoord[2]/2);
 	boundy = rectCoord[1] + (rectCoord[3]/2);
 	print(f,"Center Coordinates\t"+boundx+"\t"+boundy);
-
+	
+	/*Draw an oval for the user to adujst to the platform 
+	gets the dimensions and prints then to a file*/
 	makeOval(50, 50,width/10,height/10);
 	waitForUser("Please adjust the oval to match the platform");
 	getSelectionBounds(platCoord[0], platCoord[1], platCoord[2], platCoord[3]);
 	print(f,"PlatformDimensions\t"+platCoord[0]+"\t"+platCoord[1]+"\t"+ platCoord[2]+"\t"+platCoord[3]);	
-
+	
+	/*Checks if the pixel size is set and if not sets it from the 
+	dimensions of the cube*/	
 	getPixelSize(unit, pw, ph);
 	if(pw == 1 && ph ==1){
 		px = diameter/rectCoord[2]; py = diameter/rectCoord[3];
@@ -1088,19 +1117,24 @@ function MouseSwimTracker(){
 		
 	setBatchMode("hide");
 	makeOval(rectCoord[0], rectCoord[1], rectCoord[2], rectCoord[3]);
-	if(is("Virtual Stack")){
+	/*Removed this VS reference to make my life easier*/
+/*	if(is("Virtual Stack")){
 		close();
 		sortVirtual(dir, rectCoord, 3);
-	}else{
-		if(!blaWhi)
-			setBackgroundColor(255, 255, 255);
-		else
-			setBackgroundColor(0, 0, 0);
+	}else{*/
+		
+	//Changes the backgrnd color to match black or white mice
+	if(!blaWhi)
+		setBackgroundColor(255, 255, 255);
+	else
+		setBackgroundColor(0, 0, 0);
 
-		run("Clear Outside", "stack");
-	}
+	run("Clear Outside", "stack");
+
 	setBatchMode("show");
 	
+	/*This removes regions of the pool that can lead to problems in 
+	detecting the mouse. Its an option in Dialog1*/
 	if(rRegions){
 		for(i = 0; i < rRegions; i++){
 			waitForUser("Please select region "+i+1+" to clear");
@@ -1116,8 +1150,9 @@ function MouseSwimTracker(){
 	}
 
 	
-	//run("Threshold...");
-	setAutoThreshold("Triangle");
+	/*Set autothreshold method with Minimum and get the input from the user
+regarding it. Also save the threshold to file*/
+	setAutoThreshold("Minimum");
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
 	setThreshold(minth,maxth);
@@ -1128,22 +1163,16 @@ function MouseSwimTracker(){
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	
+	//analyse particles function
 	makeAnalysis(stagger, fps, mSwimmingArea);
-/*	if(fps == 25)
-		run("Analyze Particles...", "size="+mSwimmingArea+"-Infinity pixel include add stack");
-	else{
-		
-		for(i = 1; i < nSlices; i = i + 100/fps){
-			setSlice(i);
-			run("Analyze Particles...", "size="+mSwimmingArea+"-Infinity pixel include add slice");
-		}
-			
-	}*/
+
 	roiManager("Show All without labels");
 	roiManager("Show None");
-
+	
+	//Save ROIs to a file in the folder of the image
 	roiManager("Save", dir + imTitle + "ROIs.zip");
 	
+	//Write preferences to the file of the analysis
 	writePreferences(f);
 	//File operations done!
 	File.close(f);
@@ -1155,8 +1184,13 @@ function MouseSwimTracker(){
 	
 	
 }
+
+
+/*This function goes through the ROIs, creates and fills arrays with the
+result of the ROI analysis and then prints them to 2 files with the individual
+results and a summary of the results*/
 function getParametersSM(fps,dir, imTitle, diameter){
-	//Get dealy between frames analyzed
+	//Get delay between frames analyzed
 	if(fps != 25){
 		delay = 1/fps;
 	}else
@@ -1164,6 +1198,7 @@ function getParametersSM(fps,dir, imTitle, diameter){
 	
 	run("Set Measurements...", "centroid redirect=None decimal=3");
 	
+	/*Create arrays to hold the individual parameters of each ROI*/
 	arrayX = newArray(roiManager("Count"));
 	arrayY = newArray(roiManager("Count"));
 	displacement = newArray(roiManager("Count"));
@@ -1172,6 +1207,7 @@ function getParametersSM(fps,dir, imTitle, diameter){
 	border = newArray(roiManager("Count"));
 	flag = true;
 	
+	/*count and sum variables for the individual parameters*/
 	displa = 0; t2Plat = 0;
 	qTime1 = 0; qTime2 = 0; qTime3 = 0; qTime4 = 0;
 	qDis1 = 0; qDis2 = 0; qDis3 = 0; qDis4 = 0;
@@ -1179,6 +1215,7 @@ function getParametersSM(fps,dir, imTitle, diameter){
 	roiManager("Deselect");
 	
 	setBatchMode("hide");
+	/*Main loop to go trough all the ROIs and get the stats*/
 	for(i=0; i<roiManager("count");i++){
 		showProgress(i, roiManager("count"));
 		showStatus("Analysing detections...");
@@ -1186,9 +1223,11 @@ function getParametersSM(fps,dir, imTitle, diameter){
 		List.setMeasurements();
 		arrayX[i] = List.getValue("X");
 		arrayY[i] = List.getValue("Y");
-
+		
+		//Get result from magic function
 		angle = getQuadAndPlat(dir, imTitle, diameter);		
-
+		
+		//Which quadrant is the mouse
 		quadrant[i] = angle[0];
 
 		if(i==0){
@@ -1201,6 +1240,7 @@ function getParametersSM(fps,dir, imTitle, diameter){
 				border[i] = "Away";
 						
 		}else{
+			/*Displacement / Velocity / Quadrants / Platform*/	
 			displacement[i] = calculateDistance(arrayX[i-1], arrayY[i-1], arrayX[i], arrayY[i]);
 			velocity[i] = displacement[i]/delay;
 
@@ -1239,7 +1279,8 @@ function getParametersSM(fps,dir, imTitle, diameter){
 	
 	setBatchMode("show");
 	run("Select None");
-
+	
+	/*Write results to tables both to single spots as the summary*/
 	run("Clear Results");
 	for(i=0; i<roiManager("count"); i++){
 		showProgress(i, roiManager("count"));
@@ -1296,58 +1337,55 @@ function getParametersSM(fps,dir, imTitle, diameter){
 
 }
 
+/*Get individual parameters for the ROIs of mice in WaterMaize*/
 function getQuadAndPlat(dir, imTitle, diameter){
+	//Results array
+	angle = newArray(3);
+	Array.fill(angle, 0);
+	//Get pool bounding box from file
+	tempArray = getFileData(4, dir, imTitle, 3);
+	//Get platform bounding box from file
+	tempArray2 = getFileData(5, dir, imTitle, 3);
+	//Get pixel size from file
+	tempArray3 = getFileData(6, dir, imTitle, 3);
 	
-		angle = newArray(3);
-		Array.fill(angle, 0);
-		//Pool bounding box
-		tempArray = getFileData(4, dir, imTitle, 3);
-		//Platform bounding box
-		tempArray2 = getFileData(5, dir, imTitle, 3);
-		//Pixel size
-		tempArray3 = getFileData(6, dir, imTitle, 3);
-		
-		//Get the coordinates of the selection
-		getSelectionCoordinates(xp, yp);
-		List.setMeasurements();
-		
-		//Center mass of the selection in pixels
-		xc = List.getValue("X");
-		yc = List.getValue("Y");
-		toUnscaled(xc, yc);
-		
-		//Qudrant determination
-		if(xc <= tempArray[0] && yc <= tempArray[1])
-			angle[0] = 1;
-		else if(xc <= tempArray[0] && yc > tempArray[1])
-			angle[0] = 2;
-		else if(xc > tempArray[0] && yc <= tempArray[1])
-			angle[0] = 3;
-		else
-			angle[0] = 4;
-		
-		
-		platDist = calculateDistance(xc, yc, tempArray2[0]+(tempArray2[2]/2), tempArray2[1]+(tempArray2[3]/2));
-		
-		//find out if the rat is in the platform or not
-		if(platDist <= ((tempArray2[2] + tempArray2[3])/4))
-			angle[1] = 1;
-		
-		//Check if the mouse is less then 10units from the wall	
-		borderDist = calculateDistance(xc, yc, tempArray[0], tempArray[1]);
-		toScaled(borderDist);
-		if(borderDist >= ((diameter/2) - poolWD))
-			angle[2] = 1;
-
+	//Get the coordinates of the selection
+	getSelectionCoordinates(xp, yp);
+	List.setMeasurements();
+	
+	//Center mass of the selection in pixels
+	xc = List.getValue("X");
+	yc = List.getValue("Y");
+	toUnscaled(xc, yc);
+	
+	//Quadrant determination
+	if(xc <= tempArray[0] && yc <= tempArray[1])
+		angle[0] = 1;
+	else if(xc <= tempArray[0] && yc > tempArray[1])
+		angle[0] = 2;
+	else if(xc > tempArray[0] && yc <= tempArray[1])
+		angle[0] = 3;
+	else
+		angle[0] = 4;
+	
+	//find out if the rat is in the platform or not
+	platDist = calculateDistance(xc, yc, tempArray2[0]+(tempArray2[2]/2), tempArray2[1]+(tempArray2[3]/2));	
+	if(platDist <= ((tempArray2[2] + tempArray2[3])/4))
+		angle[1] = 1;
+	
+	//Check if the mouse is less then 10units from the wall	
+	borderDist = calculateDistance(xc, yc, tempArray[0], tempArray[1]);
+	toScaled(borderDist);
+	if(borderDist >= ((diameter/2) - poolWD))
+		angle[2] = 1;
 		return angle;
-	 
+ 
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
- * Macro to track the mice in an open cube of 38 cm by 38 cm
- * It will output several parameters related to displacement, velocity, etc.
+ Function for NovelObject analysis. Its main job its to determine when/howmuch the mouse approaches
+ each region. It also outputs several parameters related to displacement, velocity, etc.
+ including direction of head. These are trial parameters.
  */
 function MouseRegionsTracker(){
 
@@ -1357,10 +1395,10 @@ function MouseRegionsTracker(){
 	dir = getDirectory("image");
 	imTitle = getTitle();
 	rectCoord = newArray(4);
-	
+	 //Clear measurements selection and limit them to threshold
 	run("Set Measurements...", "limit redirect=None decimal=3");
 
-	//Reduce the fps of acquisition
+	//Get the parameters of the Dialog1
 	choiceArray = dialog1(4);
 	blaWhi = choiceArray[0];
 	fps = choiceArray[1];
@@ -1371,34 +1409,38 @@ function MouseRegionsTracker(){
 	gaus = choiceArray[6];
 	stagger = choiceArray[7];
 
-	//Takes care of cases where tracking has been done already
-	//asks if you want to delete it or not
-	//This is for the future!
+	 /* Takes care of cases where an analysis file exists already
+	asks if you want to delete it or not */
 	if(File.exists(dir + imTitle + ".objects.trac")){
 		showMessageWithCancel(delFile);
 		File.delete(dir + imTitle + ".objects.trac");		
 	}
-	//Save file to open later on
+	
+	/*Create a new Analysis file. It is very important not to change the order that
+	instructions get writen to this file as that will screw up the function
+	to redo previous analysis*/
 	f = File.open(dir + imTitle + ".objects.trac");
 	print(f, dir + "\t" + getWidth + "\t" + getHeight + "\t" + nSlices + "\t" + gaus);
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 
-	
+	//Run guassian blur if so selected in Dialog1
 	if(gaus > 0){
 		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
 	}
 	setBatchMode("show");
 
+	//Draw a rectangle for the user to adjust to the base of the box
 	getDimensions(width, height, channels, slices, frames);
 	makeRectangle(width/5, height/5,width/2,height/2);
 	waitForUser("Please adjust the rectangule to match the bottom of the box");
-
+	
+	//Gets the dimensions of the rectangle and prints them to a file
 	getSelectionBounds(rectCoord[0], rectCoord[1], rectCoord[2], rectCoord[3]);
 	print(f,"BoxDimensions\t"+rectCoord[0]+"\t"+rectCoord[1]+"\t"+ rectCoord[2]+"\t"+rectCoord[3]);	
 
-	
+	//Determines the center region and prints it to file
 	boundx = rectCoord[0] + (rectCoord[2]/5);
 	boundy = rectCoord[1] + (rectCoord[3]/5);
 	boundx2 = (rectCoord[2]/5)*3;
@@ -1407,26 +1449,29 @@ function MouseRegionsTracker(){
 
 	setBatchMode("hide");	
 	getPixelSize(unit, pw, ph);
-	if(is("Virtual Stack")){
+	/*Removed this VS reference to make my life easier*/
+	/*if(is("Virtual Stack")){
 		close();
 		sortVirtual(dir, rectCoord, 1);
-	}else{
-		if(!blaWhi)
-			setBackgroundColor(255, 255, 255);
-		else
-			setBackgroundColor(0, 0, 0);
+	}else{*/
+		
+	//Changes the backgrnd color to match black or white mice
+	if(!blaWhi)
+		setBackgroundColor(255, 255, 255);
+	else
+		setBackgroundColor(0, 0, 0);
+
+	run("Enlarge...", "enlarge=15 pixel");
+	run("Clear Outside", "stack");
 	
-		run("Enlarge...", "enlarge=15 pixel");
-		run("Clear Outside", "stack");
-		//Reduce the dark regions frontier
-		run("Enlarge...", "enlarge=-15 pixel");
-		run("Make Band...", "band="+ 25*pw);
-		run("Gaussian Blur...", "sigma=10 stack");	
-	}
+	//Changes the backgrnd color to match black or white mice
+	run("Enlarge...", "enlarge=-15 pixel");
+	run("Make Band...", "band="+ 25*pw);
+	run("Gaussian Blur...", "sigma=10 stack");	
  
 	setBatchMode("show");
-	//Get pixel size from the width and heigth of cube
-	
+	/*Checks if the pixel size is set and if not sets it from the 
+dimensions of the cube*/
 	if(pw == 1 && ph == 1){
 		px = cubeW/rectCoord[2]; py = cubeH/rectCoord[3];
 		print(f, "Pixel size\t"+px+"\t"+py);	
@@ -1435,7 +1480,8 @@ function MouseRegionsTracker(){
 	else
 		print(f, "Pixel size\t"+pw+"\t"+ph);	
 
-		
+	/*Asks the user to adjust ovals to the regions, gets their location and dimensions
+	and prints them to file*/	
 	Array.fill(rectCoord, 0);
 	if(nRegions>0){
 		for(i=0; i < nRegions; i++){
@@ -1447,17 +1493,21 @@ function MouseRegionsTracker(){
 	}
 
 	
-
+	//Remove dark regions if so selected
 	if(darkR)
 		darKA = removeDarkR(imTitle);
 	
+	/*Set autothreshold method with Minum and get the input from the user
+regarding it. Also save the threshold to file*/
 	run("Select None");
-	setAutoThreshold("Triangle");
+	setAutoThreshold("Minimum");
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
 	setThreshold(minth,maxth);
-	
 	print(f, "Threshold\t" + minth + "\t" + maxth);
+	
+	/*If remove dark regions was selected save the parameters to file
+	This is here to maintain the order of the file to enable previous analysis to function*/
 	if(darkR)
 		print(f, "DarkR\t" + darKA[0] + "\t" + darKA[1]);
 	else
@@ -1466,52 +1516,40 @@ function MouseRegionsTracker(){
 	roiManager("Show All without labels");
 	roiManager("Show None");
 
-	
+	//analyse particles function
 	makeAnalysis(stagger, fps, mCubeArea);
-/*	if(fps == 25)
-		run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add stack");
-	else{
-		
-		for(i = 1; i < nSlices; i = i + 100/fps){
-			setSlice(i);
-			run("Analyze Particles...", "size="+mCubeArea+"-Infinity pixel include add slice");
-		}
-			
-	}*/
 
 	roiManager("Show All without labels");
 	roiManager("Show None");
-
+	//Save ROIs to a file in the folder of the image
 	roiManager("Save", dir + imTitle + "ROIs.zip");
 	
+	//Write preferences to the file of the analysis
 	writePreferences(f);
 	//File operations done!
 	File.close(f);
 	run("Select None");
 
 	oriID=getImageID();
-
 	getParametersRT(fps, dir, imTitle, nRegions);
-
 	dialog2(oriID, dir, imTitle, 4);
-
-	
 	
 }
-///////////////////////////////////////////////////////
-////function to get the parameters of the regions 
-////where hte magic happens!!!
 
-
+/*This function goes through the ROIs, creates and fills arrays with the
+result of the ROI analysis and then prints them to 2 files with the individual
+results and a summary of the results*/
 function getParametersRT(fps,dir, imTitle, n){
+	//Determine the delay between ROIs
 	if(fps != 25){
 		delay = 1/fps;
 	}else
 		delay = 1/25;
 	
-	//delay = 0.04;
+
 	run("Set Measurements...", "centroid redirect=None decimal=3");
 	
+	/*Create arrays to hold the individual parameters of each ROI*/
 	arrayX = newArray(roiManager("Count"));
 	arrayY = newArray(roiManager("Count"));
 	displacement = newArray(roiManager("Count"));
@@ -1528,18 +1566,20 @@ function getParametersRT(fps,dir, imTitle, n){
 	roiManager("Deselect");
 	
 	setBatchMode("hide");
+	/*Main loop to go trough all the ROIs and get the stats*/
 	for(i=0, j = 0; i<roiManager("count");i++){
 		showProgress(i, roiManager("count"));
 		showStatus("Analysing detections...");
+		
 		roiManager("Select", i);
 		List.setMeasurements();
+		//Get center of mass of ROI
 		arrayX[i] = List.getValue("X");
 		arrayY[i] = List.getValue("Y");
 
-		//Get the details of where it is
+		//Get result from magic function
 		angle = getDirectionRT(dir, imTitle, n);	
-		
-		
+				
 		//Fill in if the mouse head is near any of the regions
 		for(k = 0, m=0; k < n; k++, m++){
 			if(angle[m]){
@@ -1568,6 +1608,7 @@ function getParametersRT(fps,dir, imTitle, n){
 			j = j + 2;
 		}
 		
+		/*Displacement / Velocity /  Stopped*/	
 		if(i==0){
 			displacement[i] = 0;
 			velocity[i] = 0;
@@ -1583,7 +1624,8 @@ function getParametersRT(fps,dir, imTitle, n){
 	
 	setBatchMode("show");
 	run("Select None");
-
+	
+	/*Write results to tables both to single spots as the summary*/
 	run("Clear Results");
 	for(i=0, j=0; i<roiManager("count"); i++){
 		showProgress(i, roiManager("count"));
@@ -1651,72 +1693,79 @@ function getParametersRT(fps,dir, imTitle, n){
 
 }
 
+/*Get individual parameters for the ROI of mice in NR*/
 function getDirectionRT(dir, imTitle, n){
-	
-		angle = newArray((n*2));
-		Array.fill(angle, 0);
+	//Results array
+	angle = newArray((n*2));
+	Array.fill(angle, 0);
 		
 		
-		//Get the coordinates of the selection
-		getSelectionCoordinates(xp, yp);
-		List.setMeasurements();
+	//Get the coordinates of the selection
+	getSelectionCoordinates(xp, yp);
+	List.setMeasurements();
 		
-		//Center mass of the selection
-		xc = List.getValue("X");
-		yc = List.getValue("Y");
-		toUnscaled(xc, yc);
+	//Center mass of the selection
+	xc = List.getValue("X");
+	yc = List.getValue("Y");
+	toUnscaled(xc, yc);
 		
-		//New array for the lengths of center to the perimeter of the selection
-		length = newArray(xp.length);
-		//Fill the array with the distances
-		for(i = 0; i < xp.length; i++){
-			length[i]= calculateDistance(xc,yc,xp[i],yp[i]);
-		}
+	//New array for the lengths of center to the perimeter of the selection
+	length = newArray(xp.length);
+	//Fill the array with the distances
+	for(i = 0; i < xp.length; i++){
+		length[i]= calculateDistance(xc,yc,xp[i],yp[i]);
+	}
 
-		//Get the maxs and mins of the length array
-		nInter = 10;
-		do{
-			maxlengths = Array.findMaxima(length, nInter);
-			minlengths = Array.findMinima(length, nInter);
-			nInter = round(nInter - (nInter/3));
-		}while(lengthOf(maxlengths)==0)
+	/*Get the maxs and mins of the length array
+	Max distance should be head (in most cases) minimal distances are curves of behind*/
+	nInter = 10;
+	do{
+		maxlengths = Array.findMaxima(length, nInter);
+		minlengths = Array.findMinima(length, nInter);
+		nInter = round(nInter - (nInter/3));
+	}while(lengthOf(maxlengths)==0)
 		
+	/*Loop trough regions to see if mouse is close to them or not*/
+	for(i = 0, j = 0 ; i < n; i++, j++){
+		regAprox = sortRegions(xp, yp, xc, yc, maxlengths[0], dir, imTitle,  i);
+		angle[j] = regAprox[0];
+		j++;
+		angle[j] = regAprox[1];
+	}
 
-		for(i = 0, j = 0 ; i < n; i++, j++){
-			regAprox = sortRegions(xp, yp, xc, yc, maxlengths[0], dir, imTitle,  i);
-			angle[j] = regAprox[0];
-			j++;
-			angle[j] = regAprox[1];
-		}
-
-		return angle;
+	return angle;
  
 }
 
-//This functions works only in px
-//Check if the mouse is near a region of interest or not
+/*Function to see if the mouse is near a region of interest or not
+Inputs: xp, yp - ROI coordinates
+xc, yc - mouse center of mass
+headC - array position of mouse head
+n - number of regions*/
 function sortRegions(xp, yp, xc, yc, headC, dir, imTitle, n){
-
+	//Results array
 	temp = newArray(2);
-	
 	Array.fill(temp, 0);
-	//get the region
+	//get the region from file
 	regArray = getFileData(6+n, dir, imTitle, 4);
 	
 	//calculate center of oval and ratio
 	radius = (regArray[2] + regArray[3])/4;
 	centerX = regArray[0] + (regArray[2]/2);
 	centerY = regArray[1] + (regArray[3]/2);
-
+	
+	//Calculate distance from center of region to center of mass of mouse
 	dist = calculateDistance(centerX, centerY, xc, yc);
 	
-	//check if the mouse is close to the regions
+	/*check if the mouse is close to the regions
+	If the center of mouse is further away then 6 radius donºt bother*/
 	if(dist < radius * 6){
-		//check if head or body is close to the region
+		/*Calculate the distance of the head to the regions*/
 		dist = calculateDistance(centerX,centerY,xp[headC],yp[headC]);
-		
 		if(dist <= radius * 2){
 			temp[0] = 1;
+		/*Calculate the distance of all the other regions of the mouse to 
+		see if they are near the region or not*/
 		}else{
 			for(i = 0; i < xp.length; i++){
 				dist = calculateDistance(centerX,centerY,xp[i],yp[i]);
@@ -1734,14 +1783,13 @@ function sortRegions(xp, yp, xc, yc, headC, dir, imTitle, n){
 	
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//Macro to evaluate the TY Puzzle mice 
-//It will be track the mouse in the cross like puzzle and
-//calculate the time spent in each arm and the first time it goes in each arm
+
+/*Function to evaluate the TY Maize. Its main job is to track the mouse in the 
+cross like puzzle and calculate the time spent in each arm and the 
+first time it goes in each arm*/
 function MiceYTTracker(){
-		
+	
+	//Select the directory of the open image to be analysed	
 	checkAndSort();
 
 	//First clean up and setup the macro actions
@@ -1750,7 +1798,7 @@ function MiceYTTracker(){
 	rectRegions = newArray(4);
 	run("Set Measurements...", "limit redirect=None decimal=3");
 	
-	//Reduce the fps of acquisition
+	//Run guassian blur if so selected in Dialog1
 	temp = dialog1(5);
 	blaWhi = temp[0];
 	fps = temp[1];
@@ -1759,26 +1807,27 @@ function MiceYTTracker(){
 	gaus = temp[6];
 	stagger = temp[7];
 	
-	//Takes care of cases where tracking has been done already
-	//asks if you want to delete it or not
-	//This is for the future!
+	 /* Takes care of cases where an analysis file exists already
+	asks if you want to delete it or not */
 	if(File.exists(dir + imTitle + ".TY.trac")){
 		showMessageWithCancel(delFile);
 		File.delete(dir + imTitle + ".TY.trac");		
 	}
 	
-	//Save file to open later on
+	/*Create a new Analysis file. It is very important not to change the order that
+	instructions get writen to this file as that will screw up the function
+	to redo previous analysis*/
 	f = File.open(dir + imTitle + ".TY.trac");
 	print(f, dir + "\t" + getWidth + "\t" + getHeight + "\t" + nSlices + "\t" + gaus);
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 
-	//get dimensions of the image in px
+	//Draw a triangle for the user to adujst to the triangle of the TY
 	getDimensions(width, height, channels, slices, frames);
 	makePolygon(width/2, height/2,width/2 + 40, height/2,width/2 + 20, height/2+40);
 	waitForUser("Please adjust the vertices of the triangle to match the vertices of the arms");
 
-	//get the dimensions of the triangle in the center of the T/Y
+	//get the dimensions of the triangle in the center of the T/Y and print it to file
 	getSelectionCoordinates(px, py);
 	stringx = "";
 	stringy = "";
@@ -1794,9 +1843,9 @@ function MiceYTTracker(){
 	dist = dist + calculateDistance(px[0], py[0], px[2], py[2]);
 	dist = dist + calculateDistance(px[1], py[1], px[2], py[2]);
 	dist = dist /3;
-	//Calculate the pixel size of the image for x and y
-	//And will later on put it in the image once I have the dimensions that 
-	//it represents in reality
+	
+	/*Checks if the pixel size is set and if not sets it from the 
+dimensions of the triangle*/
 	getPixelSize(unit, pw, ph);
 	if(pw == 1 && ph == 1){
 		pixx = armsD/dist; pixy = armsD/dist;
@@ -1808,7 +1857,8 @@ function MiceYTTracker(){
 		print(f, "Pixel size\t"+pw+"\t"+ph);	
 
 
-	//Asks the user to draw the polygon that the cross forms to clear outside ot if
+	/*Asks the user to draw the polygon that the cross forms to clear outside ot if
+	and prints the coordinates to file*/
 	run("Select None");
 	setTool("polygon");
 	waitForUser("Please make a polygon to match the bottom of the T/Y erasing all dark regions.");
@@ -1823,31 +1873,32 @@ function MiceYTTracker(){
 	print(f, "TYregionY" + "\t"+stringy);	
 	
 
-	//Deals with the virtual stack if it is one
-	//This is necessary since several operations do not work on virtual stacks
+	/*Removed this VS reference to make my life easier*/
 	setBatchMode("hide");
-	if(is("Virtual Stack")){
+	/*if(is("Virtual Stack")){
 		roiManager("Add");
 		close();
 		sortVirtual(dir, 0, 3);
 		roiManager("Reset");
-	}else{
-		if(!blaWhi)
-			setBackgroundColor(255, 255, 255);
-		else
-			setBackgroundColor(0, 0, 0);
+	}else{*/
+	
+	//Changes the backgrnd color to match black or white mice
+	if(!blaWhi)
+		setBackgroundColor(255, 255, 255);
+	else
+		setBackgroundColor(0, 0, 0);
 			
 		run("Clear Outside", "stack");
-	}
+		
 	setBatchMode("show");
 
 	if(darkR)
 		darKA = removeDarkR(imTitle);
 		
 	setBatchMode("show");
-	//Asks for threshold to be set to be able to detect the mouse
-	//run("Threshold...");
-	setAutoThreshold("Yen");
+	/*Set autothreshold method with Minimum and get the input from the user
+	regarding it. Also save the threshold to file*/
+	setAutoThreshold("Minimum");
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
 	setThreshold(minth,maxth);
@@ -1857,43 +1908,33 @@ function MiceYTTracker(){
 	else
 		print(f, "DarkR\t" + 0 + "\t" + 0 );
 
-	//Try to speed up things with batch mode but not sure it actually helps
-	//deals with reduction of frame acquisition
-
+	//analyse particles function
 	makeAnalysis(stagger, fps, mTYArea);
-/*	if(fps == 25)
-		run("Analyze Particles...", "size="+mTYArea+"-Infinity pixel include add stack");
-	else{
-		
-		for(i = 1; i < nSlices; i = i + 100/fps){
-			setSlice(i);
-			run("Analyze Particles...", "size="+mTYArea+"-Infinity pixel include add slice");
-		}
-			
-	}*/
 	
 	roiManager("Show All without labels");
 	roiManager("Show None");
 
-	//Save the selection results
+	//Save ROIs to a file in the folder of the image
 	roiManager("Save", dir + imTitle + "ROIs.zip");
-	//print(f, dir + imTitle + "ROIs.zip");
 	
+	//Write preferences to the file of the analysis	
 	writePreferences(f);
 	//File operations done!
 	File.close(f);
 	run("Select None");
 
-	//gets image ID
 	oriID=getImageID();
 	getParametersTY(fps, dir, imTitle);
 	dialog2(oriID, dir, imTitle, 5);
 	
 }
 
-//Main calculus function. Gets the selections for each slice and 
-//pumps out the details relevant to the test
+
+/*This function goes through the ROIs, creates and fills arrays with the
+result of the ROI analysis and then prints them to 2 files with the individual
+results and a summary of the results*/
 function getParametersTY(fps, dir, imTitle){
+	//Determine the delay between ROIs
 	if(fps != 25){
 		delay = 1/fps;
 	}else
@@ -1901,6 +1942,7 @@ function getParametersTY(fps, dir, imTitle){
 
 	run("Set Measurements...", "area centroid redirect=None decimal=3");
 	
+	/*Create arrays to hold the individual parameters of each ROI*/
 	arrayX = newArray(roiManager("Count"));
 	arrayY = newArray(roiManager("Count"));
 	displacement = newArray(roiManager("Count"));
@@ -1909,6 +1951,7 @@ function getParametersTY(fps, dir, imTitle){
 	armsPositionA = newArray(roiManager("Count"));
 	slices = newArray(roiManager("Count"));
 	
+	/*count and sum variables for the individual parameters*/
 	displa = 0; visit1 = 0; visit2=0; visit3 = 0; 
 	time1 = 0; time2 = 0; time3=0;
 	order1 = 0; order2 = 0; order3=0;
@@ -1916,6 +1959,7 @@ function getParametersTY(fps, dir, imTitle){
 	
 	roiManager("Deselect");
 	setBatchMode("hide");
+	/*Main loop to go trough all the ROIs and get the stats*/
 	for(i=0; i<roiManager("count");i++){
 		showProgress(i, roiManager("count"));
 		showStatus("Analysing detections...");
@@ -1943,6 +1987,7 @@ function getParametersTY(fps, dir, imTitle){
 			velocity[i] = 0;
 
 		}else{
+			/*Displacement / Velocity */	
 			displacement[i] = calculateDistance(arrayX[i-1], arrayY[i-1], arrayX[i], arrayY[i]);
 			velocity[i] = displacement[i]/delay;
 			if(displacement[i] > dispVal)
@@ -1978,7 +2023,8 @@ function getParametersTY(fps, dir, imTitle){
 			armsPositionA[j]=3;
 	}
 
-
+	
+	/*Positions in the arms*/
 	ordem = toString(armsPosition[0]);
 	
 	for(i = 1; i< armsPositionA.length; i++){
@@ -2029,7 +2075,7 @@ function getParametersTY(fps, dir, imTitle){
 	tripletStory = getTripletStat(ordem);
 
 	run("Clear Results");
-	//Write the Spot statistics file
+	/*Write results to tables both to single spots as the summary*/
 	for(i=0; i<roiManager("count"); i++){
 		showProgress(i, roiManager("count"));
 		showStatus("Writing results...");
@@ -2091,9 +2137,7 @@ function getParametersTY(fps, dir, imTitle){
 }
 
 
-//This function works in pixels only
-//that doesn t matter for this case as it only matters 
-//where it is or not!
+/*Get individual parameters for the ROI of mice in OpenField*/
 function getDirectionTY(){
 
 		//Get the coordinates of the selection
@@ -2139,10 +2183,10 @@ function getDirectionTY(){
 	 
 }
 
-////////////////////////////
-//Fear Conditioning
-
-
+/*
+ Function for Fear Conditioning analysis. Its main job its to determine
+  if the mouse freezes or not
+ */
 function fearConditioning(){
 
 	checkAndSort();
@@ -2154,7 +2198,7 @@ function fearConditioning(){
 
 	run("Set Measurements...", "limit redirect=None decimal=3");
 
-	//Reduce the fps of acquisition
+	 //Get the parameters of the Dialog1
 	temp = dialog1(6);
 	blaWhi = temp[0];
 	fps = temp[1];
@@ -2164,28 +2208,29 @@ function fearConditioning(){
 	gaus = temp[6];
 	stagger = temp[7];
 	
-	//Takes care of cases where tracking has been done already
-	//asks if you want to delete it or not
-	//This is for the future!
+	/* Takes care of cases where an analysis file exists already
+	asks if you want to delete it or not */
 	if(File.exists(dir + imTitle + ".free.trac")){
 		showMessageWithCancel(delFile);
 		File.delete(dir + imTitle + ".free.trac");		
 	}
 	
-	//Save file to open later on
+	/*Create a new Analysis file. It is very important not to change the order that
+	instructions get writen to this file as that will screw up the function
+	to redo previous analysis*/
 	f = File.open(dir + imTitle + ".free.trac");
 	print(f, dir + "\t" + getWidth() + "\t" +  getHeight() + "\t" + nSlices() +"\t"+ gaus);
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 	
-	
+	//Run guassian blur if so selected in Dialog1
 	if(gaus > 0){
 		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
 		
 	}
 	setBatchMode("show");
-	//Asks the user to draw the polygon that the box forms
+	//Asks the user to draw the polygon that the box form, writes it to file and clears outside
 	run("Select None");
 	setTool("polygon");
 	waitForUser("Please make a polygon to match the cage bottom.");
@@ -2200,54 +2245,64 @@ function fearConditioning(){
 	print(f, "BoxBottomY" + "\t"+stringy);	
 	
 	setBatchMode("hide");
-	if(is("Virtual Stack")){
+	/*Removed this VS reference to make my life easier*/
+	/*if(is("Virtual Stack")){
 		roiManager("Add");
 		close();
 		sortVirtual(dir, 0, 3);
 		roiManager("Reset");
-	}else{
-		if(!blaWhi)
-			setBackgroundColor(255, 255, 255);
-		else
-			setBackgroundColor(0, 0, 0);
-			
-		run("Clear Outside", "stack");
-	}
+	}else{*/
+	//Changes the backgrnd color to match black or white mice	
+	if(!blaWhi)
+		setBackgroundColor(255, 255, 255);
+	else
+		setBackgroundColor(0, 0, 0);
+		
+	run("Clear Outside", "stack");
+
 	setBatchMode("show");
 	
 	//Remove dark regions if so selected
 	if(darkR)
 		darkA = removeDarkR(imTitle);
 	
+	/*Another gaussian blur in the diference stack to try and reduce the 
+	wave patterns of the images*/
 	run("Gaussian Blur...", "sigma="+gaus+" stack");
 	
-	//Get the threshold for getting the mouse spots
-	setAutoThreshold("Triangle");  
+	/*Set autothreshold method with Minum and get the input from the user
+regarding it. Also save the threshold to file*/
+	setAutoThreshold("Minimum");  
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
 	print(f, "Threshold\t"+minth+"\t"+maxth);
 	
+	/*If remove dark regions was selected save the parameters to file
+	This is here to maintain the order of the file to enable previous analysis to function*/
 	if(darkR)
 		print(f, "DarkR\t" + darkA[0] +"\t"+ darkA[1]);
 	else 
 		print(f, "DarkR\t" + 0 +"\t"+ 0);
 	
+	//Actually set threshold
 	setThreshold(minth,maxth);
 		
 	roiManager("Show All without labels");
 	roiManager("Show None");
-	//analyse particles taking in consideration the reduction in fps if selected
-
+	
+	//analyse particles function
 	makeAnalysis(stagger, fps, mFreezeArea);
 	
+	//Save ROIs to a file in the folder of the image
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	roiManager("Save", dir + imTitle + "ROIs.zip");
-	
+	//Write preferences to the file of the analysis
 	writePreferences(f);
+	//File operations done!
 	File.close(f);
 
-	//File operations done!
+	
 	run("Select None");
 
 	//Get data of the dectetions
@@ -2257,13 +2312,14 @@ function fearConditioning(){
 
 }
 
+/*This function goes through the ROIs, creates and fills arrays with the
+result of the ROI analysis and then prints them to 2 files with the individual
+results and a summary of the results*/
 function freezeCheck(fps, dir, imTitle){
-	
-	//Weigths for a AI approach tentative for deetrmining when the mouse is stopped
-	/*w = newArray(2.177, -1.502, -1.687, -0.139, -1.837, -0.289);
-	wH = newArray(4.377, 4.227);*/
+	//Determine the delay between ROIs
 	delay = 1/fps;
 	run("Select None");
+	
 	fre = newArray(roiManager("count")-1);
 	Array.fill(fre, 0);
 	freezeT = 0;
@@ -2272,76 +2328,24 @@ function freezeCheck(fps, dir, imTitle){
 	sA = newArray(2);
 	setBatchMode("hide");
 	
-	//AI approach tentative 
-/*	for(i = 0; i <roiManager("count");i++){
-		showProgress(i,roiManager("Count"));
-		roiManager("Select", i);
-		run("Fit Spline");
-		run("Enlarge...", "enlarge="+sFreeze+" pixel");
-		run("Enlarge...", "enlarge=-"+sFreeze+" pixel");
-		roiManager("Update");	
-	}
-	setBatchMode("show");
-	setBatchMode("hide");
-	
-	xm = newArray(roiManager("count"));
-	ym = newArray(roiManager("count"));
-	area = newArray(roiManager("count"));
-	xmF = newArray(roiManager("count")-fps);
-	ymF = newArray(roiManager("count")-fps);
-	areaF = newArray(roiManager("count")-fps);
-	result = newArray(roiManager("count")-fps);
-	for(i = 0; i < roiManager("count"); i++){
-		showProgress(i,roiManager("Count"));
-		roiManager("Select", i);
-		List.setMeasurements();
-		xm[i] = List.get("XM");
-		ym[i] = List.get("YM");
-		area[i] = List.get("Area");
-	}
-	
-	seq = Array.getSequence(fps);
-	for(i = 0; i < xm.length-fps; i++){
-		showProgress(i,xm.length-fps);
-		Fit.doFit("Straight Line", seq, Array.slice(xm, i, i+25));
-		xmF[i] = Fit.p(1);
-		Fit.doFit("Straight Line", seq, Array.slice(ym, i, i+25));
-		ymF[i] = Fit.p(1);
-		Fit.doFit("Straight Line", seq, Array.slice(area, i, i+25));
-		areaF[i] = Fit.p(1);
-	}
-	
-	count = 0;
-	for(i = 0; i < xm.length-fps; i++){
-		showProgress(i,xm.length-fps);
-		h1 = (xmF[i] * w[0]) + (ymF * w[2]) + (areaF * w[4]);
-		h2 = (xmF[i] * w[1]) + (ymF * w[3]) + (areaF * w[5]);
-		
-		result[i] = (h1 * wH[0]) + (h2 * wH[1]); 
-		if(result[i] >= -0.1 && result[i] <= 0.1)
-			count++;
-		else{
-			if(count >2)
-				freezeT = freezeT + (count * delay) + 1;
-			else
-				count = 0;
-		}
-	}
-	
-	Array.show("Results", xm ,ym ,area, xmF, ymF, areaF, result);*/
-	
-	
+	/*Main loop to go trough all the ROIs and get the stats*/
 	for(i = 0, j = 0; i < roiManager("Count")-1; i++){
 		showProgress(i,roiManager("Count"));
 		showStatus("Analysing detections...");
+		//Create array to select 2 ROIs
 		sA[0] = i; sA[1] = i+1;
 		roiManager("Select", sA);
+		//Mare XOR selection
 		roiManager("XOR");
+		//Get area of XOr selection
 		getStatistics(area);
 		fre[i] = area; 
+		//Count frames that mouse is freezed
 		if(area <= 500){
 			count++;
 		}else{
+			/*If freeze frames are more then half then print to results start and ending frames
+			of freeze section*/
 			if(count > fps/2){
 				setResult("Freeze start frame", j, getSliceNumber() - count);
 				setResult("Freeze finished frame", j, getSliceNumber());
@@ -2370,7 +2374,7 @@ function freezeCheck(fps, dir, imTitle){
 }
 
 
-/*Dialog function for setting the preferences for all macro main functions*/
+/*Dialog function for setting the preferences for all main functions*/
 function Preferences(){
 	
 	Dialog.create("JAMoT Preferences");
@@ -2462,7 +2466,6 @@ function Preferences(){
 		call("ij.Prefs.set", "JAMoT_Prefs.fre.marea", mFreezeAreaL);
 		call("ij.Prefs.set", "JAMoT_Prefs.fre.smooth", sFreezeL);
 	}else{
-		//defaultPrefs();
 		//General
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.units", "cm");
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.gauval", 2);
@@ -2470,15 +2473,15 @@ function Preferences(){
 		//Cube Maize
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.soli", 0.8);
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.width", 28);
-		call("ij.Prefs.set", "JAMoT_Prefs.cube.marea", 15);
+		call("ij.Prefs.set", "JAMoT_Prefs.cube.marea", 500);
 		//Elevated Maize
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.width", 7);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.length", 19.5);
-		call("ij.Prefs.set", "JAMoT_Prefs.elev.marea", 15);
+		call("ij.Prefs.set", "JAMoT_Prefs.elev.marea", 1000);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.smooth", 3);
 		//Swimming Maize
 		call("ij.Prefs.set", "JAMoT_Prefs.swim.dia", 125);
-		call("ij.Prefs.set", "JAMoT_Prefs.swim.marea", 7);
+		call("ij.Prefs.set", "JAMoT_Prefs.swim.marea", 50);
 		call("ij.Prefs.set", "JAMoT_Prefs.swim.poolWD",10); 
 		//T/Y Maize
 		call("ij.Prefs.set", "JAMoT_Prefs.ty.width", 7);
@@ -2492,10 +2495,8 @@ function Preferences(){
 	exit("Please restart Fiji/ImageJ for changes to take effect.");
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Sort image type and first preparations+
+/*Fucntion to make checks that images are ni the right format
+and if not make them so*/
 function checkAndSort(){
 	if (nSlices==1) exit("Stack required");
 	resetThreshold();
@@ -2508,8 +2509,8 @@ function checkAndSort(){
 }
 
 
-////////////////Dialog box
-//Dialog to ask if you want to reduce the fps
+/*First Dialog for all main functions that allows setting up of parameters and choices
+for the function*/
 function dialog1(option){
 	/* 0 - Black/White mice - all
 	 * 1-fps
@@ -2613,10 +2614,7 @@ function dialog1(option){
 
 }
 
-
-
-
-//Dialog to ask what other images you want to take
+/*Dialog to ask what other images (line track or heatmap) you want to take*/
 function dialog2(imageID, dir, imTitle, option){
 	Dialog.create("Coordinates");
 	Dialog.addMessage("What other images to you want?");
@@ -2626,7 +2624,8 @@ function dialog2(imageID, dir, imTitle, option){
 	
 	heat = Dialog.getCheckbox();
 	line = Dialog.getCheckbox();
-
+	
+	//Calls respective functions
 	if(heat)
 		heatMap(imageID, dir, imTitle, option);
 		
@@ -2635,7 +2634,9 @@ function dialog2(imageID, dir, imTitle, option){
 	
 }
 
-//Sort out the analysis of the ROIs for the movies
+/*Function to sort out the analysis of the stacks to create ROIS
+taking into consideration starting and ending points if the user selects stagger
+and increase in delay between ROIs (fps)*/
 function makeAnalysis(flag, fps, area){
 	
 	if(flag == 0){
@@ -2677,9 +2678,8 @@ function makeAnalysis(flag, fps, area){
 }
 
 
-
-
-
+/*this function has been removed due to complications in supporting Virtual Stacks 
+for analysis. Left it here for future.
 //Function to sort the virtual stack and clear outside
 function sortVirtual(dir, rectCoord, option, colorM){
 	showStatus("Sorting out virtual stack");
@@ -2732,12 +2732,12 @@ function sortVirtual(dir, rectCoord, option, colorM){
 	close();	
 	run("Image Sequence...", "open="+dir+".tif file=tif sort use");
 	
-}
+}*/
 
 
-//Drawing the path of the mouse around the puzzle
+/*Function to draw the path of the mouse along time using a line
+It also draws the maize and other parameters of the maizes*/
 function lineTrack(imageID, dir, imTitle, option){
-
 		
 	selectImage(imageID);
 	getDimensions(width, height, channels, slices, frames);
@@ -2843,11 +2843,13 @@ function lineTrack(imageID, dir, imTitle, option){
 		}
 	}
 	
+	//Actually draw the path of the mouse
 	run("Set Measurements...", "centroid redirect=None decimal=3");
 	setLineWidth(2);
 	setForegroundColor(255, 255, 255); 
 	setBatchMode("hide");
 	for(i=0;i<roiManager("count")-1;i++){
+		showStatus("Creating line track...");
 		roiManager("Select", i);
 		List.setMeasurements();
 		x1 = List.getValue("X");
@@ -2868,7 +2870,7 @@ function heatMap(imageID, dir, imTitle, option){
 		
 	if(option == 1) 								//Empty box
 		choice = promptandgetChoice(1, 1, 0, 0, 0, 0);
-	else if(option == 2 || option == 5)				//Cross/TY region
+	else if(option == 2 || option == 5)				//Elevated/TY region
 		choice = promptandgetChoice(1, 0, 0, 1, 0, 0);
 	else if(option == 3)							//Swimming
 		choice = promptandgetChoice(1, 0, 1, 0, 0, 0);
@@ -2883,15 +2885,16 @@ function heatMap(imageID, dir, imTitle, option){
 	getDimensions(width, height, channels, slices, frames);
 	newImage("HeatMap", "16-bit black", width, height, 1);
 	heat = getImageID();
-
 	
 	run("Set Measurements...", "centroid redirect=None decimal=3");
 
-	//selectImage(ori);
+	/*Actually draw the heatmap of the ROIs using 
+	either the selection or points of 1/4/8 bits*/
 	if(x==0){
 		selectImage(heat);
 		setBatchMode("hide");
 		for(i=0; i<roiManager("count");i++){
+			showStatus("Creating HeatMap...");
 			roiManager("Select", i);
 			run("Add...", "value=1 slice");
 		}
@@ -2901,13 +2904,14 @@ function heatMap(imageID, dir, imTitle, option){
 		selectImage(heat);
 		setBatchMode("hide");
 		for(i=0; i<roiManager("count");i++){
+			showStatus("Creating HeatMap...");
 			roiManager("Select", i);
 			List.setMeasurements();
 			xc = List.getValue("X");
 			yc = List.getValue("Y");
 			for(j=xc-x;j<xc+x;j++){
 				for(k=yc-x;k<yc+x;k++){
-					setPixel(j, k, getPixel(j,k)+1);  // 
+					setPixel(j, k, getPixel(j,k)+1);   
 				}
 			}
 			
@@ -2916,6 +2920,7 @@ function heatMap(imageID, dir, imTitle, option){
 	}
 	run("Select None");
 	run("Fire");
+	
 	//convert to 8-bit taking into account the max of the image
 	getStatistics(a, b, c, max);
 	if(max < 255)
@@ -2928,7 +2933,7 @@ function heatMap(imageID, dir, imTitle, option){
 	run("8-bit");
 	resetMinAndMax();
 
-
+	/*Draws the maizes and other regions of the maizes*/
 	if(choice[1]){
 		setForegroundColor(255,255,255);
 		if(option == 1 || option == 4){ //Empty box
@@ -3014,9 +3019,8 @@ function heatMap(imageID, dir, imTitle, option){
 
 
 
-///////////////Dialog box
-//Provides options of drawing regions in the heatmap and 
-//trajectory map
+/*Dialog that provides options of drawing regions in the heatmap and 
+line track map*/
 function promptandgetChoice(c1, c2, c3, c4, c5, c6){
 	temp = newArray(4);
 	Array.fill(temp, 0);
@@ -3080,8 +3084,7 @@ function promptandgetChoice(c1, c2, c3, c4, c5, c6){
 	return temp; 
 }
 
-//Retrieve data from a specific line from a file in dir with the name imTitle
-//Only in use for Mice_Track
+/*Function to retrieve data from a specific line from a file in dir with the name imTitle*/
 function getFileData(line, dir, imTitle, option){
 
 	strTer = newArray(".cube.trac", ".cross.trac", ".swim.trac", ".objects.trac", ".TY.trac", ".free.trac");
@@ -3100,15 +3103,15 @@ function getFileData(line, dir, imTitle, option){
 }
 
 
-//simple function to calculate the distance between two points
-//by the Pitagoras formula
+/*simple function to calculate the distance between two points
+by the Pitagoras formula*/
 function calculateDistance(x1, y1, x2, y2){
 	temp = sqrt(pow((x2-x1), 2) + pow((y2-y1),2));
 	return temp;
 }
 
 
-//function to clear a region
+/*Function to clear a region from the Water Maize*/
 function clearRegion(){
 	Dialog.create("Region clear");
 	Dialog.addMessage("Do you want to clear a region?");
@@ -3127,7 +3130,7 @@ function clearRegion(){
 	
 }
 
-//Function to count the lines of a txt file separated by \n
+/*Function to count the lines of a txt file separated by "\n" */
 function countLinesStartingWith(dir, imTitle, option, strBegin){
 	strTer = newArray(".cube.trac", ".cross.trac", ".swim.trac", ".objects.trac", ".TY.trac", ".free.trac");
 	str = dir + imTitle + strTer[option-1];
@@ -3144,7 +3147,8 @@ function countLinesStartingWith(dir, imTitle, option, strBegin){
 }
 
 
-//Tries to sort out the dark regions
+/*First dialog to ask for first and last frame to create an average projection
+to create the difference stack*/
 function removeDarkR(imTitle){
 	temp = newArray(2);
 	run("Select None");
@@ -3160,6 +3164,7 @@ function removeDarkR(imTitle){
 	return temp;
 }
 
+/*Actual function to create the average projection and difference stack*/
 function darkRPorjection(imTitle, min, max) {
 	setBatchMode("hide");
 	run("Z Project...", "start="+min+" stop="+max+" projection=[Average Intensity]");
@@ -3173,7 +3178,7 @@ function darkRPorjection(imTitle, min, max) {
 
 
 
-//function to calculate the angle between two points
+/*function to calculate the angle between two points (using atan2)*/
 function calculateAngle2(x1,y1, x2,y2){
 	xdi = x2 - x1;
 	ydi = y2 - y1;
@@ -3200,12 +3205,16 @@ function getTripletStat(ordem){
 	
 }
 
-/*Everything related with redoing analysis 
-is from here downwards!!
+
+
 /////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
-///////////////////////////////////////////////////// */
+/////////////////////////////////////////////////////
+/*Everything related with redoing analysis 
+is from here downwards!!*/
 
+/*Function to open previous analysis file. It checks that the file is valid
+and launches the correct function, or complains that it isn't valid*/
 function openPreviousAnalysis(){
 
 	strTer = newArray(".cube.trac", ".cross.trac", ".swim.trac", ".objects.trac", ".TY.trac");
@@ -3246,6 +3255,7 @@ function openPreviousAnalysis(){
 
 }
 
+/*Fucntion to redo a previous analysis of the FC*/
 function fearRedo(temp, option){
 	//Get the data from the file		
 	dir = temp[0];
@@ -3315,7 +3325,7 @@ function fearRedo(temp, option){
 	
 }
 
-
+/*Fucntion to redo a previous analysis of the TY*/
 function tyRedo(temp, option){
 	//Get the data from the file		
 	triX = newArray(4);
@@ -3399,7 +3409,7 @@ function tyRedo(temp, option){
 	
 }
 	
-
+/*Function to redo a previous analysis of the NO*/
 function objectsRedo(temp, option){
 	//Get the data from the file		
 	box = newArray(4);
@@ -3488,7 +3498,7 @@ function objectsRedo(temp, option){
 	
 }
 
-
+/*Function to redo a previous analysis of the WM*/
 function swimRedo(temp, option){
 	//Get the data from the file		
 	box = newArray(4);
@@ -3553,7 +3563,7 @@ function swimRedo(temp, option){
 }
 
 
-
+/*Function to redo a previous analysis of the EM*/
 function crossRedo(temp, option){
 	
 	//Get the data from the file		
@@ -3634,7 +3644,7 @@ function crossRedo(temp, option){
 }
 
 
-
+/*Function to redo a previous analysis of the OF*/
 function cubeRedo(temp, option){
 	
 	//Get the data from the file
@@ -3715,6 +3725,8 @@ function cubeRedo(temp, option){
 }
 
 
+/*Function to set the threshold and analysis the 
+image stack in redo analysis*/
 function setThrandAna(thrMin, thrMax, fps, option){
 
 		setThreshold(thrMin,thrMax);
@@ -3745,6 +3757,8 @@ function setThrandAna(thrMin, thrMax, fps, option){
 		setBatchMode("show");
 }
 
+/*Function to set the bckgrnd color depending on the threshold used 
+in the analysis (used with redo previous analysis)*/
 function setBackgrdCo(thr){
 		if(thr < 50)
 			setBackgroundColor(255, 255, 255);
@@ -3754,11 +3768,13 @@ function setBackgrdCo(thr){
 }
 
 
+/*Small function to run a guassian blur if so selected*/
 function gausCheckRun(n){
 	if(n > 0)
 			run("Gaussian Blur...", "sigma="+n+" stack");
 }
 
+/*Function to open an image file if it exists and complain if it doesn't*/
 function openFile(str, option){
 	if(File.exists(str))
 		open(str);
@@ -3812,6 +3828,8 @@ function getFileDataRedo(filestring){
 	
 }
 
+
+/*Function to write all the preferences at that time to the analysis file*/
 function writePreferences(file){
 	//General
 	print(file, "Preferences");
@@ -3841,6 +3859,8 @@ function writePreferences(file){
 	
 }
 
+/*Function to check all the Preferences that were saved in the analysis file
+and compared them to the preferences in current use*/
 function checkPreferences(array){
 	print("Checking current vs. selected run preferences...");
 	//General
