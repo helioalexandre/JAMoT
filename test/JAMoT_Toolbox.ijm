@@ -2506,7 +2506,7 @@ function Preferences(){
 		call("ij.Prefs.set", "JAMoT_Prefs.swim.poolWD",10); 
 		//T/Y Maize
 		call("ij.Prefs.set", "JAMoT_Prefs.ty.width", 7);
-		call("ij.Prefs.set", "JAMoT_Prefs.ty.marea", 15);
+		call("ij.Prefs.set", "JAMoT_Prefs.ty.marea", 500);
 		call("ij.Prefs.set", "JAMoT_Prefs.ty.smooth", 3);
 		//Freeze maize
 		call("ij.Prefs.set", "JAMoT_Prefs.fre.marea", 5000);
@@ -2800,7 +2800,7 @@ function lineTrack(imageID, dir, imTitle, option){
 			array = getFileData(3, dir, imTitle, option);
 			drawRect(array[0], array[1], array[2], array[3]);
 		}
-		//Swimming option
+		//Swimming option - pool
 		else if(option == 3){								
 			array = getFileData(3, dir, imTitle, option);
 			drawOval(array[0], array[1], array[2], array[3]);
@@ -2813,6 +2813,8 @@ function lineTrack(imageID, dir, imTitle, option){
 				n = 3;
 			else if(option == 4)
 				n = 6;
+			else if(option == 5)
+				n = 6;
 															
 			arrayx = getFileData(n, dir, imTitle, option);
 			arrayy = getFileData(n+1, dir, imTitle, option);
@@ -2821,24 +2823,35 @@ function lineTrack(imageID, dir, imTitle, option){
 	         	lineTo(arrayx[i], arrayy[i]);
 	
 	        lineTo(arrayx[0], arrayy[0]);
+	        
+	        if(option == 5){
+	        	setLineWidth(2);
+	        	setColor("white");
+	        	arrayx = getFileData(3, dir, imTitle, option);
+				arrayy = getFileData(4, dir, imTitle, option);
+				drawString("Center", arrayx[0] - 40, arrayy[0]-abs(arrayy[2]-arrayy[1])*2);
+				drawString("Left", arrayx[0]- 40, arrayy[0] + (abs(arrayy[2]-arrayy[1])*2));
+				drawString("Rigth", arrayx[1], arrayy[1] + (abs(arrayy[2]-arrayy[1])*2));
+				
+	        }
 		}
 		
 	}
 
 	if(choice[2]){
 		setForegroundColor(255,255,255);
-		//Empty box
+		//Empty box - draw cube base
 		if(option == 1){
 			array = getFileData(4, dir, imTitle, option);
 			drawRect(array[0], array[1], array[2], array[3]);
 		}
-		//Swimming option
+		//Swimming option - draw platform
 		else if(option == 3){								
 			array = getFileData(5, dir, imTitle, option);
 			drawOval(array[0], array[1], array[2], array[3]);
 		}
 
-		//Regions option
+		//Regions option regions and their numbers
 		else if(option == 4){
 			count = countLinesStartingWith(dir, imTitle, option, "Object");
 			for(k = 6, j = 1; k < (6+count); k++,j++){
@@ -2852,7 +2865,7 @@ function lineTrack(imageID, dir, imTitle, option){
 	
 	if(choice[3]){
 		setForegroundColor(255,255,255);
-		//Swimming option
+		//Swimming option -draw quadrants and number them
 		if(option == 3){
 			setLineWidth(2);
 			array = getFileData(4, dir, imTitle, option);
@@ -2996,6 +3009,16 @@ function heatMap(imageID, dir, imTitle, option){
 	         	lineTo(arrayx[i], arrayy[i]);
 	
 	        lineTo(arrayx[0], arrayy[0]);
+	        
+           	if(option == 5){
+				setLineWidth(2);
+				setColor("white");
+				arrayx = getFileData(3, dir, imTitle, option);
+				arrayy = getFileData(4, dir, imTitle, option);
+				drawString("Center", arrayx[0] - 40, arrayy[0]-abs(arrayy[2]-arrayy[1])*2);
+				drawString("Left", arrayx[0]- 40, arrayy[0] + (abs(arrayy[2]-arrayy[1])*2));
+				drawString("Rigth", arrayx[1], arrayy[1] + (abs(arrayy[2]-arrayy[1])*2));
+        	}
 		}
 	}
 
