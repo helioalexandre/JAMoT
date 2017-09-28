@@ -1,8 +1,8 @@
- /*
- Toolbox for mouse behavioural analysis of several maize types:
- Open Field Maize; Elevated Maize; Water Maize; Novel Object Maize; T/Y Maize; Fear Conditioning
+/*
+Toolbox for mouse behavioural analysis of several maize types:
+Open Field; Elevated Plus Maze; Morris Water Maze; Novel Object Recognition; Y Maze; Fear Conditioning
  
- MIT License
+MIT License
 
 Copyright (c) 2017 Helio Roque
 
@@ -23,12 +23,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
- */
+*/
  
  
- requires("1.50a");
+requires("1.50a");
  
- var filemenu = newMenu("Mouse trial Macros Menu Tool", newArray("Batch Process Video Files", "Process Video", "Open Field Test","Elevated Plus Maize", "Watermaize Test", "Novel Object Recognition", "Y/T Maize","Fear Conditioning", "Open Previous Analysis File", "Preferences","-"));
+ var filemenu = newMenu("Mouse trial Macros Menu Tool", newArray("Batch Process Video Files", "Process Video", "Open Field","Elevated Plus Maze", "Morris Water Maze", "Novel Object Recognition", "Y Maze","Fear Conditioning", "Open Previous Analysis File", "Preferences","-"));
  var delFile = "Previous analysis file exists. Overwrite? Cancel will stop the macro.";
  var setThr = "Please set the threshold carefully and press OK (Image>Adjust>Threshold).";
  //General
@@ -57,7 +57,7 @@ SOFTWARE.
  var sFreeze = call("ij.Prefs.get", "JAMoT_Prefs.fre.smooth", "0");
  
  
- macro "Mouse trial Macros Menu Tool - C000C111D98C111D88C111D89C111D86D99C111D87C111D85C111D8aD97C111D9aC222D79D8bC222D7aC222D96C222D84C222D78C222D7bC222D76D9bC222D95C222D77C333Da9C333D75C333D74C333D73Da8C333DaaC333D8cC333C444D83C444D7cDa7C444D6aC444D69C444D94C444C555D9cC555DabC555Da6C555D68C555D6bC555D66C555D72C555C666D67C666D65C666D64D7dDa5Db9C666D63C666D8dDb8C666DbaC666D82D93C666DacC666C777D6cC777D7eC777Da4Db7C777D9dDbbC777D59D7fC777D5aD62D6dDb6C777D6fC777D8eC777C888D6eD92DbcC888Da3DadDcaC888D57D58Db5Dc9C888D56Dc7C888D5bD8fDc8C888D9eDc6DcbC888D9fDaeDb4DbdDc5C888D53D55D71D91DccC888D81Da1Da2Dc1Dd8C888D54D5cDafDb1Db2Db3Dc0Dc2Dd0Dd1Dd6DdaDdbDdfDe0De8De9DeaC888D52D5fDc3Dd2Dd5Dd7Dd9C888D5dD90Da0Db0DbeDc4Dd3DdcDdeDefDf2C888D5eDbfDcdDcfDd4De1DebDfaC888D4aD61DddDe2Df0Df1Df5Df8C999D80DceDe3DeeDf3Df4Df9DfbDfdDfeC999D41D47D49De7DecDedDf6Df7DfcDffC999D40D42D46D4bD4cD4dD51De4C999D43D44D48D4eD4fD50D70De5De6C999D10D20D30D31D36D3cD45D60C999D17D32D3bD3fC999D21D22D26D2eD2fD34D37D39D3aD3dD3eC999D15D16D23D29D33C999D07D11D12D14D18D19D1eD1fD25D27D2aD2dD35D38C999D00D05D06D0fD1aD24D2bD2cC999D01D04D09D0cD13D1bD1cD1dD28C999D02D0aD0bD0eC999D08D0dC999D03"{
+macro "Mouse trial Macros Menu Tool - C000C111D98C111D88C111D89C111D86D99C111D87C111D85C111D8aD97C111D9aC222D79D8bC222D7aC222D96C222D84C222D78C222D7bC222D76D9bC222D95C222D77C333Da9C333D75C333D74C333D73Da8C333DaaC333D8cC333C444D83C444D7cDa7C444D6aC444D69C444D94C444C555D9cC555DabC555Da6C555D68C555D6bC555D66C555D72C555C666D67C666D65C666D64D7dDa5Db9C666D63C666D8dDb8C666DbaC666D82D93C666DacC666C777D6cC777D7eC777Da4Db7C777D9dDbbC777D59D7fC777D5aD62D6dDb6C777D6fC777D8eC777C888D6eD92DbcC888Da3DadDcaC888D57D58Db5Dc9C888D56Dc7C888D5bD8fDc8C888D9eDc6DcbC888D9fDaeDb4DbdDc5C888D53D55D71D91DccC888D81Da1Da2Dc1Dd8C888D54D5cDafDb1Db2Db3Dc0Dc2Dd0Dd1Dd6DdaDdbDdfDe0De8De9DeaC888D52D5fDc3Dd2Dd5Dd7Dd9C888D5dD90Da0Db0DbeDc4Dd3DdcDdeDefDf2C888D5eDbfDcdDcfDd4De1DebDfaC888D4aD61DddDe2Df0Df1Df5Df8C999D80DceDe3DeeDf3Df4Df9DfbDfdDfeC999D41D47D49De7DecDedDf6Df7DfcDffC999D40D42D46D4bD4cD4dD51De4C999D43D44D48D4eD4fD50D70De5De6C999D10D20D30D31D36D3cD45D60C999D17D32D3bD3fC999D21D22D26D2eD2fD34D37D39D3aD3dD3eC999D15D16D23D29D33C999D07D11D12D14D18D19D1eD1fD25D27D2aD2dD35D38C999D00D05D06D0fD1aD24D2bD2cC999D01D04D09D0cD13D1bD1cD1dD28C999D02D0aD0bD0eC999D08D0dC999D03"{
  	choice = getArgument();
  	
  	if(units == 0 && choice != "Preferences"){
@@ -67,11 +67,11 @@ SOFTWARE.
 	 	if(choice != "-"){
 	 		if(choice == "Process Video") {ProcessVideo(); }
 	 		else if(choice == "Batch Process Video Files") {BatchProcessVideoFiles();}
-	 		else if(choice == "Open Field Test") {MouseCubeTracker(); }
-	 		else if(choice == "Elevated Plus Maize") {MiceElevatedPuzzleTracker(); }
-	 		else if(choice == "Watermaize Test") {MouseSwimTracker(); }
+	 		else if(choice == "Open Field") {MouseCubeTracker(); }
+	 		else if(choice == "Elevated Plus Maze") {MiceElevatedPuzzleTracker(); }
+	 		else if(choice == "Morris Water Maze") {MouseSwimTracker(); }
 	 		else if(choice == "Novel Object Recognition") {MouseRegionsTracker(); }
-	 		else if(choice == "Y/T Maize") {MiceYTTracker(); }
+	 		else if(choice == "Y Maze") {MiceYTTracker(); }
 	 		else if(choice == "Open Previous Analysis File") {openPreviousAnalysis(); }
 	 		else if(choice == "Preferences") {Preferences(); }
 	 		else if(choice == "Fear Conditioning"){fearConditioning();}
@@ -350,7 +350,7 @@ function MouseCubeTracker(){
 	roiManager("Show None");
 	
 	//analyse particles function	
-	makeAnalysis(stagger, fps, mCubeArea);
+	totalslices = makeAnalysis(stagger, fps, mCubeArea, 1);
 	
 	//Save ROIs to a file in the folder of the image
 	roiManager("Show All without labels");
@@ -366,7 +366,7 @@ function MouseCubeTracker(){
 
 	//Get data of the dectetions
 	oriID=getImageID();
-	getParameters(fps, dir, imTitle);
+	getParameters(fps, dir, imTitle, totalslices);
 	dialog2(oriID, dir, imTitle, 1);
 
 }
@@ -374,7 +374,7 @@ function MouseCubeTracker(){
 /*This function goes through the ROIs, creates and fills arrays with the
 result of the ROI analysis and then prints them to 2 files with the individual
 results and a summary of the results*/
-function getParameters(fps,dir, imTitle){
+function getParameters(fps,dir, imTitle, totalSlices){
 	//Determine the delay between ROIs
 	if(fps != 25){
 		delay = 1/fps;
@@ -520,7 +520,7 @@ function getParameters(fps,dir, imTitle){
 	setResult("Value", i,(displa - displaCenter));
 	i = i + 1;
 	setResult("Label", i,"Total time"); 
-	setResult("Value", i, nSlices * delay);
+	setResult("Value", i, totalSlices * delay);
 	i = i + 1;
 	setResult("Label", i, "Time in center"); 
 	setResult("Value", i, centerTime);
@@ -532,16 +532,16 @@ function getParameters(fps,dir, imTitle){
 	setResult("Value", i, wallsTime);
 	i = i + 1;
 	setResult("Label", i, "Time at borders"); 
-	setResult("Value", i, ((nSlices * delay) - wallsTime - centerTime));
+	setResult("Value", i, ((totalSlices * delay) - wallsTime - centerTime));
 	i = i + 1;
 	setResult("Label", i, "Time freezed/not moving"); 
-	setResult("Value", i,((nSlices * delay) - moving));
+	setResult("Value", i,((totalSlices * delay) - moving));
 	i = i + 1;
 	setResult("Label", i, "Time freezed/not moving in center"); 
 	setResult("Value", i,freezeCenter);
 	i = i + 1;
 	setResult("Label", i, "Time freezed/not moving in outer region"); 
-	setResult("Value", i,((nSlices * delay) - moving) - freezeCenter);
+	setResult("Value", i,((totalSlices * delay) - moving) - freezeCenter);
 	i = i + 1;
 	setResult("Label", i, "Average displacement");
 	Array.getStatistics(displacement, min,max,mean,dev);
@@ -555,7 +555,7 @@ function getParameters(fps,dir, imTitle){
 	selectWindow("Results");
 	saveAs("text", dir+imTitle+".Track.xls");
 	run("Close");
-	//setBatchMode("show");
+
 
 }
 
@@ -753,7 +753,7 @@ function MiceElevatedPuzzleTracker(){
 		print(f, "DarkR\t" + 0 + "\t" + 0);
 	
 	//analyse particles function
-	makeAnalysis(stagger, fps, mElevatedArea);
+	totalSlices = makeAnalysis(stagger, fps, mElevatedArea, 2);
 
 
 	roiManager("Show All without labels");
@@ -781,7 +781,7 @@ function MiceElevatedPuzzleTracker(){
 /*This function goes through the ROIs, creates and fills arrays with the
 result of the ROI analysis and then prints them to 2 files with the individual
 results and a summary of the results*/
-function getParametersET(fps, dir, imTitle, armsL){
+function getParametersET(fps, dir, imTitle, armsL, totalSlices){
 	//Determine the delay between ROIs
 	if(fps != 25){
 		delay = 1/fps;
@@ -958,7 +958,7 @@ function getParametersET(fps, dir, imTitle, armsL){
 	setResult("Label", 7, "Times of over the edge exploration"); 
 	setResult("Value", 7, nExplo);
 	setResult("Label", 8, "Time in central area");
-	setResult("Value", 8, (nSlices*delay)-closedTime-openTime);
+	setResult("Value", 8, (totalSlices*delay)-closedTime-openTime);
 	
 	updateResults();
 	selectWindow("Results");
@@ -1139,7 +1139,7 @@ function MouseSwimTracker(){
 	setBatchMode("hide");
 	makeOval(rectCoord[0], rectCoord[1], rectCoord[2], rectCoord[3]);
 	/*Removed this VS reference to make my life easier*/
-/*	if(is("Virtual Stack")){
+	/*if(is("Virtual Stack")){
 		close();
 		sortVirtual(dir, rectCoord, 3);
 	}else{*/
@@ -1184,8 +1184,8 @@ regarding it. Also save the threshold to file*/
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	
-	//analyse particles function
-	makeAnalysis(stagger, fps, mSwimmingArea);
+	//analyse particles function (here totalSlices is the first slice analysed)
+	totalSlices = makeAnalysis(stagger, fps, mSwimmingArea, 3);
 
 	roiManager("Show All without labels");
 	roiManager("Show None");
@@ -1200,7 +1200,7 @@ regarding it. Also save the threshold to file*/
 	run("Select None");
 
 	oriID=getImageID();
-	getParametersSM(fps,dir, imTitle, diameter);
+	getParametersSM(fps,dir, imTitle, diameter, totalSlices);
 	dialog2(oriID, dir, imTitle, 3);
 	
 	
@@ -1210,7 +1210,7 @@ regarding it. Also save the threshold to file*/
 /*This function goes through the ROIs, creates and fills arrays with the
 result of the ROI analysis and then prints them to 2 files with the individual
 results and a summary of the results*/
-function getParametersSM(fps,dir, imTitle, diameter){
+function getParametersSM(fps,dir, imTitle, diameter, totalSlices){
 	//Get delay between frames analyzed
 	if(fps != 25){
 		delay = 1/fps;
@@ -1280,7 +1280,7 @@ function getParametersSM(fps,dir, imTitle, diameter){
 			}else;
 
 			if(angle[1] && flag){
-				t2Plat = getSliceNumber()*delay;
+				t2Plat = (getSliceNumber() - totalSlices)*delay;
 				flag = 0;
 			}
 			
@@ -1538,7 +1538,7 @@ regarding it. Also save the threshold to file*/
 	roiManager("Show None");
 
 	//analyse particles function
-	makeAnalysis(stagger, fps, mCubeArea);
+	totalSlices = makeAnalysis(stagger, fps, mCubeArea, 4);
 
 	roiManager("Show All without labels");
 	roiManager("Show None");
@@ -1552,7 +1552,7 @@ regarding it. Also save the threshold to file*/
 	run("Select None");
 
 	oriID=getImageID();
-	getParametersRT(fps, dir, imTitle, nRegions);
+	getParametersRT(fps, dir, imTitle, nRegions, totalSlices);
 	dialog2(oriID, dir, imTitle, 4);
 	
 }
@@ -1560,7 +1560,7 @@ regarding it. Also save the threshold to file*/
 /*This function goes through the ROIs, creates and fills arrays with the
 result of the ROI analysis and then prints them to 2 files with the individual
 results and a summary of the results*/
-function getParametersRT(fps,dir, imTitle, n){
+function getParametersRT(fps,dir, imTitle, n, totalSlices){
 	//Determine the delay between ROIs
 	if(fps != 25){
 		delay = 1/fps;
@@ -1676,7 +1676,7 @@ function getParametersRT(fps,dir, imTitle, n){
 	setResult("Label", 0, "Total displacement"); 
 	setResult("Value", 0, displa);
 	setResult("Label", 1,"Total time"); 
-	setResult("Value",1, nSlices * delay);
+	setResult("Value",1, totalSlices * delay);
 	setResult("Label", 2, "Average displacement");
 	Array.getStatistics(displacement, min,max,mean,dev);
 	setResult("Value", 2, mean);
@@ -1929,8 +1929,8 @@ dimensions of the triangle*/
 	else
 		print(f, "DarkR\t" + 0 + "\t" + 0 );
 
-	//analyse particles function
-	makeAnalysis(stagger, fps, mTYArea);
+	//analyse particles function (here totalSlices is first slice)
+	totalSlices = makeAnalysis(stagger, fps, mTYArea, 5);
 	
 	roiManager("Show All without labels");
 	roiManager("Show None");
@@ -1945,7 +1945,7 @@ dimensions of the triangle*/
 	run("Select None");
 
 	oriID=getImageID();
-	getParametersTY(fps, dir, imTitle);
+	getParametersTY(fps, dir, imTitle, totalSlices);
 	dialog2(oriID, dir, imTitle, 5);
 	
 }
@@ -1954,7 +1954,7 @@ dimensions of the triangle*/
 /*This function goes through the ROIs, creates and fills arrays with the
 result of the ROI analysis and then prints them to 2 files with the individual
 results and a summary of the results*/
-function getParametersTY(fps, dir, imTitle){
+function getParametersTY(fps, dir, imTitle, sStart){
 	//Determine the delay between ROIs
 	if(fps != 25){
 		delay = 1/fps;
@@ -1996,10 +1996,10 @@ function getParametersTY(fps, dir, imTitle){
 		arrayY[i] = List.getValue("Y");
 		
 
-		//angle is an array which provides several properties to setup
+		//armsPosition is an array which provides several properties to setup
 		//information. 
 		armsPosition[i] = getDirectionTY();			
-		slices[i] = getSliceNumber();
+		slices[i] = (getSliceNumber() - sStart);
 
 
 				
@@ -2056,7 +2056,7 @@ function getParametersTY(fps, dir, imTitle){
 				ordem = ordem + ",1";
 				if(order1 == 0){
 					roiManager("Select", i);
-					order1 = delay * getSliceNumber();
+					order1 = delay * (getSliceNumber()-sStart);
 				}
 					
 			}
@@ -2068,7 +2068,7 @@ function getParametersTY(fps, dir, imTitle){
 				ordem = ordem + ",2";
 				if(order2 == 0){
 					roiManager("Select", i);
-					order2 = delay * getSliceNumber();
+					order2 = delay * (getSliceNumber()-sStart);
 				}
 					
 			}
@@ -2079,7 +2079,7 @@ function getParametersTY(fps, dir, imTitle){
 				ordem = ordem + ",3";
 				if(order3 == 0){
 					roiManager("Select", i);
-					order3 = delay * getSliceNumber();
+					order3 = delay * (getSliceNumber()-sStart);
 				}
 					
 			}
@@ -2312,7 +2312,7 @@ regarding it. Also save the threshold to file*/
 	roiManager("Show None");
 	
 	//analyse particles function
-	makeAnalysis(stagger, fps, mFreezeArea);
+	totalSlices = makeAnalysis(stagger, fps, mFreezeArea, 6);
 	
 	//Save ROIs to a file in the folder of the image
 	roiManager("Show All without labels");
@@ -2336,7 +2336,7 @@ regarding it. Also save the threshold to file*/
 /*This function goes through the ROIs, creates and fills arrays with the
 result of the ROI analysis and then prints them to 2 files with the individual
 results and a summary of the results*/
-function freezeCheck(fps, dir, imTitle){
+function freezeCheck(fps, dir, imTitle, sStart){
 	//Determine the delay between ROIs
 	delay = 1/fps;
 	run("Select None");
@@ -2368,9 +2368,9 @@ function freezeCheck(fps, dir, imTitle){
 			/*If freeze frames are more then half then print to results start and ending frames
 			of freeze section*/
 			if(count > fps/2){
-				setResult("Freeze start frame", j, getSliceNumber() - count);
-				setResult("Freeze finished frame", j, getSliceNumber());
-				setResult("Time frozen", j , delay * count);
+				setResult("Still start frame", j, (getSliceNumber()- sStart) - count);
+				setResult("Still finished frame", j, (getSliceNumber()- sStart));
+				setResult("Time Still", j , delay * count);
 				freezeT = freezeT + (count*delay);
 				count = 0;	
 				j++;
@@ -2493,11 +2493,11 @@ function Preferences(){
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.dispVal", 0.1);
 		//Cube Maize
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.soli", 0.8);
-		call("ij.Prefs.set", "JAMoT_Prefs.cube.width", 28);
+		call("ij.Prefs.set", "JAMoT_Prefs.cube.width", 38);
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.marea", 500);
 		//Elevated Maize
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.width", 7);
-		call("ij.Prefs.set", "JAMoT_Prefs.elev.length", 19.5);
+		call("ij.Prefs.set", "JAMoT_Prefs.elev.length", 25);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.marea", 1000);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.smooth", 3);
 		//Swimming Maize
@@ -2658,17 +2658,25 @@ function dialog2(imageID, dir, imTitle, option){
 /*Function to sort out the analysis of the stacks to create ROIS
 taking into consideration starting and ending points if the user selects stagger
 and increase in delay between ROIs (fps)*/
-function makeAnalysis(flag, fps, area){
+function makeAnalysis(flag, fps, area, option){
 	
+	totalSlices = 0;
 	if(flag == 0){
 		setBatchMode("hide");
-		if(fps == 25)
+		if(fps == 25){
+			if(option != 3 && option != 5)
+				totalSlices = nSlices;
+			else
+				totalSlices = 1;
 			run("Analyze Particles...", "size="+area+"-Infinity pixel include add stack");
-		else{
+		}else{
 			for(i = 1; i < nSlices; i = i + 100/fps){
+				totalSlices++;
 				setSlice(i);
 				run("Analyze Particles...", "size="+area+"-Infinity pixel include add slice");
 			}
+			if(option == 3 || option == 5)
+				totalSlices = 1;
 		}
 		setBatchMode("show");
 	}else{
@@ -2676,9 +2684,14 @@ function makeAnalysis(flag, fps, area){
 		s = getSliceNumber();
 		waitForUser("Please select ending frame for ROI analysis");
 		e = getSliceNumber();
-		
+			
 		setBatchMode("hide");
 		if(fps == 25){
+			if(option != 3 && option != 5)
+				totalSlices = e - s;
+			else
+				totalSlices = s;
+			
 			for(i = s; i < e; i++){
 				setSlice(i);
 				run("Analyze Particles...", "size="+area+"-Infinity pixel include add slice");
@@ -2686,15 +2699,18 @@ function makeAnalysis(flag, fps, area){
 		
 		}else{
 			for(i = s; i < e; i = i + 100/fps){
+				totalSlices++;
 				setSlice(i);
 				run("Analyze Particles...", "size="+area+"-Infinity pixel include add slice");
 			}
+			if(option == 3 || option == 5)
+				totalSlices = s;
 		}
 		setBatchMode("show");
 	}
 	
 	
-	
+	return totalSlices;
 	
 }
 
