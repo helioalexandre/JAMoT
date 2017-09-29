@@ -55,6 +55,7 @@ requires("1.50a");
  //Freezing test
  var mFreezeArea = call("ij.Prefs.get", "JAMoT_Prefs.fre.marea", "0");
  var sFreeze = call("ij.Prefs.get", "JAMoT_Prefs.fre.smooth", "0");
+ var tFreeze = call("ij.Prefs.get", "JAMoT_Prefs.fre.binInt", "0");
  
  
 macro "Mouse trial Macros Menu Tool - C000C111D98C111D88C111D89C111D86D99C111D87C111D85C111D8aD97C111D9aC222D79D8bC222D7aC222D96C222D84C222D78C222D7bC222D76D9bC222D95C222D77C333Da9C333D75C333D74C333D73Da8C333DaaC333D8cC333C444D83C444D7cDa7C444D6aC444D69C444D94C444C555D9cC555DabC555Da6C555D68C555D6bC555D66C555D72C555C666D67C666D65C666D64D7dDa5Db9C666D63C666D8dDb8C666DbaC666D82D93C666DacC666C777D6cC777D7eC777Da4Db7C777D9dDbbC777D59D7fC777D5aD62D6dDb6C777D6fC777D8eC777C888D6eD92DbcC888Da3DadDcaC888D57D58Db5Dc9C888D56Dc7C888D5bD8fDc8C888D9eDc6DcbC888D9fDaeDb4DbdDc5C888D53D55D71D91DccC888D81Da1Da2Dc1Dd8C888D54D5cDafDb1Db2Db3Dc0Dc2Dd0Dd1Dd6DdaDdbDdfDe0De8De9DeaC888D52D5fDc3Dd2Dd5Dd7Dd9C888D5dD90Da0Db0DbeDc4Dd3DdcDdeDefDf2C888D5eDbfDcdDcfDd4De1DebDfaC888D4aD61DddDe2Df0Df1Df5Df8C999D80DceDe3DeeDf3Df4Df9DfbDfdDfeC999D41D47D49De7DecDedDf6Df7DfcDffC999D40D42D46D4bD4cD4dD51De4C999D43D44D48D4eD4fD50D70De5De6C999D10D20D30D31D36D3cD45D60C999D17D32D3bD3fC999D21D22D26D2eD2fD34D37D39D3aD3dD3eC999D15D16D23D29D33C999D07D11D12D14D18D19D1eD1fD25D27D2aD2dD35D38C999D00D05D06D0fD1aD24D2bD2cC999D01D04D09D0cD13D1bD1cD1dD28C999D02D0aD0bD0eC999D08D0dC999D03"{
@@ -350,7 +351,12 @@ function MouseCubeTracker(){
 	roiManager("Show None");
 	
 	//analyse particles function	
-	totalslices = makeAnalysis(stagger, fps, mCubeArea, 1);
+	SEpoints = makeAnalysis(stagger, fps, mCubeArea);
+	print(f, "staggerPoints\t" + SEpoints[0] +"\t"+ SEpoints[1]);
+	if(fps == 25)
+		totalslices = SEpoints[1] - SEpoints[0];
+	else
+		totalslices = round((SEpoints[1] - SEpoints[0])/ (100/fps));
 	
 	//Save ROIs to a file in the folder of the image
 	roiManager("Show All without labels");
@@ -753,8 +759,12 @@ function MiceElevatedPuzzleTracker(){
 		print(f, "DarkR\t" + 0 + "\t" + 0);
 	
 	//analyse particles function
-	totalSlices = makeAnalysis(stagger, fps, mElevatedArea, 2);
-
+	SEpoints = makeAnalysis(stagger, fps, mElevatedArea);
+	print(f, "staggerPoints\t" + SEpoints[0] +"\t"+ SEpoints[1]);
+	if(fps == 25)
+		totalslices = SEpoints[1] - SEpoints[0];
+	else
+		totalslices = round((SEpoints[1] - SEpoints[0])/ (100/fps));
 
 	roiManager("Show All without labels");
 	roiManager("Show None");
@@ -772,7 +782,7 @@ function MiceElevatedPuzzleTracker(){
 	
 	//Get data of the detections
 	oriID=getImageID();
-	getParametersET(fps, dir, imTitle, armsL);
+	getParametersET(fps, dir, imTitle, armsL, totalslices);
 	dialog2(oriID, dir, imTitle, 2);
 	
 }
@@ -1184,9 +1194,11 @@ regarding it. Also save the threshold to file*/
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	
-	//analyse particles function (here totalSlices is the first slice analysed)
-	totalSlices = makeAnalysis(stagger, fps, mSwimmingArea, 3);
-
+	//analyse particles function (here we only need the first slice analysed)
+	SEpoints = makeAnalysis(stagger, fps, mSwimmingArea);
+	print(f, "staggerPoints\t" + SEpoints[0] +"\t"+ SEpoints[1]);
+	
+	
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	
@@ -1200,7 +1212,7 @@ regarding it. Also save the threshold to file*/
 	run("Select None");
 
 	oriID=getImageID();
-	getParametersSM(fps,dir, imTitle, diameter, totalSlices);
+	getParametersSM(fps,dir, imTitle, diameter, SEpoints[0]);
 	dialog2(oriID, dir, imTitle, 3);
 	
 	
@@ -1538,8 +1550,13 @@ regarding it. Also save the threshold to file*/
 	roiManager("Show None");
 
 	//analyse particles function
-	totalSlices = makeAnalysis(stagger, fps, mCubeArea, 4);
-
+	SEpoints = makeAnalysis(stagger, fps, mCubeArea);
+	print(f, "staggerPoints\t" + SEpoints[0] +"\t"+ SEpoints[1]);
+	if(fps == 25)
+		totalslices = SEpoints[1] - SEpoints[0];
+	else
+		totalslices = round((SEpoints[1] - SEpoints[0])/ (100/fps));
+	
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	//Save ROIs to a file in the folder of the image
@@ -1552,7 +1569,7 @@ regarding it. Also save the threshold to file*/
 	run("Select None");
 
 	oriID=getImageID();
-	getParametersRT(fps, dir, imTitle, nRegions, totalSlices);
+	getParametersRT(fps, dir, imTitle, nRegions, totalslices);
 	dialog2(oriID, dir, imTitle, 4);
 	
 }
@@ -1929,8 +1946,10 @@ dimensions of the triangle*/
 	else
 		print(f, "DarkR\t" + 0 + "\t" + 0 );
 
-	//analyse particles function (here totalSlices is first slice)
-	totalSlices = makeAnalysis(stagger, fps, mTYArea, 5);
+	//analyse particles function (here we only need the first slice)
+	SEpoints = makeAnalysis(stagger, fps, mTYArea);
+	print(f, "staggerPoints\t" + SEpoints[0] +"\t"+ SEpoints[1]);
+
 	
 	roiManager("Show All without labels");
 	roiManager("Show None");
@@ -1945,7 +1964,7 @@ dimensions of the triangle*/
 	run("Select None");
 
 	oriID=getImageID();
-	getParametersTY(fps, dir, imTitle, totalSlices);
+	getParametersTY(fps, dir, imTitle, SEpoints[0]);
 	dialog2(oriID, dir, imTitle, 5);
 	
 }
@@ -2284,12 +2303,15 @@ function fearConditioning(){
 	setBatchMode("show");
 	
 	//Remove dark regions if so selected
-	if(darkR)
+	if(darkR){
 		darkA = removeDarkR(imTitle);
-	
-	/*Another gaussian blur in the diference stack to try and reduce the 
+		/*Another gaussian blur in the diference stack to try and reduce the 
 	wave patterns of the images*/
-	run("Gaussian Blur...", "sigma="+gaus+" stack");
+		run("Gaussian Blur...", "sigma="+gaus+" stack");
+	}
+		
+	
+	
 	
 	/*Set autothreshold method with Minum and get the input from the user
 regarding it. Also save the threshold to file*/
@@ -2312,7 +2334,9 @@ regarding it. Also save the threshold to file*/
 	roiManager("Show None");
 	
 	//analyse particles function
-	totalSlices = makeAnalysis(stagger, fps, mFreezeArea, 6);
+	SEpoints = makeAnalysis(stagger, fps, mFreezeArea);
+	print(f, "staggerPoints\t" + SEpoints[0] +"\t"+ SEpoints[1]);
+	
 	
 	//Save ROIs to a file in the folder of the image
 	roiManager("Show All without labels");
@@ -2328,7 +2352,7 @@ regarding it. Also save the threshold to file*/
 
 	//Get data of the dectetions
 	oriID=getImageID();
-	freezeCheck(fps, dir, imTitle);
+	freezeCheck(fps, dir, imTitle, SEpoints[0]);
 	dialog2(oriID, dir, imTitle, 6);
 
 }
@@ -2341,8 +2365,6 @@ function freezeCheck(fps, dir, imTitle, sStart){
 	delay = 1/fps;
 	run("Select None");
 	
-	fre = newArray(roiManager("count")-1);
-	Array.fill(fre, 0);
 	freezeT = 0;
 	count = 0;
 	
@@ -2350,8 +2372,8 @@ function freezeCheck(fps, dir, imTitle, sStart){
 	setBatchMode("hide");
 	
 	/*Main loop to go trough all the ROIs and get the stats*/
-	for(i = 0, j = 0; i < roiManager("Count")-1; i++){
-		showProgress(i,roiManager("Count"));
+	for(i = 0; i < roiManager("Count")-1; i++){
+		showProgress(i,roiManager("Count")-1);
 		showStatus("Analysing detections...");
 		//Create array to select 2 ROIs
 		sA[0] = i; sA[1] = i+1;
@@ -2360,7 +2382,6 @@ function freezeCheck(fps, dir, imTitle, sStart){
 		roiManager("XOR");
 		//Get area of XOr selection
 		getStatistics(area);
-		fre[i] = area; 
 		//Count frames that mouse is freezed
 		if(area <= 500){
 			count++;
@@ -2368,29 +2389,64 @@ function freezeCheck(fps, dir, imTitle, sStart){
 			/*If freeze frames are more then half then print to results start and ending frames
 			of freeze section*/
 			if(count > fps/2){
-				setResult("Still start frame", j, (getSliceNumber()- sStart) - count);
-				setResult("Still finished frame", j, (getSliceNumber()- sStart));
-				setResult("Time Still", j , delay * count);
+				for(k = 0; k < count; k++){
+					n = nResults;
+					setResult("Time", n, ((getSliceNumber()- sStart) - count + k + 1)*delay);
+					setResult("Sum of time for interval", n, (k + 1) * delay);
+				}
+				
 				freezeT = freezeT + (count*delay);
 				count = 0;	
-				j++;
+				/*setResult("Still start frame", j, (getSliceNumber()- sStart) - count);
+				setResult("Still finished frame", j, (getSliceNumber()- sStart));
+				setResult("Time Still", j , delay * count);
+				
+				j++;*/
 			}else
 				count = 0;
 		}
 		 		 	
 	}
-		
-
-	setBatchMode("show");
-
 	updateResults();
-
+	setBatchMode("show");
+	
+	fre = newArray(nResults+1);
+	for(j = 0; j<nResults; j++)
+		fre[j] = getResult("Time", j);
+	
+	Array.getStatistics(fre, min, max, mean, stdDev);
+	bins = round(max / tFreeze);
+	counts = newArray(bins);
+	Array.fill(counts,0);
+	value = 0;
+	for(j = 0; j < counts.length; j++){
+		for(k = 0; k < fre.length; k++){
+			if(fre[k] < tFreeze*(j+1) && fre[k] >= tFreeze*(j) && fre[k] != 0)
+				value++;
+		}
+		counts[j] = value;
+		value = 0;
+	}
+	
+	
 	selectWindow("Results");
 	saveAs("text", dir+imTitle+".Spots.xls");
-	run("Close");
-
+	run("Clear Results");
 	
-	print("Total freezing time: " + freezeT + "s.");
+	
+	for(j = 0; j < counts.length; j++){
+		setResult("Bin Start", j, tFreeze*(j));
+		setResult("Bin End", j, tFreeze*(j+1));
+		setResult("Value (counts of " + delay+")", j, counts[j]);
+	
+	}
+	
+	setResult("Total freezing time (s)", nResults, freezeT);
+	selectWindow("Results");
+	saveAs("text", dir+imTitle+".Tracks.xls");
+	run("Close");
+	
+
 
 }
 
@@ -2429,6 +2485,7 @@ function Preferences(){
 	Dialog.addMessage("Freezing Maize Parameters");
 	Dialog.addNumber("Mouse minimal area (pixels)", mFreezeArea);
 	Dialog.addNumber("Selection smoothing value (pixels)", sFreeze);
+	Dialog.addNumber("Bin intervals (seconds)", tFreeze);
 	//Defaults
 	Dialog.addMessage("To use default parameters, check the box below.\n Above values will be ignored");
 	Dialog.addCheckbox("Revert to default settings", false);
@@ -2457,6 +2514,7 @@ function Preferences(){
 	sTYL = Dialog.getNumber();
 	//Freeze test
 	mFreezeAreaL = Dialog.getNumber();
+	sFreezeL = Dialog.getNumber();
 	sFreezeL = Dialog.getNumber();
 	//Default
 	default = Dialog.getCheckbox();
@@ -2511,6 +2569,7 @@ function Preferences(){
 		//Freeze maize
 		call("ij.Prefs.set", "JAMoT_Prefs.fre.marea", 5000);
 		call("ij.Prefs.set", "JAMoT_Prefs.fre.smooth", 10);
+		call("ij.Prefs.set", "JAMoT_Prefs.fre.binInt", 30);
 	}
 	
 	exit("Please restart Fiji/ImageJ for changes to take effect.");
@@ -2658,25 +2717,22 @@ function dialog2(imageID, dir, imTitle, option){
 /*Function to sort out the analysis of the stacks to create ROIS
 taking into consideration starting and ending points if the user selects stagger
 and increase in delay between ROIs (fps)*/
-function makeAnalysis(flag, fps, area, option){
+function makeAnalysis(flag, fps, area){
 	
-	totalSlices = 0;
+	startEnd = newArray(2);
 	if(flag == 0){
+		startEnd[0] = 1;
+		startEnd[1] = nSlices;
 		setBatchMode("hide");
 		if(fps == 25){
-			if(option != 3 && option != 5)
-				totalSlices = nSlices;
-			else
-				totalSlices = 1;
+			
 			run("Analyze Particles...", "size="+area+"-Infinity pixel include add stack");
 		}else{
 			for(i = 1; i < nSlices; i = i + 100/fps){
-				totalSlices++;
 				setSlice(i);
 				run("Analyze Particles...", "size="+area+"-Infinity pixel include add slice");
 			}
-			if(option == 3 || option == 5)
-				totalSlices = 1;
+
 		}
 		setBatchMode("show");
 	}else{
@@ -2684,14 +2740,11 @@ function makeAnalysis(flag, fps, area, option){
 		s = getSliceNumber();
 		waitForUser("Please select ending frame for ROI analysis");
 		e = getSliceNumber();
-			
+		
+		startEnd[0] = s;
+		startEnd[1] = e + 1 ;
 		setBatchMode("hide");
 		if(fps == 25){
-			if(option != 3 && option != 5)
-				totalSlices = e - s;
-			else
-				totalSlices = s;
-			
 			for(i = s; i < e; i++){
 				setSlice(i);
 				run("Analyze Particles...", "size="+area+"-Infinity pixel include add slice");
@@ -2699,18 +2752,15 @@ function makeAnalysis(flag, fps, area, option){
 		
 		}else{
 			for(i = s; i < e; i = i + 100/fps){
-				totalSlices++;
 				setSlice(i);
 				run("Analyze Particles...", "size="+area+"-Infinity pixel include add slice");
 			}
-			if(option == 3 || option == 5)
-				totalSlices = s;
 		}
 		setBatchMode("show");
 	}
 	
 	
-	return totalSlices;
+	return startEnd;
 	
 }
 
@@ -3335,7 +3385,8 @@ function fearRedo(temp, option){
 	jump = 9 + ((count-9)*2) + 1;
 	thrMin = parseInt(temp[jump+1]); thrMax = parseInt(temp[jump+2]);
 	drkMin = parseInt(temp[jump+4]); drkMax = parseInt(temp[jump+5]);
-	temp2 = Array.slice(temp, jump+6, 100);
+	staggerS =  parseInt(temp[jump+7]);  staggerE = parseInt(temp[jump + 8]);
+	temp2 = Array.slice(temp, jump+9, 100);
 	checkPreferences(temp2);
 	
 	if(option == 0){
@@ -3348,15 +3399,17 @@ function fearRedo(temp, option){
 		//set bckgrd color
 		setBackgrdCo(thrMin);
 			
-		if(drkMin != drkMax)
+		if(drkMin != drkMax){
 			darkRPorjection(imName, drkMin,drkMax);
-
+			run("Gaussian Blur...", "sigma="+gaus+" stack");
+		}
+			
 		//setThreshold and Analyse
-		setThrandAna(thrMin, thrMax, fps,6);
+		setThrandAna(thrMin, thrMax, fps,6, staggerS, staggerE);
 		
 		//gets image ID
 		oriID=getImageID();
-		freezeCheck(fps, dir, imName);
+		freezeCheck(fps, dir, imName, staggerS);
 		dialog2(oriID, dir, imName, 6);
 		
 	}else{
@@ -3372,7 +3425,7 @@ function fearRedo(temp, option){
 			exit("Roi큦 file appears to not exist!");
 		if(option == 1){
 			//Get data of the dectetions
-			freezeCheck(fps, dir, imName);
+			freezeCheck(fps, dir, imName, staggerS);
 		}
 		if(option == 2){
 			oriID = getImageID();
@@ -3410,7 +3463,8 @@ function tyRedo(temp, option){
 	jump = 20 + ((count-20)*2) + 1;
 	thrMin = parseInt(temp[jump+1]); thrMax = parseInt(temp[jump+2]);
 	drkMin = parseInt(temp[jump+4]); drkMax = parseInt(temp[jump+5]);
-	temp2 = Array.slice(temp, jump+6, 100);
+	staggerS =  parseInt(temp[jump+7]);  staggerE = parseInt(temp[jump + 8]);
+	temp2 = Array.slice(temp, jump+9, 100);
 	checkPreferences(temp2);
 	
 	if(option == 0){
@@ -3434,11 +3488,11 @@ function tyRedo(temp, option){
 			darkRPorjection(imName, drkMin,drkMax);
 
 		//setThreshold and Analyse
-		setThrandAna(thrMin, thrMax, fps,5);
+		setThrandAna(thrMin, thrMax, fps,5, staggerS, staggerE);
 		
 		//gets image ID
 		oriID=getImageID();
-		getParametersTY(fps, dir, imName);
+		getParametersTY(fps, dir, imName, staggerS);
 		dialog2(oriID, dir, imName, 5);
 		
 	}else{
@@ -3456,7 +3510,7 @@ function tyRedo(temp, option){
 			exit("Roi큦 file appears to not exist!");
 		if(option == 1){
 			//Get data of the dectetions
-			getParametersTY(fps, dir, imName);
+			getParametersTY(fps, dir, imName, staggerS);
 		}
 		if(option == 2){
 			oriID = getImageID();
@@ -3491,7 +3545,8 @@ function objectsRedo(temp, option){
 		
 	thrMin = parseInt(temp[21 + count + 1]); thrMax = parseInt(temp[21 + count + 2]);
 	drkMin = parseInt(temp[21 + count + 4]); drkMax = parseInt(temp[21 + count + 5]);
-	temp2 = Array.slice(temp, 21+count+6, 100);
+	staggerS =  parseInt(temp[21 + count + 7]);  staggerE = parseInt(temp[21 + count + 8]);
+	temp2 = Array.slice(temp, 21+count+9, 100);
 	checkPreferences(temp2);
 	
 	if(option == 0){
@@ -3523,11 +3578,16 @@ function objectsRedo(temp, option){
 			darkRPorjection(imName, drkMin,drkMax);
 
 		//setThreshold and Analyse
-		setThrandAna(thrMin, thrMax, fps, 4);
+		setThrandAna(thrMin, thrMax, fps, 4, staggerS, staggerE);
 		
 		//Get data of the dectetions
 		oriID=getImageID();
-		getParametersRT(fps, dir, imName, nRegions);
+		if(fps == 25)
+			totalslices = staggerE - staggerS;
+		else
+			totalslices = round((staggerE - staggerS)/ (100/fps));
+			
+		getParametersRT(fps, dir, imName, nRegions, totalslices);
 		dialog2(oriID, dir, imName, 4);
 		
 	}else{
@@ -3545,7 +3605,7 @@ function objectsRedo(temp, option){
 			exit("Roi큦 file appears to not exist!");
 		if(option == 1){
 			//Get data of the dectetions
-			getParametersRT(fps, dir, imName, nRegions);
+			getParametersRT(fps, dir, imName, nRegions, totalslices);
 		}
 		if(option == 2){
 			oriID = getImageID();
@@ -3571,7 +3631,8 @@ function swimRedo(temp, option){
 	pw = parseFloat(temp[22]); py = parseFloat(temp[23]);
 	thrMin = parseInt(temp[25]); thrMax = parseInt(temp[26]);
 	diameter = parseInt(temp[28]);
-	temp2 = Array.slice(temp, 29, 100);
+	staggerS = parseInt(temp[30]);  staggerE = parseInt(temp[31]); 
+	temp2 = Array.slice(temp, 32, 100);
 	checkPreferences(temp2);
 	
 	if(option == 0){
@@ -3591,11 +3652,11 @@ function swimRedo(temp, option){
 		run("Clear Outside", "stack");
 		
 		//setThreshold and Analyse
-		setThrandAna(thrMin, thrMax, fps, 3);
+		setThrandAna(thrMin, thrMax, fps, 3, staggerS, staggerE);
 		
 		//Get data of the dectetions
 		oriID = getImageID;
-		getParametersSM(fps,dir, imName, diameter);
+		getParametersSM(fps,dir, imName, diameter, staggerS);
 		dialog2(oriID, dir, imName, 3);
 		
 	}else{
@@ -3613,7 +3674,7 @@ function swimRedo(temp, option){
 			exit("Roi큦 file appears to not exist!");
 		if(option == 1){
 			//Get data of the dectetions
-			getParametersSM(fps,dir, imName);
+			getParametersSM(fps,dir, imName, diameter, staggerS);
 		}
 		if(option == 2){
 			oriID = getImageID();
@@ -3647,8 +3708,8 @@ function crossRedo(temp, option){
 	jump = 18 + ((count-18)*2) + 1;
 	thrMin = parseInt(temp[jump+1]); thrMax = parseInt(temp[jump+2]);
 	drkMin = parseInt(temp[jump+4]); drkMax = parseInt(temp[jump+5]);
-	
-	temp2 = Array.slice(temp, jump+6, 100);
+	staggerS = parseInt(temp[jump + 7]);  staggerE = parseInt(temp[jump + 8]); 
+	temp2 = Array.slice(temp, jump + 9, 100);
 	checkPreferences(temp2);
 	
 	if(option == 0){
@@ -3671,12 +3732,17 @@ function crossRedo(temp, option){
 			darkRPorjection(imName, drkMin,drkMax);
 		
 		//setThreshold and Analyse
-		setThrandAna(thrMin, thrMax, fps, 2);
+		setThrandAna(thrMin, thrMax, fps, 2, staggerS, staggerE);
 		
 		//Get data of the dectetions
+		if(fps == 25)
+			totalslices = staggerE - staggerS;
+		else
+			totalslices = round((staggerE - staggerS) / (100/fps));
+			
 		oriID = getImageID;
 		toUnscaled(armsL);
-		getParametersET(fps, dir, imName, armsL);
+		getParametersET(fps, dir, imName, armsL, totalslices);
 		dialog2(oriID, dir, imName, 2);
 	}else{
 		//Open image file or create an empty one
@@ -3694,7 +3760,7 @@ function crossRedo(temp, option){
 		if(option == 1){
 			//Get data of the dectetions
 			toUnscaled(armsL);
-			getParametersET(fps, dir, imName, armsL );
+			getParametersET(fps, dir, imName, armsL, totalslices);
 		}
 		if(option == 2){
 			oriID = getImageID();
@@ -3718,7 +3784,8 @@ function cubeRedo(temp, option){
 	pw = parseFloat(temp[19]); py = parseFloat(temp[20]);
 	thrMin = parseInt(temp[22]); thrMax = parseInt(temp[23]);
 	drkMin = parseInt(temp[25]); drkMax = parseInt(temp[26]);
-	temp2 = Array.slice(temp,27,100);
+	staggerS = parseInt(temp[28]);  staggerE = parseInt(temp[29]); 
+	temp2 = Array.slice(temp,30,100);
 	checkPreferences(temp2);
 	
 	if(option == 0){
@@ -3750,10 +3817,15 @@ function cubeRedo(temp, option){
 			darkRPorjection(imName, drkMin,drkMax);
 
 		//setThreshold and Analyse
-		setThrandAna(thrMin, thrMax, fps, 1);
+		setThrandAna(thrMin, thrMax, fps, 1, staggerS, staggerE);
 		
 		//Get data of the dectetions
-		getParameters(fps, dir, imName);
+		if(fps == 25)
+			totalslices = staggerE - staggerS;
+		else
+			totalslices = round((staggerE - staggerS)/ (100/fps));
+		
+		getParameters(fps, dir, imName, totalslices);
 		oriID = getImageID();
 		dialog2(oriID, dir, imName, 1);
 		
@@ -3772,7 +3844,7 @@ function cubeRedo(temp, option){
 			exit("Roi큦 file appears to not exist!");
 		if(option == 1){
 			//Get data of the dectetions
-			getParameters(fps, dir, imName);
+			getParameters(fps, dir, imName, totalslices);
 		}
 		if(option == 2){
 			oriID = getImageID();
@@ -3787,7 +3859,7 @@ function cubeRedo(temp, option){
 
 /*Function to set the threshold and analysis the 
 image stack in redo analysis*/
-function setThrandAna(thrMin, thrMax, fps, option){
+function setThrandAna(thrMin, thrMax, fps, option, start, end){
 
 		setThreshold(thrMin,thrMax);
 	
@@ -3806,14 +3878,15 @@ function setThrandAna(thrMin, thrMax, fps, option){
 		setBatchMode("hide");
 		//analyse particles taking in consideration the reduction in fps if selected
 		if(fps == 25)
-			run("Analyze Particles...", "size="+n+"-Infinity pixel include add stack");
-		else{
+			j = 1;
+		else
+			j = 100/fps;
 			
-			for(i = 1; i < nSlices; i = i + 100/fps){
+		for(i = start; i < end + 1; i = i + j){
 				setSlice(i);
 				run("Analyze Particles...", "size="+n+"-Infinity pixel include add slice");
 			}
-		}
+			
 		setBatchMode("show");
 }
 
@@ -3916,6 +3989,7 @@ function writePreferences(file){
 	//Fear Conditioning
 	print(file, "Mouse minimal area (pixels)\t"+ mFreezeArea);
 	print(file, "Selection smoothing value (pixels)\t"+ sFreeze);
+	print(file, "Bin intervals (seconds)\t"+ tFreeze);
 	
 }
 
@@ -3983,6 +4057,8 @@ function checkPreferences(array){
 	i = i + 2;
 	print(array[i] + ": current is "+  sFreeze + ". Saved is: " + array[i+1]);
 	if( sFreeze!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Fear Conditioning.");}
-			
+	i = i + 2;
+	print(array[i] + ": current is "+  tFreeze + ". Saved is: " + array[i+1]);
+	if( tFreeze!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Fear Conditioning.");}		
 }
 
