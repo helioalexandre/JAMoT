@@ -24,15 +24,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
-=======
- * //////////////////Author - Helio Roque - Centro Nacional Investigaciones CardioVasculares, Madrid, Spain/////////////
- * /////////////////Contact - helio.alexandreduarte at cnic.es///////////////////////////////////////////////////////////////
+/*
+ * Author - Helio Roque - Centro Nacional Investigaciones CardioVasculares, Madrid, Spain
+ * Contact - helio.alexandreduarte at cnic.es
  * 
  */
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
- 
- 
+  
 requires("1.50a");
  
  var filemenu = newMenu("Mouse trial Macros Menu Tool", newArray("Batch Process Video Files", "Process Video", "Open Field","Elevated Plus Maze", "Morris Water Maze", "Novel Object Recognition", "Y Maze","Fear Conditioning", "Open Previous Analysis File", "Preferences","-"));
@@ -220,8 +217,6 @@ function ProcessVideo(){
 }
 
 
-
-
 /*
  Function for Open Field analysis. Its main job its to determine if the mouse is in the center
  of the cube or in the walls region. It also outputs several parameters related to displacement, velocity, etc.
@@ -328,11 +323,7 @@ function MouseCubeTracker(){
 		px = boxW/rectCoord[2]; py = boxH/rectCoord[3];
 		print(f, "Pixel size\t"+px+"\t"+py);
 		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit="+units+" pixel_width="+px+" pixel_height="+py+" voxel_depth=1");	
-<<<<<<< HEAD
 	}else
-=======
-	}else{
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 		print(f, "Pixel size\t"+pw+"\t"+ph);
 
 	
@@ -360,14 +351,7 @@ function MouseCubeTracker(){
 		
 	roiManager("Show All without labels");
 	roiManager("Show None");
-<<<<<<< HEAD
-=======
-	
-	//analyse particles function	
-	makeAnalysis(stagger, fps, mCubeArea);
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
-	
-<<<<<<< HEAD
+
 	//analyse particles function	
 	SEpoints = makeAnalysis(stagger, fps, mCubeArea);
 	print(f, "staggerPoints\t" + SEpoints[0] +"\t"+ SEpoints[1]);
@@ -376,8 +360,7 @@ function MouseCubeTracker(){
 	else
 		totalslices = round((SEpoints[1] - SEpoints[0])/ (100/fps));
 	
-=======
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
+
 	//Save ROIs to a file in the folder of the image
 	roiManager("Show All without labels");
 	roiManager("Show None");
@@ -400,11 +383,8 @@ function MouseCubeTracker(){
 /*This function goes through the ROIs, creates and fills arrays with the
 result of the ROI analysis and then prints them to 2 files with the individual
 results and a summary of the results*/
-<<<<<<< HEAD
 function getParameters(fps,dir, imTitle, totalSlices){
-=======
-function getParameters(fps,dir, imTitle){
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
+
 	//Determine the delay between ROIs
 	if(fps != 25){
 		delay = 1/fps;
@@ -783,17 +763,13 @@ function MiceElevatedPuzzleTracker(){
 		print(f, "DarkR\t" + 0 + "\t" + 0);
 	
 	//analyse particles function
-<<<<<<< HEAD
 	SEpoints = makeAnalysis(stagger, fps, mElevatedArea);
 	print(f, "staggerPoints\t" + SEpoints[0] +"\t"+ SEpoints[1]);
 	if(fps == 25)
 		totalslices = SEpoints[1] - SEpoints[0];
 	else
 		totalslices = round((SEpoints[1] - SEpoints[0])/ (100/fps));
-=======
-	makeAnalysis(stagger, fps, mElevatedArea);
 
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 
 	roiManager("Show All without labels");
 	roiManager("Show None");
@@ -820,11 +796,8 @@ function MiceElevatedPuzzleTracker(){
 /*This function goes through the ROIs, creates and fills arrays with the
 result of the ROI analysis and then prints them to 2 files with the individual
 results and a summary of the results*/
-<<<<<<< HEAD
 function getParametersET(fps, dir, imTitle, armsL, totalSlices){
-=======
-function getParametersET(fps, dir, imTitle, armsL){
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
+
 	//Determine the delay between ROIs
 	if(fps != 25){
 		delay = 1/fps;
@@ -1182,11 +1155,7 @@ function MouseSwimTracker(){
 	setBatchMode("hide");
 	makeOval(rectCoord[0], rectCoord[1], rectCoord[2], rectCoord[3]);
 	/*Removed this VS reference to make my life easier*/
-<<<<<<< HEAD
 	/*if(is("Virtual Stack")){
-=======
-/*	if(is("Virtual Stack")){
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 		close();
 		sortVirtual(dir, rectCoord, 3);
 	}else{*/
@@ -1231,17 +1200,10 @@ regarding it. Also save the threshold to file*/
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	
-<<<<<<< HEAD
 	//analyse particles function (here we only need the first slice analysed)
 	SEpoints = makeAnalysis(stagger, fps, mSwimmingArea);
 	print(f, "staggerPoints\t" + SEpoints[0] +"\t"+ SEpoints[1]);
-	
-	
-=======
-	//analyse particles function
-	makeAnalysis(stagger, fps, mSwimmingArea);
 
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	
@@ -1265,11 +1227,7 @@ regarding it. Also save the threshold to file*/
 /*This function goes through the ROIs, creates and fills arrays with the
 result of the ROI analysis and then prints them to 2 files with the individual
 results and a summary of the results*/
-<<<<<<< HEAD
 function getParametersSM(fps,dir, imTitle, diameter, totalSlices){
-=======
-function getParametersSM(fps,dir, imTitle, diameter){
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 	//Get delay between frames analyzed
 	if(fps != 25){
 		delay = 1/fps;
@@ -1597,7 +1555,6 @@ regarding it. Also save the threshold to file*/
 	roiManager("Show None");
 
 	//analyse particles function
-<<<<<<< HEAD
 	SEpoints = makeAnalysis(stagger, fps, mCubeArea);
 	print(f, "staggerPoints\t" + SEpoints[0] +"\t"+ SEpoints[1]);
 	if(fps == 25)
@@ -1605,10 +1562,6 @@ regarding it. Also save the threshold to file*/
 	else
 		totalslices = round((SEpoints[1] - SEpoints[0])/ (100/fps));
 	
-=======
-	makeAnalysis(stagger, fps, mCubeArea);
-
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 	roiManager("Show All without labels");
 	roiManager("Show None");
 	//Save ROIs to a file in the folder of the image
@@ -1621,11 +1574,7 @@ regarding it. Also save the threshold to file*/
 	run("Select None");
 
 	oriID=getImageID();
-<<<<<<< HEAD
 	getParametersRT(fps, dir, imTitle, nRegions, totalslices);
-=======
-	getParametersRT(fps, dir, imTitle, nRegions);
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 	dialog2(oriID, dir, imTitle, 4);
 	
 }
@@ -1633,11 +1582,7 @@ regarding it. Also save the threshold to file*/
 /*This function goes through the ROIs, creates and fills arrays with the
 result of the ROI analysis and then prints them to 2 files with the individual
 results and a summary of the results*/
-<<<<<<< HEAD
 function getParametersRT(fps,dir, imTitle, n, totalSlices){
-=======
-function getParametersRT(fps,dir, imTitle, n){
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 	//Determine the delay between ROIs
 	if(fps != 25){
 		delay = 1/fps;
@@ -2006,15 +1951,10 @@ dimensions of the triangle*/
 	else
 		print(f, "DarkR\t" + 0 + "\t" + 0 );
 
-<<<<<<< HEAD
+
 	//analyse particles function (here we only need the first slice)
 	SEpoints = makeAnalysis(stagger, fps, mTYArea);
 	print(f, "staggerPoints\t" + SEpoints[0] +"\t"+ SEpoints[1]);
-
-=======
-	//analyse particles function
-	makeAnalysis(stagger, fps, mTYArea);
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 	
 	roiManager("Show All without labels");
 	roiManager("Show None");
@@ -2038,11 +1978,7 @@ dimensions of the triangle*/
 /*This function goes through the ROIs, creates and fills arrays with the
 result of the ROI analysis and then prints them to 2 files with the individual
 results and a summary of the results*/
-<<<<<<< HEAD
 function getParametersTY(fps, dir, imTitle, sStart){
-=======
-function getParametersTY(fps, dir, imTitle){
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 	//Determine the delay between ROIs
 	if(fps != 25){
 		delay = 1/fps;
@@ -2380,17 +2316,10 @@ function fearConditioning(){
 	}
 		
 	
-<<<<<<< HEAD
-=======
 	/*Another gaussian blur in the diference stack to try and reduce the 
 	wave patterns of the images*/
 	run("Gaussian Blur...", "sigma="+gaus+" stack");
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
-	
-<<<<<<< HEAD
-	
-=======
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
+
 	/*Set autothreshold method with Minum and get the input from the user
 regarding it. Also save the threshold to file*/
 	setAutoThreshold("Minimum");  
@@ -2410,21 +2339,11 @@ regarding it. Also save the threshold to file*/
 		
 	roiManager("Show All without labels");
 	roiManager("Show None");
-<<<<<<< HEAD
-=======
-	
-	//analyse particles function
-	makeAnalysis(stagger, fps, mFreezeArea);
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
-	
-<<<<<<< HEAD
+
 	//analyse particles function
 	SEpoints = makeAnalysis(stagger, fps, mFreezeArea);
 	print(f, "staggerPoints\t" + SEpoints[0] +"\t"+ SEpoints[1]);
 	
-	
-=======
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 	//Save ROIs to a file in the folder of the image
 	roiManager("Show All without labels");
 	roiManager("Show None");
@@ -2447,20 +2366,11 @@ regarding it. Also save the threshold to file*/
 /*This function goes through the ROIs, creates and fills arrays with the
 result of the ROI analysis and then prints them to 2 files with the individual
 results and a summary of the results*/
-<<<<<<< HEAD
 function freezeCheck(fps, dir, imTitle, sStart){
-=======
-function freezeCheck(fps, dir, imTitle){
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 	//Determine the delay between ROIs
 	delay = 1/fps;
 	run("Select None");
 	
-<<<<<<< HEAD
-=======
-	fre = newArray(roiManager("count")-1);
-	Array.fill(fre, 0);
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 	freezeT = 0;
 	count = 0;
 	
@@ -2468,13 +2378,8 @@ function freezeCheck(fps, dir, imTitle){
 	setBatchMode("hide");
 	
 	/*Main loop to go trough all the ROIs and get the stats*/
-<<<<<<< HEAD
 	for(i = 0; i < roiManager("Count")-1; i++){
 		showProgress(i,roiManager("Count")-1);
-=======
-	for(i = 0, j = 0; i < roiManager("Count")-1; i++){
-		showProgress(i,roiManager("Count"));
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 		showStatus("Analysing detections...");
 		//Create array to select 2 ROIs
 		sA[0] = i; sA[1] = i+1;
@@ -2483,10 +2388,6 @@ function freezeCheck(fps, dir, imTitle){
 		roiManager("XOR");
 		//Get area of XOr selection
 		getStatistics(area);
-<<<<<<< HEAD
-=======
-		fre[i] = area; 
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 		//Count frames that mouse is freezed
 		if(area <= 500){
 			count++;
@@ -2656,19 +2557,11 @@ function Preferences(){
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.dispVal", 0.1);
 		//Cube Maize
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.soli", 0.8);
-<<<<<<< HEAD
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.width", 38);
-=======
-		call("ij.Prefs.set", "JAMoT_Prefs.cube.width", 28);
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.marea", 500);
 		//Elevated Maize
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.width", 7);
-<<<<<<< HEAD
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.length", 25);
-=======
-		call("ij.Prefs.set", "JAMoT_Prefs.elev.length", 19.5);
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.marea", 1000);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.smooth", 3);
 		//Swimming Maize
@@ -3972,14 +3865,9 @@ function cubeRedo(temp, option){
 
 /*Function to set the threshold and analysis the 
 image stack in redo analysis*/
-<<<<<<< HEAD
 function setThrandAna(thrMin, thrMax, fps, option, start, end){
-=======
-function setThrandAna(thrMin, thrMax, fps, option){
->>>>>>> branch 'master' of https://github.com/helioalexandre/JAMoT
 
 		setThreshold(thrMin,thrMax);
-	
 		roiManager("Show All without labels");
 		roiManager("Show None");
 		if(option == 1 || option == 4)
