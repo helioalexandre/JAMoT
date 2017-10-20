@@ -1,9 +1,9 @@
 /*
-<<<<<<< HEAD
-Toolbox for mouse behavioural analysis of several maize types:
+Toolbox for mouse behavioural analysis of several maze types:
 Open Field; Elevated Plus Maze; Morris Water Maze; Novel Object Recognition; Y Maze; Fear Conditioning
- 
-MIT License
+ * Author - Helio Roque - Centro Nacional Investigaciones CardioVasculares, Madrid, Spain
+ * Contact - helio.alexandreduarte at cnic.es
+ *  
 
 Copyright (c) 2017 Helio Roque
 
@@ -24,15 +24,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-/*
- * Author - Helio Roque - Centro Nacional Investigaciones CardioVasculares, Madrid, Spain
- * Contact - helio.alexandreduarte at cnic.es
- * 
+
  */
   
 requires("1.50a");
- 
- var filemenu = newMenu("Mouse trial Macros Menu Tool", newArray("Batch Process Video Files", "Process Video", "Open Field","Elevated Plus Maze", "Morris Water Maze", "Novel Object Recognition", "Y Maze","Fear Conditioning", "Open Previous Analysis File", "Preferences","-"));
+ //Menu
+ var filemenu = newMenu("Mouse Behavioral Analysis Menu Tool", newArray("Batch Process Video Files", "Process Video Maze", "Open Field","Elevated Plus Maze", "Morris Water Maze", "Novel Object Recognition", "Y Maze","Fear Conditioning", "Open Previous Analysis File", "Preferences","-"));
+ //Strings fror general use
  var delFile = "Previous analysis file exists. Overwrite? Cancel will stop the macro.";
  var setThr = "Please set the threshold carefully and press OK (Image>Adjust>Threshold).";
  //General
@@ -43,16 +41,16 @@ requires("1.50a");
  var solidity = call("ij.Prefs.get", "JAMoT_Prefs.cube.soli", "0");
  var wCube = call("ij.Prefs.get", "JAMoT_Prefs.cube.width", "0");
  var mCubeArea = call("ij.Prefs.get", "JAMoT_Prefs.cube.marea","0");
- //Elevated Maize
+ //Elevated maze
  var wElevated = call("ij.Prefs.get", "JAMoT_Prefs.elev.width", "0");
  var lElevated = call("ij.Prefs.get", "JAMoT_Prefs.elev.length", "0");
  var mElevatedArea = call("ij.Prefs.get", "JAMoT_Prefs.elev.marea", "0");
  var sElevated = call("ij.Prefs.get", "JAMoT_Prefs.elev.smooth", "0");
- //Swimming Maize
+ //Swimming maze
  var dSwimming = call("ij.Prefs.get", "JAMoT_Prefs.swim.dia", "0");
  var mSwimmingArea = call("ij.Prefs.get", "JAMoT_Prefs.swim.marea", "0");
  var poolWD = call("ij.Prefs.get", "JAMoT_Prefs.swim.poolWD", "0");
- //T/Y Maize
+ //T/Y maze
  var wTY = call("ij.Prefs.get", "JAMoT_Prefs.ty.width", "0");
  var mTYArea = call("ij.Prefs.get", "JAMoT_Prefs.ty.marea", "0");
  var sTY = call("ij.Prefs.get", "JAMoT_Prefs.ty.smooth", "0");
@@ -62,7 +60,7 @@ requires("1.50a");
  var tFreeze = call("ij.Prefs.get", "JAMoT_Prefs.fre.binInt", "0");
  
  
-macro "Mouse trial Macros Menu Tool - C000C111D98C111D88C111D89C111D86D99C111D87C111D85C111D8aD97C111D9aC222D79D8bC222D7aC222D96C222D84C222D78C222D7bC222D76D9bC222D95C222D77C333Da9C333D75C333D74C333D73Da8C333DaaC333D8cC333C444D83C444D7cDa7C444D6aC444D69C444D94C444C555D9cC555DabC555Da6C555D68C555D6bC555D66C555D72C555C666D67C666D65C666D64D7dDa5Db9C666D63C666D8dDb8C666DbaC666D82D93C666DacC666C777D6cC777D7eC777Da4Db7C777D9dDbbC777D59D7fC777D5aD62D6dDb6C777D6fC777D8eC777C888D6eD92DbcC888Da3DadDcaC888D57D58Db5Dc9C888D56Dc7C888D5bD8fDc8C888D9eDc6DcbC888D9fDaeDb4DbdDc5C888D53D55D71D91DccC888D81Da1Da2Dc1Dd8C888D54D5cDafDb1Db2Db3Dc0Dc2Dd0Dd1Dd6DdaDdbDdfDe0De8De9DeaC888D52D5fDc3Dd2Dd5Dd7Dd9C888D5dD90Da0Db0DbeDc4Dd3DdcDdeDefDf2C888D5eDbfDcdDcfDd4De1DebDfaC888D4aD61DddDe2Df0Df1Df5Df8C999D80DceDe3DeeDf3Df4Df9DfbDfdDfeC999D41D47D49De7DecDedDf6Df7DfcDffC999D40D42D46D4bD4cD4dD51De4C999D43D44D48D4eD4fD50D70De5De6C999D10D20D30D31D36D3cD45D60C999D17D32D3bD3fC999D21D22D26D2eD2fD34D37D39D3aD3dD3eC999D15D16D23D29D33C999D07D11D12D14D18D19D1eD1fD25D27D2aD2dD35D38C999D00D05D06D0fD1aD24D2bD2cC999D01D04D09D0cD13D1bD1cD1dD28C999D02D0aD0bD0eC999D08D0dC999D03"{
+macro "Mouse Behavioral Analysis Menu Tool - C000C111D98C111D88C111D89C111D86D99C111D87C111D85C111D8aD97C111D9aC222D79D8bC222D7aC222D96C222D84C222D78C222D7bC222D76D9bC222D95C222D77C333Da9C333D75C333D74C333D73Da8C333DaaC333D8cC333C444D83C444D7cDa7C444D6aC444D69C444D94C444C555D9cC555DabC555Da6C555D68C555D6bC555D66C555D72C555C666D67C666D65C666D64D7dDa5Db9C666D63C666D8dDb8C666DbaC666D82D93C666DacC666C777D6cC777D7eC777Da4Db7C777D9dDbbC777D59D7fC777D5aD62D6dDb6C777D6fC777D8eC777C888D6eD92DbcC888Da3DadDcaC888D57D58Db5Dc9C888D56Dc7C888D5bD8fDc8C888D9eDc6DcbC888D9fDaeDb4DbdDc5C888D53D55D71D91DccC888D81Da1Da2Dc1Dd8C888D54D5cDafDb1Db2Db3Dc0Dc2Dd0Dd1Dd6DdaDdbDdfDe0De8De9DeaC888D52D5fDc3Dd2Dd5Dd7Dd9C888D5dD90Da0Db0DbeDc4Dd3DdcDdeDefDf2C888D5eDbfDcdDcfDd4De1DebDfaC888D4aD61DddDe2Df0Df1Df5Df8C999D80DceDe3DeeDf3Df4Df9DfbDfdDfeC999D41D47D49De7DecDedDf6Df7DfcDffC999D40D42D46D4bD4cD4dD51De4C999D43D44D48D4eD4fD50D70De5De6C999D10D20D30D31D36D3cD45D60C999D17D32D3bD3fC999D21D22D26D2eD2fD34D37D39D3aD3dD3eC999D15D16D23D29D33C999D07D11D12D14D18D19D1eD1fD25D27D2aD2dD35D38C999D00D05D06D0fD1aD24D2bD2cC999D01D04D09D0cD13D1bD1cD1dD28C999D02D0aD0bD0eC999D08D0dC999D03"{
  	choice = getArgument();
  	
  	if(units == 0 && choice != "Preferences"){
@@ -72,7 +70,7 @@ macro "Mouse trial Macros Menu Tool - C000C111D98C111D88C111D89C111D86D99C111D87
 	 	if(choice != "-"){
 	 		if(choice == "Process Video") {ProcessVideo(); }
 	 		else if(choice == "Batch Process Video Files") {BatchProcessVideoFiles();}
-	 		else if(choice == "Open Field") {MouseCubeTracker(); }
+	 		else if(choice == "Open Field Maze") {MouseCubeTracker(); }
 	 		else if(choice == "Elevated Plus Maze") {MiceElevatedPuzzleTracker(); }
 	 		else if(choice == "Morris Water Maze") {MouseSwimTracker(); }
 	 		else if(choice == "Novel Object Recognition") {MouseRegionsTracker(); }
@@ -92,22 +90,28 @@ macro "Mouse trial Macros Menu Tool - C000C111D98C111D88C111D89C111D86D99C111D87
  */
  function BatchProcessVideoFiles(){
 		
-	showMessage("Batch AVI processing tool","<html>"+"<font size=2><center>This macro assumes that the file <br>"+"<font size=+2><center>ffmpeg.exe<br>"+"<font size=2><center>is in the directory of the files being processed!<br>" + "<font size=2><center>If you do not have ffmpeg installed please download it at<br>" + "<font size=2><font color=blue>https://ffmpeg.org/download.html<br><br>"+"<font size=2><font color=black> Also note that this macro does not support <b>SPACES</b> in the files/directories names!<br>");
+	//Get the ffmpeg.exe path and check if file is present
+	pathFFmpeg = getDirectory("macros") + File.separator + "toolsets" + File.separator + "ffmpeg.exe";
+	if(!File.exists(pathFFmpeg)){
+		//Explain the needs of the function
+		showMessage("Video processing tool","<html>"+"<font size=2><center>This step requires <br>"+"<font size=+2><center>ffmpeg.exe<br>"+"<font size=2><center>in the directory of ImageJ/macros/toolset!<br>" + "<font size=2><center>If you do not have ffmpeg installed please download it at<br>" + "<font size=2><font color=blue>https://ffmpeg.org/download.html<br><br>"+"<font size=2><font color=black> Also note that this macro does not support <b>SPACES</b> in the files/directories names!<br>");
+		exit(); 
+	}
 	
-	dir = getDirectory("Choose a Directory ");
-	
-	ffmpegPath = getDirectory("macros") + File.separator + "toolsets" + File.separator + "ffmpeg.exe";
+
+	dir = getDirectory("Choose the origin Directory:");
+	savedir = getDirectory("Choose destination Directory:");
 	
 	setBatchMode(true);
 	list = getFileList(dir);
 		
 	for(i=0; i < list.length; i++){
 		showProgress(i, list.length);
-		if(endsWith(list[i], "avi")){
+		if(endsWith(list[i], "avi") || endsWith(list[i], "mov") || endsWith(list[i], "mpeg") || endsWith(list[i], "mp4")){
 
 			/*create string to run the ffmpeg command to convert the avi file to an uncompressed 
 			avi file that can be open in ImageJ*/
-			string = ffmpegPath + " -loglevel quiet -i "+ dir + list[i] + " -f avi -vcodec mjpeg "+ dir + list[i] + ".converted.avi && echo off";
+			string = ffmpegPath + " -loglevel quiet -i "+ dir + list[i] + " -f avi -vcodec mjpeg "+ savedir + list[i] + ".converted.avi && echo off";
 			
 			os = getInfo("os.name");
 
@@ -120,15 +124,15 @@ macro "Mouse trial Macros Menu Tool - C000C111D98C111D88C111D89C111D86D99C111D87
 				exec("sh -c "+ string);
 
 			//Open the new AVI file convert it to 8bit and use virtual stack
-			run("AVI...", "open=" + dir + list[i] + ".converted.avi convert use");
+			run("AVI...", "open=" + savedir + list[i] + ".converted.avi convert use");
 
 			title = getTitle();
 			id = getImageID();
 			//Save a Tiff stack of the new AVI file
-			saveAs("tiff", dir+list[i] +".converted.tif");
+			saveAs("tiff", savedir+list[i] +".converted.tif");
 			
 			//Delete intermediate AVI file
-			File.delete(dir + list[i] + ".converted.avi");	
+			File.delete(savedir + list[i] + ".converted.avi");	
 			print("Converted " + list[i]);
 			close();	
 		
@@ -148,24 +152,28 @@ macro "Mouse trial Macros Menu Tool - C000C111D98C111D88C111D89C111D86D99C111D87
  It requires FFMPEG.EXE in the toolset folder
  */
 function ProcessVideo(){
-	//Explain the needs of the function
-	showMessage("AVI processing tool","<html>"+"<font size=2><center>This step requires <br>"+"<font size=+2><center>ffmpeg.exe<br>"+"<font size=2><center>in the directory of ImageJ/macros/toolset!<br>" + "<font size=2><center>If you do not have ffmpeg installed please download it at<br>" + "<font size=2><font color=blue>https://ffmpeg.org/download.html<br><br>"+"<font size=2><font color=black> Also note that this macro does not support <b>SPACES</b> in the files/directories names!<br>");
+	
 	
 	//Get the ffmpeg.exe path and check if file is present
 	pathFFmpeg = getDirectory("macros") + File.separator + "toolsets" + File.separator + "ffmpeg.exe";
-	if(!File.exists(pathFFmepg))
-		exit("ffmpeg.exe file not present in the macros/toolset folder!"); 
+	if(!File.exists(pathFFmpeg)){
+		//Explain the needs of the function
+		showMessage("AVI processing tool","<html>"+"<font size=2><center>This step requires <br>"+"<font size=+2><center>ffmpeg.exe<br>"+"<font size=2><center>in the directory of ImageJ/macros/toolset!<br>" + "<font size=2><center>If you do not have ffmpeg installed please download it at<br>" + "<font size=2><font color=blue>https://ffmpeg.org/download.html<br><br>"+"<font size=2><font color=black> Also note that this macro does not support <b>SPACES</b> in the files/directories names!<br>");
+		exit(); 
+	}
+		
 	
 	//Get target file and check if converted already exists and asks to delete it
-	path = File.openDialog("Select the AVI file to convert.");
+	path = File.openDialog("Select the movie file to convert.");
 	if(File.exists(path + ".converted.avi")){
 		showMessageWithCancel(delFile);
 		File.delete(path + ".converted.avi");		
 	}
 	
+	
 	//Make string to run ffmepg command and run it on system dependent manner
 	string = pathFFmpeg + " -loglevel quiet -i "+ path +" -f avi -vcodec mjpeg "+ path + ".converted.avi && echo off";
-	
+
 	os = getInfo("os.name");
 	
 	if(startsWith(os, "Windows")){
@@ -183,22 +191,20 @@ function ProcessVideo(){
 
 	//confirm that you have a stack
 	if (nSlices==1) exit("Stack required");
-	
-	
+		
 	id = getImageID;
 	name = getTitle();
+	
+	//If needed remove slices from the beginning and the end
 	//Trim stack down if necessary
-	waitForUser("Please have a look at the stack to check for 1st and last slice and then press OK");
-	Dialog.create("Slice numbers");
-	Dialog.addNumber("First Slice", 1);
-	Dialog.addNumber("Last Slice", nSlices)
-	Dialog.show();
-	first = Dialog.getNumber();
-	last = Dialog.getNumber();
+	waitForUser("Please have a look at the stack to see if you want to trim it down. To select 1st frame press OK.");
+	first = getSliceNumber();
+	waitForUser("And now select the last frame adn press OK.");
+	last = getSliceNumber();
+	
 	//Get directory to save image to 
 	dir = getDirectory("Choose Destination for image.");
 	
-	//If needed remove slices from the beginning and the end
 	setBatchMode("hide");
 	if(first > 1)
 		run("Slice Remover", "first=1 last="+first+" increment=1");
@@ -258,7 +264,7 @@ function MouseCubeTracker(){
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 	
-	//Run guassian blur if so selected in Dialog1
+	//Run gaussian blur if so selected in Dialog1
 	if(gaus > 0){
 		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
@@ -305,14 +311,14 @@ function MouseCubeTracker(){
 	
 	/*Reduce intensity of the cage wall
 	Taking in consideration the pixel size*/
-	run("Enlarge...", "enlarge=-15 pixel");
+	/*run("Enlarge...", "enlarge=-15 pixel");
 	if(pw == 1 && ph == 1)
 		run("Make Band...", "band=25");
 	else
 		run("Make Band...", "band=" + 25*pw);
 		
 	
-	run("Gaussian Blur...", "sigma=10 stack");
+	run("Gaussian Blur...", "sigma=10 stack");*/
 
 	setBatchMode("show");
 	
@@ -334,6 +340,7 @@ function MouseCubeTracker(){
 
 	/*Set autothreshold method with Minum and get the input from the user
 	regarding it. Also save the threshold to file*/
+	setSlice(round(nSlices/2));
 	setAutoThreshold("Minimum");  
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
@@ -376,6 +383,7 @@ function MouseCubeTracker(){
 	//Get data of the dectetions
 	oriID=getImageID();
 	getParameters(fps, dir, imTitle, totalslices);
+	//roiManager("Save", dir + imTitle + "ROIPs.zip");
 	dialog2(oriID, dir, imTitle, 1);
 
 }
@@ -404,24 +412,49 @@ function getParameters(fps,dir, imTitle, totalSlices){
 	estado = newArray(roiManager("Count"));
 	lookup = newArray(roiManager("Count"));
 	inRegion = newArray(roiManager("Count"));
+	headAngle = newArray(roiManager("Count"));
 	
 	/*count and sum variables for the individual parameters*/
 	displa = 0; moving = 0;
 	displaCenter = 0; centerTime=0; entriesCenter = 0; freezeCenter = 0; wallsTime=0;
 	roiManager("Deselect");
-	setBatchMode("hide");
 	
+	setBatchMode("hide");
 	/*Main loop to go trough all the ROIs and get the stats*/
 	for(i=0; i<roiManager("count");i++){
 		showProgress(i  , roiManager("count"));
 		showStatus("Analysing Detections...");
-		roiManager("Select", i);
-		List.setMeasurements();
-		arrayX[i] = List.getValue("X");
-		arrayY[i] = List.getValue("Y");
+		
 		
 		//Get result from magic function
-		angle = getDirection(dir, imTitle);	
+		if(i == 0){
+			/*setBatchMode("show");
+			setTool("point");
+			run("Select None");
+			setSlice(1);
+			waitForUser("Please add a point to the tip of the mouse head.");
+			getSelectionCoordinates(c,d);
+			//toUnscaled(c,d);*/
+			
+			roiManager("Select", i);
+			List.setMeasurements();
+			arrayX[i] = List.getValue("X");
+			arrayY[i] = List.getValue("Y");
+			/*a = arrayX[i];
+			b = arrayY[i];
+			toUnscaled(a,b);
+			headAngle[i] = calculateAngle(a, b, c[0], d[0]);*/
+			angle = getDirection(dir, imTitle, i, 0, fps, i);	
+			headAngle[i] = angle[3];
+		}else{
+			roiManager("Select", i);
+			List.setMeasurements();
+			arrayX[i] = List.getValue("X");
+			arrayY[i] = List.getValue("Y");
+			angle = getDirection(dir, imTitle, i, headAngle[i-1], fps, i);
+			headAngle[i] = angle[3];	
+		}			
+			
 		/*Determine where the mouse is looking  by determining the angle from the head to the center of mass*/		
 		if((angle[0] >= 0 && angle[0] < 22.5) || (angle[0] < 0 && angle[0] >= -22.5))
 			direction[i] = "Rigth";
@@ -494,7 +527,7 @@ function getParameters(fps,dir, imTitle, totalSlices){
 
 	}
 	run("Select None");
-	
+
 	setBatchMode("show");
 	
 	/*Write results to tables both to single spots as the summary*/
@@ -566,14 +599,13 @@ function getParameters(fps,dir, imTitle, totalSlices){
 	saveAs("text", dir+imTitle+".Track.xls");
 	run("Close");
 
-
 }
 
 /*Get individual parameters for the ROI of mice in OpenField*/
-function getDirection(dir, imTitle){
+function getDirection(dir, imTitle, time, headAngle, fps, i){
 		
 		//Results array
-		angle = newArray(3);
+		angle = newArray(5);
 		Array.fill(angle, 0);
 		//Get box region from file
 		tempArray = getFileData(3, dir, imTitle, 1);
@@ -590,58 +622,101 @@ function getDirection(dir, imTitle){
 		toUnscaled(xc, yc);
 		//New array for the distances of center to the perimeter of the selection
 		length = newArray(xp.length);
-		//Fill the array with the distances
-		for(i = 0; i < xp.length; i++){
-			length[i]= calculateDistance(xc,yc,xp[i],yp[i]);
+		Array.fill(length, 0);
+		maxLength = 0;
+		headPoint = 0;
+		if(i % floor(fps/2) == 0 || i == 0){
+			//Fill the array with the distances
+			for(i = 0; i < xp.length; i++){
+				length[i]= calculateDistance(xc,yc,xp[i],yp[i]);
+				if(length[i] > maxLength){
+					maxLength = length[i];
+					headPoint = i;
+					angle[4] = 0;
+				
+				}
+			} 
+		}else{
+			//Fill the array with the distances
+			for(i = 0; i < xp.length; i++){
+				//Calculate the angle from the center to the coordinates
+				tempAngle = calculateAngle(xc, yc, xp[i],yp[i]);
+				anglediff = ((tempAngle - headAngle + 180 + 360) % 360) - 180;
+				if(anglediff <= 35 && anglediff >= -35){
+					length[i]= calculateDistance(xc,yc,xp[i],yp[i]);
+					if(length[i] > maxLength){
+						maxLength = length[i];
+						headPoint = i;
+						angle[4] = anglediff;
+					
+					}
+				} 				
+			}
 		}
-
+		
+	
 		/*Get the maxs and mins of the length array
 		Max distance should be head (in most cases) minimal distances are curves of behind*/
-		nInter = 10;
+		/*nInter = 10;
 		do{
 			maxlengths = Array.findMaxima(length, nInter);
-			minlengths = Array.findMinima(length, nInter);
+			//minlengths = Array.findMinima(length, nInter);
 			nInter = round(nInter - (nInter/3));
-		}while(lengthOf(maxlengths)==0)
-
+		}while(lengthOf(maxlengths)==0)*/
+	
+		//Make new point selection with centroid and head
+		/*makeSelection("point",newArray(xc,xp[headPoint]) ,newArray(yc, yp[headPoint]));
+		roiManager("Update")*/;
+		
 		//Calculate the angle of the center to the head (max length)
-		angle[0] = calculateAngle2(xc, yc, xp[maxlengths[0]],yp[maxlengths[0]]);
+		angle[0] = calculateAngle2(xc, yc, xp[headPoint],yp[headPoint]);
+		
+		//Calculate the angle of the center to the head (max length)
+		angle[3] = calculateAngle(xc, yc, xp[headPoint],yp[headPoint]);
+
+			
+		
 
 		//Tentative of finding out if the rat is rearing
-		if(List.getValue("Solidity")< solidity && ((xp[maxlengths[0]] < tempArray[0] || xp[maxlengths[0]] > tempArray[0]+tempArray[2]) && (yp[maxlengths[0]] < tempArray[1] || yp[maxlengths[0]]> tempArray[1]+tempArray[3])))
-			angle[1] = 1;
+		if(List.getValue("Solidity")< solidity && ((xp[headPoint] < tempArray[0] || xp[headPoint] > tempArray[0]+tempArray[2]) && (yp[headPoint] < tempArray[1] || yp[headPoint]> tempArray[1]+tempArray[3])))
+				angle[1] = 1;
 		
 		//find out if the rat is in the center or not
 		count = false; in= 0; out = 0;
 		for(i = 0; i < xp.length; i++){
 			
 			//Check if its the head that is out			
-			if(xp[maxlengths[0]] >= tempArray2[0] && xp[maxlengths[0]] <= (tempArray2[0] + tempArray2[2]) && yp[maxlengths[0]] >= tempArray2[1] && yp[maxlengths[0]] <= (tempArray2[1]+tempArray2[3]))
-				count = true;			
-			
+			if(xp[headPoint] >= tempArray2[0] && xp[headPoint] <= (tempArray2[0] + tempArray2[2]) && yp[headPoint] >= tempArray2[1] && yp[headPoint] <= (tempArray2[1]+tempArray2[3]))
+					count = true;	
 			
 			//Check if the coordinates are in the center or not
 			if(xp[i] >= tempArray2[0] && xp[i] <= (tempArray2[0] + tempArray2[2]) && yp[i] >= tempArray2[1] && yp[i] <= (tempArray2[1]+tempArray2[3]))
 				in++;
-				
+					
 			else
 				out++;
+			
 		}
+
+							
 		
 		/*Fill in if the rat is in the center or in the outer regions
 		or at the borders*/
 		if(in >= (lengthOf(xp)*0.8) && count)
 			angle[2] = 1;
-		else 
+		else if(out >= (lengthOf(xp)*0.8))
+		
 			angle[2] = 2;
-
+		else
+			angle[2] = 3;
+			
 		return angle;
 	 
 }
 
 
-/*Function to evaluate the Elevated Maize mice proof
-It will be track the mouse in the maize and
+/*Function to evaluate the Elevated Maze mice proof
+It will be track the mouse in the maze and
 calculate the time spent in the closed arms vs open arms
 it will also try to verify if the mouse was looking outside the
 edge in the open arms (exploring)*/
@@ -664,6 +739,7 @@ function MiceElevatedPuzzleTracker(){
 	darkR = temp[5];
 	gaus = temp[6];
 	stagger = temp[7];
+	openDir = temp[8];
 	
 	 /* Takes care of cases where an analysis file exists already
 	asks if you want to delete it or not */
@@ -680,7 +756,7 @@ function MiceElevatedPuzzleTracker(){
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 	
-	//Run guassian blur if so selected in Dialog1
+	//Run gaussian blur if so selected in Dialog1
 	if(gaus > 0){
 		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
@@ -690,7 +766,7 @@ function MiceElevatedPuzzleTracker(){
 	//get dimensions of the image in px
 	getDimensions(width, height, channels, slices, frames);
 	makeRectangle(width/2.5, height/2.5,width/10,height/10);
-	waitForUser("Please adjust the rectangule to match the center of the maize.");
+	waitForUser("Please adjust the rectangule to match the center of the maze.");
 	
 	/*get the dimensions of the square in the center of the cross
 	This limits the lower bounds of the cross*/
@@ -711,7 +787,7 @@ function MiceElevatedPuzzleTracker(){
 	//Asks the user to draw the polygon that the cross forms to clear outside ot if
 	run("Select None");
 	setTool("polygon");
-	waitForUser("Please make a polygon to match the maize base.");
+	waitForUser("Please make a polygon to match the maze base.");
 	getSelectionCoordinates(px, py);
 	stringx = "";
 	stringy = "";
@@ -749,6 +825,7 @@ function MiceElevatedPuzzleTracker(){
 	setBatchMode("show");
 	/*Set autothreshold method with Minum and get the input from the user
 	regarding it. Also save the threshold to file*/
+	setSlice(round(nSlices/2));
 	setAutoThreshold("Minimum");
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
@@ -765,6 +842,7 @@ function MiceElevatedPuzzleTracker(){
 	//analyse particles function
 	SEpoints = makeAnalysis(stagger, fps, mElevatedArea);
 	print(f, "staggerPoints\t" + SEpoints[0] +"\t"+ SEpoints[1]);
+	print(f, "Arms direction\t" + openDir);
 	if(fps == 25)
 		totalslices = SEpoints[1] - SEpoints[0];
 	else
@@ -787,7 +865,7 @@ function MiceElevatedPuzzleTracker(){
 	
 	//Get data of the detections
 	oriID=getImageID();
-	getParametersET(fps, dir, imTitle, armsL, totalslices);
+	getParametersET(fps, dir, imTitle, armsL, totalslices, openDir);
 	dialog2(oriID, dir, imTitle, 2);
 	
 }
@@ -796,7 +874,7 @@ function MiceElevatedPuzzleTracker(){
 /*This function goes through the ROIs, creates and fills arrays with the
 result of the ROI analysis and then prints them to 2 files with the individual
 results and a summary of the results*/
-function getParametersET(fps, dir, imTitle, armsL, totalSlices){
+function getParametersET(fps, dir, imTitle, armsL, totalSlices, openDir){
 
 	//Determine the delay between ROIs
 	if(fps != 25){
@@ -827,7 +905,7 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices){
 	roiManager("Deselect");
 	setBatchMode("hide");
 	/*Main loop to go trough all the ROIs and get the stats*/
-	for(i=0; i<roiManager("count");i++){
+	for(i=0; i < roiManager("count"); i++){
 		showProgress(i, roiManager("count"));
 		showStatus("Analyzing detections...");
 		roiManager("Select", i);
@@ -840,11 +918,10 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices){
 		//Center coordinates of mouse
 		arrayX[i] = List.getValue("X");
 		arrayY[i] = List.getValue("Y");
-		mouseArea[i] = List.getValue("Area");
-
+	
 		/*angle is an array which provides several properties to setup
 		information.*/ 
-		angle = getDirectionET(armsL);		
+		angle = getDirectionET(armsL, openDir);		
 		angles[i] = angle[0];
 
 		if(angle[0]==0){
@@ -853,10 +930,7 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices){
 			
 		}else if(angle[0] == 1){
 			closeArmsPosition[i] = "In";
-			closedAreaAve = closedAreaAve + mouseArea[i];
-			closeAreaCount++;
-
-			
+						
 			if(i>0)
 				closedTime = closedTime + delay;
 				
@@ -891,7 +965,7 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices){
 	}
 	
 	//smoothing the entries in arms by a moving average of window 7
-	r = 7;
+	r = fps;
 	for(j=r; j<lengthOf(angles)-r;j++){
 		count0 = 0; count1 = 0; count2=0;
 		for(m = j-round(r/2); m <= j+round(r/2); m++){
@@ -918,8 +992,7 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices){
 			entriesClose++;
 		else if(anglesA[j] == 2 && anglesA[j-1] != 2)
 			entriesOpen++;
-		else
-			;
+		
 	}
 	
 	setBatchMode("show");
@@ -941,7 +1014,7 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices){
 		setResult("Exploring", i, explo[i]);
 		if(explo[i] == "Yes"){
 			count++;
-			if(count == 5){
+			if(count == 3){
 				nExplo++;
 			}		 
 		}else if(explo[i] == "No" && count > 0)
@@ -985,7 +1058,7 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices){
 
 
 /*Get individual parameters for the ROI of mice in EM*/
-function getDirectionET(armsL){
+function getDirectionET(armsL, openDir){
 	//Results array
 	angle = newArray(2);
 	Array.fill(angle, 0);
@@ -994,33 +1067,60 @@ function getDirectionET(armsL){
 	List.setMeasurements();
 
 	//Get central box parameters from file
-	rectRegions = getFileData(3, dir, imTitle, 2);
-		
+	rectRegions = getFileData(3, dir, imTitle, 2); 
+	
 	//Center mass of the selection
 	xc = List.getValue("X");
 	yc = List.getValue("Y");
 	toUnscaled(xc, yc);
-
+	
 				
 	//find out if the rat is closed or open arms
 	flag = true; countOpen = 0; countClose= 0;
-	for(i = 0; i < xp.length; i++){
-		if(yc <= rectRegions[1] - rectRegions[3] || yc >= rectRegions[1] + (rectRegions[2]*2)){
+	
+	//Open arms west - east
+	if(openDir){
+		//Is it in the closed arms completely?
+		if(yc < rectRegions[1] - rectRegions[3] || yc >= rectRegions[1] + (rectRegions[2]*2)){
 			angle[0] = 1;
 			flag = false;
-		}else if(flag && (xp[i] >= rectRegions[0] && xp[i] <= (rectRegions[0] + rectRegions[2])) && ( yp[i] <= rectRegions[1] || yp[i] > (rectRegions[1] + rectRegions[3])))
-			countClose++;
-		else if(xc <= rectRegions[0]-rectRegions[2] || xc >= (rectRegions[0] + (rectRegions[2]*2))){
+		}//Or is it in the open arms completely?
+		else if(xc < rectRegions[0]-rectRegions[2] || xc >= (rectRegions[0] + (rectRegions[2]*2))){
 			angle[0] = 2;
 			flag = false;
+		}//It is in the borders somewhere...
+		else if(flag){
+			for(i = 0; i < xp.length; i++){
+				if((xp[i] >= rectRegions[0] && xp[i] <= (rectRegions[0] + rectRegions[2])) && ( yp[i] <= rectRegions[1] || yp[i] > (rectRegions[1] + rectRegions[3])))
+					countClose++;
+				else if((xp[i] < rectRegions[0] || xp[i] >= (rectRegions[0] + rectRegions[2])))
+					countOpen++;	
+			}
 		}
-		else if(flag && (xp[i] <= rectRegions[0] || xp[i] >= (rectRegions[0] + rectRegions[2])))
-			countOpen++;
-		else
-			;
+		
+	}else{
+		//Is it in the open arms completely?
+		if(yc < rectRegions[1] - rectRegions[3] || yc >= rectRegions[1] + (rectRegions[2]*2)){
+			angle[0] = 2;
+			flag = false;
+		}//Or is it in the closed arms completely?
+		else if(xc < rectRegions[0]-rectRegions[2] || xc >= (rectRegions[0] + (rectRegions[2]*2))){
+			angle[0] = 1;
+			flag = false;
+		}//It is in the borders somewhere...
+		else if(flag){
+			for(i = 0; i < xp.length; i++){
+				if((yp[i] < rectRegions[1] || yp[i] >= (rectRegions[1] + rectRegions[3])))
+					countOpen++;
+				else if((xp[i] <= rectRegions[0] || xp[i] >= (rectRegions[0] + rectRegions[2])) && ( yp[i] >= rectRegions[1] && yp[i] < (rectRegions[1] + rectRegions[3])))
+					countClose++;	
+			}
+		}
 	}
+	
 
 
+	//setup the result to tell where the mouse is...
 	if(flag && countClose >= lengthOf(xp)*0.8)
 		angle[0] = 1;
 	else if(flag && countOpen >= lengthOf(xp)*0.8)
@@ -1048,32 +1148,34 @@ function getDirectionET(armsL){
 	armL = armsL;
 	toUnscaled(armL);
 	
-	//Check if the head of the mouse is out of the open arms fronteirs
-	count = false;
-	if(xp[maxlengths[0]] < rectRegions[0] || xp[maxlengths[0]] > rectRegions[0] + rectRegions[2])
-		if((yp[maxlengths[0]] < rectRegions[1] || yp[maxlengths[0]] > (rectRegions[1]+rectRegions[3]) || xp[maxlengths[0]] < (rectRegions[0] - armL) || xp[maxlengths[0]] > (rectRegions[0] + rectRegions[1] + armL)))	
-			count = true;
-	
-	//find out if the rat exploring or not
+	/*find out if the rat exploring or not
+	Check if the head of the mouse is out of the open arms fronteirs*/
+	//West-East direction
 	in= 0;
-	if(count){
-	
+	if(openDir){
 		for(i = 0; i < xp.length; i++){
-			if(angle[0] != 1 && (yp[i]< rectRegions[1] || yp[i] > (rectRegions[1]+rectRegions[3]) || xp[i] < (rectRegions[0] - armL) || xp[i] > (rectRegions[0] + rectRegions[2] + armL)))
+			if(angle[0] != 1 && (xp[i] <= rectRegions[0] || xp[i] >= (rectRegions[0]+rectRegions[2])) && (yp[i] <= rectRegions[1] || yp[i] >= (rectRegions[1]+rectRegions[3]) || xp[i] <= (rectRegions[0] - armL-1) || xp[i] >= (rectRegions[0] + rectRegions[2] + armL)))
 				in++;
-			}
+		}
+	}//North-south direction
+	else{
+		for(i = 0; i < xp.length; i++){
+			if(angle[0] != 1 && (yp[i] <= rectRegions[1] || yp[i] >= (rectRegions[1]+rectRegions[3])) && (xp[i] <= rectRegions[0] || xp[i] >= (rectRegions[0]+rectRegions[2]) || yp[i] <= (rectRegions[1] - armL) || yp[i] >= (rectRegions[1] + rectRegions[3] + armL)))
+				in++;
+		}
 	}
-	if(in >= 10 && count)
-		angle[1] = 1;
 
 	
+	if(in >= 10)
+		angle[1] = 1;
+
 	return angle;
 	 
 }
 
 
 /*
- Function for WaterMaize analysis. Its main job its to determine in which quadrant the
+ Function for Watermaze analysis. Its main job its to determine in which quadrant the
  is, if its at the walss or not and if it finds the platform. It also outputs velocity and 
  displacement.
  */
@@ -1114,7 +1216,7 @@ function MouseSwimTracker(){
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 	
-	//Run guassian blur if so selected in Dialog1
+	//Run gaussian blur if so selected in Dialog1
 	if(gaus > 0){
 		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
@@ -1189,6 +1291,7 @@ function MouseSwimTracker(){
 	
 	/*Set autothreshold method with Minimum and get the input from the user
 regarding it. Also save the threshold to file*/
+	setSlice(round(nSlices/2));
 	setAutoThreshold("Minimum");
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
@@ -1375,7 +1478,7 @@ function getParametersSM(fps,dir, imTitle, diameter, totalSlices){
 
 }
 
-/*Get individual parameters for the ROIs of mice in WaterMaize*/
+/*Get individual parameters for the ROIs of mice in Watermaze*/
 function getQuadAndPlat(dir, imTitle, diameter){
 	//Results array
 	angle = newArray(3);
@@ -1462,7 +1565,7 @@ function MouseRegionsTracker(){
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 
-	//Run guassian blur if so selected in Dialog1
+	//Run gaussian blur if so selected in Dialog1
 	if(gaus > 0){
 		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
@@ -1503,9 +1606,9 @@ function MouseRegionsTracker(){
 	run("Clear Outside", "stack");
 	
 	//Changes the backgrnd color to match black or white mice
-	run("Enlarge...", "enlarge=-15 pixel");
+	/*run("Enlarge...", "enlarge=-15 pixel");
 	run("Make Band...", "band="+ 25*pw);
-	run("Gaussian Blur...", "sigma=10 stack");	
+	run("Gaussian Blur...", "sigma=10 stack");	*/
  
 	setBatchMode("show");
 	/*Checks if the pixel size is set and if not sets it from the 
@@ -1538,6 +1641,7 @@ dimensions of the cube*/
 	/*Set autothreshold method with Minum and get the input from the user
 regarding it. Also save the threshold to file*/
 	run("Select None");
+	setSlice(round(nSlices/2));
 	setAutoThreshold("Minimum");
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
@@ -1827,7 +1931,7 @@ function sortRegions(xp, yp, xc, yc, headC, dir, imTitle, n){
 }
 
 
-/*Function to evaluate the TY Maize. Its main job is to track the mouse in the 
+/*Function to evaluate the TY maze. Its main job is to track the mouse in the 
 cross like puzzle and calculate the time spent in each arm and the 
 first time it goes in each arm*/
 function MiceYTTracker(){
@@ -1841,7 +1945,7 @@ function MiceYTTracker(){
 	rectRegions = newArray(4);
 	run("Set Measurements...", "limit redirect=None decimal=3");
 	
-	//Run guassian blur if so selected in Dialog1
+	//Run gaussian blur if so selected in Dialog1
 	temp = dialog1(5);
 	blaWhi = temp[0];
 	fps = temp[1];
@@ -1941,6 +2045,7 @@ dimensions of the triangle*/
 	setBatchMode("show");
 	/*Set autothreshold method with Minimum and get the input from the user
 	regarding it. Also save the threshold to file*/
+	setSlice(round(nSlices/2));
 	setAutoThreshold("Minimum");
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
@@ -2072,6 +2177,13 @@ function getParametersTY(fps, dir, imTitle, sStart){
 	/*Positions in the arms*/
 	ordem = toString(armsPosition[0]);
 	
+	if(armsPosition[0] == 1)
+		visit1++;
+	else if(armsPosition[0] == 2)
+		visit2++;
+	else if(armsPosition[0] == 3)
+		visit3++;
+	
 	for(i = 1; i< armsPositionA.length; i++){
 		if(armsPositionA[i]==1){
 			time1 = time1 + delay;
@@ -2107,7 +2219,7 @@ function getParametersTY(fps, dir, imTitle, sStart){
 				}
 					
 			}
-		}else ;
+		}
 
 	}
 
@@ -2129,7 +2241,7 @@ function getParametersTY(fps, dir, imTitle, sStart){
 		setResult("Y Center",i, arrayY[i]);
 		setResult("Displacement (cm)",i, displacement[i]);
 		setResult("Velocity (cm/s)",i, velocity[i]);
-		setResult("In Arm (1-Center, 2-Left, 3-Right",i, armsPosition[i]);
+		setResult("In Arm (1-Center, 2-Left, 3-Right)",i, armsPosition[i]);
 		
 	}
 	updateResults();
@@ -2268,7 +2380,7 @@ function fearConditioning(){
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
 	
-	//Run guassian blur if so selected in Dialog1
+	//Run gaussian blur if so selected in Dialog1
 	if(gaus > 0){
 		setBatchMode("hide");
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
@@ -2315,13 +2427,9 @@ function fearConditioning(){
 		run("Gaussian Blur...", "sigma="+gaus+" stack");
 	}
 		
-	
-	/*Another gaussian blur in the diference stack to try and reduce the 
-	wave patterns of the images*/
-	run("Gaussian Blur...", "sigma="+gaus+" stack");
-
 	/*Set autothreshold method with Minum and get the input from the user
 regarding it. Also save the threshold to file*/
+	setSlice(round(nSlices/2));
 	setAutoThreshold("Minimum");  
 	waitForUser(setThr);
 	getThreshold(minth, maxth);
@@ -2392,9 +2500,9 @@ function freezeCheck(fps, dir, imTitle, sStart){
 		if(area <= 500){
 			count++;
 		}else{
-			/*If freeze frames are more then half then print to results start and ending frames
+			/*If freeze frames are more then half second then print to results start and ending frames
 			of freeze section*/
-			if(count > fps/2){
+			if(count >= fps/2){
 				for(k = 0; k < count; k++){
 					n = nResults;
 					setResult("Time", n, ((getSliceNumber()- sStart) - count + k + 1)*delay);
@@ -2421,13 +2529,14 @@ function freezeCheck(fps, dir, imTitle, sStart){
 		fre[j] = getResult("Time", j);
 	
 	Array.getStatistics(fre, min, max, mean, stdDev);
-	bins = round(max / tFreeze);
+	bins = round(max / parseFloat(tFreeze));
 	counts = newArray(bins);
 	Array.fill(counts,0);
 	value = 0;
+	
 	for(j = 0; j < counts.length; j++){
 		for(k = 0; k < fre.length; k++){
-			if(fre[k] < tFreeze*(j+1) && fre[k] >= tFreeze*(j) && fre[k] != 0)
+			if(fre[k] < parseFloat(tFreeze)*(j+1) && fre[k] >= parseFloat(tFreeze)*(j) && fre[k] != 0)
 				value++;
 		}
 		counts[j] = value;
@@ -2441,10 +2550,9 @@ function freezeCheck(fps, dir, imTitle, sStart){
 	
 	
 	for(j = 0; j < counts.length; j++){
-		setResult("Bin Start", j, tFreeze*(j));
-		setResult("Bin End", j, tFreeze*(j+1));
-		setResult("Value (counts of " + delay+")", j, counts[j]);
-	
+		setResult("Bin Start", j, parseFloat(tFreeze)*j);
+		setResult("Bin End", j, parseFloat(tFreeze)*(j+1));
+		setResult("Value (counts of " + delay +")", j, counts[j]);
 	}
 	
 	setResult("Total freezing time (s)", nResults, freezeT);
@@ -2464,31 +2572,31 @@ function Preferences(){
 	//General preferences
 	Dialog.addMessage("General preferences");
 	Dialog.addChoice("Units of work", newArray("m", "cm", "mm","microns"), units);
-	Dialog.addNumber("Guassian blur to apply", gauVal);
+	Dialog.addNumber("Gaussian blur sigma value", gauVal);
 	Dialog.addNumber("Minimum displacement to consider a moving mouse (units)", dispVal);
-	//Cube and Objects Maizes
-	Dialog.addMessage("Open Field Preferences");
-	Dialog.addNumber("Rearing - Solidity (Cube only)", solidity);
-	Dialog.addNumber("Default width of box", wCube);
+	//Cube and Objects mazes
+	Dialog.addMessage("Open Field / NOR Preferences");
+	Dialog.addNumber("Rearing - Solidity (OF only)", solidity);
+	Dialog.addNumber("Default width of box (units)", wCube);
 	Dialog.addNumber("Mouse minimal area (pixels)", mCubeArea);
-	//Elevated Maize
-	Dialog.addMessage("Elevated Maize Preferences");
-	Dialog.addNumber("Width of arms", wElevated);
-	Dialog.addNumber("Length of arms", lElevated);
+	//Elevated maze
+	Dialog.addMessage("Elevated maze Preferences");
+	Dialog.addNumber("Arms width (units)", wElevated);
+	Dialog.addNumber("Length of arms (units)", lElevated);
 	Dialog.addNumber("Mouse minimal area (pixels)", mElevatedArea);
 	Dialog.addNumber("Selection smoothing value (pixels)", sElevated);
-	//Swimming Maize
-	Dialog.addMessage("Swimming pool maize Preferences");
-	Dialog.addNumber("Pool diameter", dSwimming);
+	//Swimming maze
+	Dialog.addMessage("Morris Water maze Preferences");
+	Dialog.addNumber("Pool diameter (units)", dSwimming);
 	Dialog.addNumber("Mouse minimal area (pixels)", mSwimmingArea);
-	Dialog.addNumber("Distance to pool wall to count as at wall (units)", poolWD);
-	//T/Y Maize
-	Dialog.addMessage("T/Y Maize Preferences");
-	Dialog.addNumber("Arms width", wTY);
+	Dialog.addNumber("Distance to pool wall to consider at wall (units)", poolWD);
+	//T/Y maze
+	Dialog.addMessage("T/Y maze Preferences");
+	Dialog.addNumber("Arms width (units)", wTY);
 	Dialog.addNumber("Mouse minimal area (pixels)", mTYArea);
 	Dialog.addNumber("Selection smoothing value (pixels)", sTY);
 	//Freeze test
-	Dialog.addMessage("Freezing Maize Parameters");
+	Dialog.addMessage("Fear Conditioning Parameters");
 	Dialog.addNumber("Mouse minimal area (pixels)", mFreezeArea);
 	Dialog.addNumber("Selection smoothing value (pixels)", sFreeze);
 	Dialog.addNumber("Bin intervals (seconds)", tFreeze);
@@ -2501,27 +2609,27 @@ function Preferences(){
 	unitsL = Dialog.getChoice();
 	gauValL = Dialog.getNumber();
 	dispValL = Dialog.getNumber();
-	//Cube Maize
+	//Cube maze
 	solidityL = Dialog.getNumber();
 	wCubeL = Dialog.getNumber();
 	mCubeAreaL = Dialog.getNumber();
-	//Elevated Maize
+	//Elevated maze
 	wElevatedL = Dialog.getNumber();
 	lElevatedL = Dialog.getNumber();
 	mElevatedAreaL = Dialog.getNumber();
 	sElevatedL = Dialog.getNumber();
-	//Swimming Maize
+	//Swimming maze
 	dSwimmingL = Dialog.getNumber();
 	mSwimmingAreaL = Dialog.getNumber();
 	poolWDL = Dialog.getNumber();
-	//T/Y Maize
+	//T/Y maze
 	wTYL = Dialog.getNumber();
 	mTYAreaL = Dialog.getNumber();
 	sTYL = Dialog.getNumber();
 	//Freeze test
 	mFreezeAreaL = Dialog.getNumber();
 	sFreezeL = Dialog.getNumber();
-	sFreezeL = Dialog.getNumber();
+	tFreezeL = Dialog.getNumber();
 	//Default
 	default = Dialog.getCheckbox();
 	
@@ -2530,49 +2638,50 @@ function Preferences(){
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.units", unitsL);
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.gauval", gauValL);
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.dispVal", dispValL);
-		//Cube Maize
+		//Cube maze
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.soli", solidityL);
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.width", wCubeL);
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.marea", mCubeAreaL);
-		//Elevated Maize
+		//Elevated maze
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.width", wElevatedL);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.length", lElevatedL);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.marea", mElevatedAreaL);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.smooth", sElevatedL);
-		//Swimming Maize
+		//Swimming maze
 		call("ij.Prefs.set", "JAMoT_Prefs.swim.dia", dSwimmingL);
 		call("ij.Prefs.set", "JAMoT_Prefs.swim.marea", mSwimmingAreaL);
 		call("ij.Prefs.set", "JAMoT_Prefs.swim.poolWD", poolWDL);
-		//T/Y Maize
+		//T/Y maze
 		call("ij.Prefs.set", "JAMoT_Prefs.ty.width", wTYL);
 		call("ij.Prefs.set", "JAMoT_Prefs.ty.marea", mTYAreaL);
 		call("ij.Prefs.set", "JAMoT_Prefs.ty.smooth", sTYL);
-		//Freeze Maize
+		//Freeze maze
 		call("ij.Prefs.set", "JAMoT_Prefs.fre.marea", mFreezeAreaL);
 		call("ij.Prefs.set", "JAMoT_Prefs.fre.smooth", sFreezeL);
+		call("ij.Prefs.set", "JAMoT_Prefs.fre.binInt", tFreezeL);
 	}else{
 		//General
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.units", "cm");
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.gauval", 2);
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.dispVal", 0.1);
-		//Cube Maize
+		//Cube maze
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.soli", 0.8);
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.width", 38);
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.marea", 500);
-		//Elevated Maize
+		//Elevated maze
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.width", 7);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.length", 25);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.marea", 1000);
 		call("ij.Prefs.set", "JAMoT_Prefs.elev.smooth", 3);
-		//Swimming Maize
+		//Swimming maze
 		call("ij.Prefs.set", "JAMoT_Prefs.swim.dia", 125);
 		call("ij.Prefs.set", "JAMoT_Prefs.swim.marea", 50);
 		call("ij.Prefs.set", "JAMoT_Prefs.swim.poolWD",10); 
-		//T/Y Maize
+		//T/Y maze
 		call("ij.Prefs.set", "JAMoT_Prefs.ty.width", 7);
 		call("ij.Prefs.set", "JAMoT_Prefs.ty.marea", 500);
 		call("ij.Prefs.set", "JAMoT_Prefs.ty.smooth", 3);
-		//Freeze maize
+		//Freeze maze
 		call("ij.Prefs.set", "JAMoT_Prefs.fre.marea", 5000);
 		call("ij.Prefs.set", "JAMoT_Prefs.fre.smooth", 10);
 		call("ij.Prefs.set", "JAMoT_Prefs.fre.binInt", 30);
@@ -2598,7 +2707,8 @@ function checkAndSort(){
 /*First Dialog for all main functions that allows setting up of parameters and choices
 for the function*/
 function dialog1(option){
-	/* 0 - Black/White mice - all
+	/* 
+	 * 0 - Black/White mice - all
 	 * 1-fps
 	 * 2-width of box or diamter of pool or arms of Y
 	 * 3 - heigth of box
@@ -2607,56 +2717,58 @@ function dialog1(option){
 	 * 6 - Gaussian blur to apply to stack
 	 * 7 - Stagger analysis of ROIs defined by user
 	 */
-	temp = newArray(8); 
+	temp = newArray(9); 
 	Array.fill(temp, 0);
-	stringA = newArray("OpenField Test", "Elevated Plus Puzzled", "Watermaize Test", "Novel Object Recognition Test", "Y/T Maize", "Fear Conditioning");
-	array1 = newArray("Black mice in white bckgrnd", "White mice in black bkgrnd");
+	stringA = newArray("Open Field Maze", "Elevated Plus Maze", "Morris Water Maze", "Novel Object Recognition", "Y Maze", "Fear Conditioning Maze");
+	array1 = newArray("Black mice in white background", "White mice in black background");
 	array2 = newArray("25", "20", "15", "5");
 	array3 = newArray("Center Region", "Objects");
 
-	str = "JAMouT (Just Another Mouse Tracker) -- " + stringA[option-1];
+	str = "Mouse Behavioral Analysis Menu Tool -- " + stringA[option-1];
 	Dialog.create(str);
-	Dialog.addRadioButtonGroup("Mice color", array1, 1, 2, "Black mice in white bckgrnd");
+	Dialog.addRadioButtonGroup("Mice color", array1, 1, 2, "Black mice in white background"); //0
 	
-	Dialog.addMessage("Do you want to reduce the tracking resolution to increase speed?");
-	Dialog.addRadioButtonGroup("Frames per second (25 is all)", array2, 1, 4, "25");
+	Dialog.addMessage("Do you want to reduce the time resolution to increase analysis speed?");
+	Dialog.addRadioButtonGroup("Frames per second (25 is all)", array2, 1, 4, "25");	//1
 	
 	//Specific dialog options for each macro
 	if(option == 1 || option == 4){
 		Dialog.addMessage("Measurements of box base:");
-		Dialog.addNumber("Width (in " + units+")", wCube);
-		Dialog.addNumber("Height (in " + units+")", wCube);
+		Dialog.addNumber("Width (in " + units+")", wCube);	//2
+		Dialog.addNumber("Height (in " + units+")", wCube);	//3
 	}
 	
 	if(option == 2){
 		Dialog.addMessage("Measurements of central area/arms of cross:");
-		Dialog.addNumber("Width - Height of arms (in " + units+")", wElevated);
-		Dialog.addNumber("Length of arms (in " + units+")", lElevated);
+		Dialog.addNumber("Width - Height of arms (in " + units+")", wElevated);	//2
+		Dialog.addNumber("Length of arms (in " + units+")", lElevated);	//3
+		arrayArms = newArray("North - South direction", "West - East direction");
+		Dialog.addRadioButtonGroup("Open arms direction", arrayArms, 1, 2, "West - East direction"); //8
 	}			
 
 	if(option == 3){
-		Dialog.addNumber("Diameter of the pool (in (" + units+"):", dSwimming);
+		Dialog.addNumber("Diameter of the pool (in (" + units+"):", dSwimming);	//2
 		Dialog.addMessage("Do you want to remove any region(s)? Leave zero if not.");
-		Dialog.addNumber("How many", 0);
+		Dialog.addNumber("How many", 0);	//4
 	}
 		
 	if(option == 4){
-		Dialog.addSlider("Regions to analyze", 1, 5, 2);
+		Dialog.addSlider("Regions to analyze", 1, 5, 2);	//4
 	}
 
 	if(option == 5){
-		Dialog.addNumber("Width of arms (in " + units+"):", wTY);
+		Dialog.addNumber("Width of arms (in " + units+"):", wTY);	//5
 	}
 
 	if(option != 3){
 		Dialog.addMessage("Dark/White regions processing?");
-		Dialog.addCheckbox("Create difference to average projection?", false);
+		Dialog.addCheckbox("Create difference to average projection?", false);	//5
 	}
-
+	
 	Dialog.addMessage(" ");
-	Dialog.addNumber("Guassian blur to apply to image (0 for not)", gauVal);
+	Dialog.addNumber("Gaussian blur to apply to image (0 for not)", gauVal);	//6
 	Dialog.addMessage(" ");
-	Dialog.addCheckbox("Define start and end for ROI analysis?", false);
+	Dialog.addCheckbox("Define start and end for ROI analysis?", false);	//7
 
 
 	Dialog.show();
@@ -2670,6 +2782,10 @@ function dialog1(option){
 	if(option == 1 || option == 2 || option == 4){
 		temp[2] = Dialog.getNumber();
 		temp[3] = Dialog.getNumber();
+	}
+	if(option == 2){
+		if(Dialog.getRadioButton() == "West - East direction")
+			temp[8] = 1;
 	}
 	//Pool
 	if(option==3){
@@ -2695,6 +2811,7 @@ function dialog1(option){
 		temp[7] = 1;
 	else
 		temp[7] = 0;
+	
 		
 	return temp;
 
@@ -2710,6 +2827,9 @@ function dialog2(imageID, dir, imTitle, option){
 	
 	heat = Dialog.getCheckbox();
 	line = Dialog.getCheckbox();
+	
+	roiManager("Reset");
+	roiManager("Open", dir + imTitle + "ROIs.zip");
 	
 	//Calls respective functions
 	if(heat)
@@ -2829,7 +2949,7 @@ function sortVirtual(dir, rectCoord, option, colorM){
 
 
 /*Function to draw the path of the mouse along time using a line
-It also draws the maize and other parameters of the maizes*/
+It also draws the maze and other parameters of the mazes*/
 function lineTrack(imageID, dir, imTitle, option){
 		
 	selectImage(imageID);
@@ -3039,7 +3159,7 @@ function heatMap(imageID, dir, imTitle, option){
 	run("8-bit");
 	resetMinAndMax();
 
-	/*Draws the maizes and other regions of the maizes*/
+	/*Draws the mazes and other regions of the mazes*/
 	if(choice[1]){
 		setForegroundColor(255,255,255);
 		if(option == 1 || option == 4){ //Empty box
@@ -3227,7 +3347,7 @@ function calculateDistance(x1, y1, x2, y2){
 }
 
 
-/*Function to clear a region from the Water Maize*/
+/*Function to clear a region from the Water maze*/
 function clearRegion(){
 	Dialog.create("Region clear");
 	Dialog.addMessage("Do you want to clear a region?");
@@ -3290,6 +3410,20 @@ function darkRPorjection(imTitle, min, max) {
 	run("Invert", "stack");
 	run("Gamma...", "value=5 stack");
 	setBatchMode("show");
+}
+
+/*function to calculate the angle between two points (using atan2)*/
+function calculateAngle(x1,y1, x2,y2){
+	xdi = x2 - x1;
+	ydi = y2 - y1;
+	
+	//uses atan2 to get negative values for different quadrants
+	angle = atan2(ydi, xdi)*(180/PI);
+	if(angle < 0){
+		angle += 360;
+	}
+	
+	return angle;
 }
 
 
@@ -3399,7 +3533,7 @@ function fearRedo(temp, option){
 		//Open image
 		ignore = openFile(dir+imName, option);
 		
-		//Check for guassian blur
+		//Check for gaussian blur
 		gausCheckRun(gaus);
 		
 		//set bckgrd color
@@ -3477,7 +3611,7 @@ function tyRedo(temp, option){
 		//Open image
 		ignore = openFile(dir+imName, option);
 		
-		//Check for guassian blur
+		//Check for gaussian blur
 		gausCheckRun(gaus);
 				
 		//set image parameters - pixel
@@ -3555,11 +3689,17 @@ function objectsRedo(temp, option){
 	temp2 = Array.slice(temp, 21+count+9, 100);
 	checkPreferences(temp2);
 	
+	
+	if(fps == 25)
+		totalslices = staggerE - staggerS;
+	else
+		totalslices = round((staggerE - staggerS)/ (100/fps));
+	
 	if(option == 0){
 		//Open image
 		ignore = openFile(dir+imName, option);
 		
-		//Check for guassian blur
+		//Check for gaussian blur
 		gausCheckRun(gaus);
 				
 		//set image parameters - pixel
@@ -3571,28 +3711,16 @@ function objectsRedo(temp, option){
 		makeRectangle(box[0], box[1], box[2], box[3]);
 		run("Enlarge...", "enlarge=15 pixel");
 		run("Clear Outside", "stack");
-		//Reduce intensity of the cage wall
-		run("Enlarge...", "enlarge=-15 pixel");
-		if(pw == 1 && py == 1)
-			run("Make Band...", "band=25");
-		else
-			run("Make Band...", "band=" + 25*pw);
-			
-		run("Gaussian Blur...", "sigma=10 stack");
+		
 		
 		if(drkMin != drkMax)
 			darkRPorjection(imName, drkMin,drkMax);
 
 		//setThreshold and Analyse
 		setThrandAna(thrMin, thrMax, fps, 4, staggerS, staggerE);
-		
+				
 		//Get data of the dectetions
-		oriID=getImageID();
-		if(fps == 25)
-			totalslices = staggerE - staggerS;
-		else
-			totalslices = round((staggerE - staggerS)/ (100/fps));
-			
+		oriID=getImageID();	
 		getParametersRT(fps, dir, imName, nRegions, totalslices);
 		dialog2(oriID, dir, imName, 4);
 		
@@ -3645,7 +3773,7 @@ function swimRedo(temp, option){
 		//open image
 		ignore = openFile(dir+imName, option);
 		
-		//Check for guassian blur
+		//Check for gaussian blur
 		gausCheckRun(gaus);
 		
 		//set image parameters - pixel
@@ -3714,15 +3842,22 @@ function crossRedo(temp, option){
 	jump = 18 + ((count-18)*2) + 1;
 	thrMin = parseInt(temp[jump+1]); thrMax = parseInt(temp[jump+2]);
 	drkMin = parseInt(temp[jump+4]); drkMax = parseInt(temp[jump+5]);
-	staggerS = parseInt(temp[jump + 7]);  staggerE = parseInt(temp[jump + 8]); 
-	temp2 = Array.slice(temp, jump + 9, 100);
+	staggerS = parseInt(temp[jump + 7]);  staggerE = parseInt(temp[jump + 8]);
+	openDir =  parseInt(temp[jump + 10]);
+	temp2 = Array.slice(temp, jump + 11, 100);
 	checkPreferences(temp2);
+	
+	//Get data of the dectetions
+	if(fps == 25)
+		totalslices = staggerE - staggerS;
+	else
+		totalslices = round((staggerE - staggerS) / (100/fps));
 	
 	if(option == 0){
 		//open image
 		ignore = openFile(dir+imName, option);
 		
-		//Check for guassian blur
+		//Check for gaussian blur
 		gausCheckRun(gaus);
 		
 		//set image parameters - pixel
@@ -3740,15 +3875,11 @@ function crossRedo(temp, option){
 		//setThreshold and Analyse
 		setThrandAna(thrMin, thrMax, fps, 2, staggerS, staggerE);
 		
-		//Get data of the dectetions
-		if(fps == 25)
-			totalslices = staggerE - staggerS;
-		else
-			totalslices = round((staggerE - staggerS) / (100/fps));
+		
 			
 		oriID = getImageID;
 		toUnscaled(armsL);
-		getParametersET(fps, dir, imName, armsL, totalslices);
+		getParametersET(fps, dir, imName, armsL, totalslices, openDir);
 		dialog2(oriID, dir, imName, 2);
 	}else{
 		//Open image file or create an empty one
@@ -3766,7 +3897,7 @@ function crossRedo(temp, option){
 		if(option == 1){
 			//Get data of the dectetions
 			toUnscaled(armsL);
-			getParametersET(fps, dir, imName, armsL, totalslices);
+			getParametersET(fps, dir, imName, armsL, totalslices, openDir);
 		}
 		if(option == 2){
 			oriID = getImageID();
@@ -3794,11 +3925,17 @@ function cubeRedo(temp, option){
 	temp2 = Array.slice(temp,30,100);
 	checkPreferences(temp2);
 	
+	//Get data of the dectetions
+	if(fps == 25)
+		totalslices = staggerE - staggerS;
+	else
+		totalslices = round((staggerE - staggerS)/ (100/fps));
+	
 	if(option == 0){
 		//Open image
 		ignore = openFile(dir+imName, option);
 		
-		//Check for guassian blur
+		//Check for gaussian blur
 		gausCheckRun(gaus);
 				
 		//set image parameters - pixel
@@ -3810,14 +3947,6 @@ function cubeRedo(temp, option){
 		makeRectangle(box[0], box[1], box[2], box[3]);
 		run("Enlarge...", "enlarge=15 pixel");
 		run("Clear Outside", "stack");
-		//Reduce intensity of the cage wall
-		run("Enlarge...", "enlarge=-15 pixel");
-		if(pw == 1 && py == 1)
-			run("Make Band...", "band=25");
-		else
-			run("Make Band...", "band=" + 25*pw);
-			
-		run("Gaussian Blur...", "sigma=10 stack");
 		
 		if(drkMin!= drkMax)
 			darkRPorjection(imName, drkMin,drkMax);
@@ -3825,11 +3954,7 @@ function cubeRedo(temp, option){
 		//setThreshold and Analyse
 		setThrandAna(thrMin, thrMax, fps, 1, staggerS, staggerE);
 		
-		//Get data of the dectetions
-		if(fps == 25)
-			totalslices = staggerE - staggerS;
-		else
-			totalslices = round((staggerE - staggerS)/ (100/fps));
+
 		
 		getParameters(fps, dir, imName, totalslices);
 		oriID = getImageID();
@@ -3906,7 +4031,7 @@ function setBackgrdCo(thr){
 }
 
 
-/*Small function to run a guassian blur if so selected*/
+/*Small function to run a gaussian blur if so selected*/
 function gausCheckRun(n){
 	if(n > 0)
 			run("Gaussian Blur...", "sigma="+n+" stack");
@@ -3972,22 +4097,22 @@ function writePreferences(file){
 	//General
 	print(file, "Preferences");
 	print(file, "Units of work\t" + units);
-	print(file, "Guassian blur to apply\t"+ gauVal);
+	print(file, "Gaussian blur to apply\t"+ gauVal);
 	print(file, "Minimum Displacement value (units)\t"+ dispVal);
-	//Cube and Objects Maizes
+	//Cube and Objects mazes
 	print(file, "Rearing - Solidity (Cube/Region only)\t"+ solidity);
 	print(file, "Default width of box\t"+ wCube);
 	print(file, "Mouse minimal area (pixels)\t"+ mCubeArea);
-	//Elevated Maize
+	//Elevated maze
 	print(file, "Width of arms\t"+ wElevated);
 	print(file, "Length of arms\t"+ lElevated);
 	print(file, "Mouse minimal area (pixels)\t"+ mElevatedArea);
 	print(file, "Selection smoothing value (pixels)\t"+ sElevated);
-	//Swimming Maize
+	//Swimming maze
 	print(file, "Pool diameter\t"+ dSwimming);
 	print(file, "Mouse minimal area (pixels)\t"+ mSwimmingArea);
 	print(file, "Distance to pool Wall to consider at wall (units)\t"+ poolWD);
-	//T/Y Maize
+	//T/Y maze
 	print(file, "Arms width\t"+ wTY);
 	print(file, "Mouse minimal area (pixels)\t"+ mTYArea);
 	print(file, "Selection smoothing value (pixels)\t"+ sTY);
@@ -4015,46 +4140,46 @@ function checkPreferences(array){
 	//Open/NOR
 	i = i + 2;
 	print(array[i] + ": current is "+ solidity + ". Saved is: " + array[i+1]);
-	if(solidity!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of OpenField/NOR.");}
+	if(solidity!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Open Field/Novel Object Recognition.");}
 	i = i + 2;
 	print(array[i] + ": current is "+ wCube + ". Saved is: " + array[i+1]);
-	if(wCube!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of OpenField/NOR.");}
+	if(wCube!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Open Field/Novel Object Recognition.");}
 	i = i + 2;
 	print(array[i] + ": current is "+ mCubeArea + ". Saved is: " + array[i+1]);
-	if(mCubeArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of OpenField/NOR.");}
+	if(mCubeArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Open Field/Novel Object Recognition.");}
 	//elevated
 	i = i + 2;
 	print(array[i] + ": current is "+ wElevated + ". Saved is: " + array[i+1]);
-	if(wElevated!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus Maize.");}
+	if(wElevated!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus maze.");}
 	i = i + 2;
 	print(array[i] + ": current is "+ lElevated + ". Saved is: " + array[i+1]);
-	if(lElevated!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus Maize.");}
+	if(lElevated!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus maze.");}
 	i = i + 2;
 	print(array[i] + ": current is "+ mElevatedArea + ". Saved is: " + array[i+1]);
-	if(mElevatedArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus Maize.");}
+	if(mElevatedArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus maze.");}
 	i = i + 2;
 	print(array[i] + ": current is "+ sElevated + ". Saved is: " + array[i+1]);
-	if(sElevated!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus Maize.");}
-	//Watermaize
+	if(sElevated!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Elevated Plus maze.");}
+	//Watermaze
 	i = i + 2;
 	print(array[i] + ": current is "+ dSwimming + ". Saved is: " + array[i+1]);
-	if(dSwimming!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of WaterMaize.");}
+	if(dSwimming!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Morris Water maze.");}
 	i = i + 2;
 	print(array[i] + ": current is "+ mSwimmingArea + ". Saved is: " + array[i+1]);
-	if(mSwimmingArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of WaterMaize.");}
+	if(mSwimmingArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Morris Water maze.");}
 	i = i + 2;
 	print(array[i] + ": current is "+ poolWD + ". Saved is: " + array[i+1]);
-	if(poolWD!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of WaterMaize.");}
-	//TY Maize
+	if(poolWD!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Morris Water maze.");}
+	//TY maze
 	i = i + 2;
 	print(array[i] + ": current is "+  wTY + ". Saved is: " + array[i+1]);
-	if( wTY!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of T/Y Maize.");}
+	if( wTY!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Y maze.");}
 	i = i + 2;
 	print(array[i] + ": current is "+  mTYArea + ". Saved is: " + array[i+1]);
-	if( mTYArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of T/Y Maize.");}
+	if( mTYArea!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Y maze.");}
 	i = i + 2;
 	print(array[i] + ": current is "+  sTY + ". Saved is: " + array[i+1]);
-	if( sTY!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of T/Y Maize.");}
+	if( sTY!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Y maze.");}
 	//Fear Conditioning
 	i = i + 2;
 	print(array[i] + ": current is "+  mFreezeArea + ". Saved is: " + array[i+1]);
