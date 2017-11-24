@@ -29,7 +29,7 @@ SOFTWARE.
   
 requires("1.50a");
  //Menu
- var filemenu = newMenu("Mouse Behavioral Analysis Menu Tool", newArray("Batch Process Video Files", "Process Video Maze", "Open Field","Elevated Plus Maze", "Morris Water Maze", "Novel Object Recognition", "Y Maze","Fear Conditioning", "Open Previous Analysis File", "Preferences","-"));
+ var filemenu = newMenu("Mouse Behavioral Analysis Menu Tool", newArray("Batch Process Video Files", "Process Video File", "Open Field Maze","Elevated Plus Maze", "Morris Water Maze", "Novel Object Recognition", "Y Maze","Fear Conditioning", "Open Previous Analysis File", "Preferences","-"));
  //Strings fror general use
  var delFile = "Previous analysis file exists. Overwrite? Cancel will stop the macro.";
  var setThr = "Please set the threshold carefully and press OK (Image>Adjust>Threshold).";
@@ -38,7 +38,7 @@ requires("1.50a");
  var gauVal = call("ij.Prefs.get", "JAMoT_Prefs.gen.gauval", "0");
  var dispVal = call("ij.Prefs.get", "JAMoT_Prefs.gen.dispVal", "0");
  //Open Field
- var solidity = call("ij.Prefs.get", "JAMoT_Prefs.cube.soli", "0");
+ //var solidity = call("ij.Prefs.get", "JAMoT_Prefs.cube.soli", "0");
  var wCube = call("ij.Prefs.get", "JAMoT_Prefs.cube.width", "0");
  var mCubeArea = call("ij.Prefs.get", "JAMoT_Prefs.cube.marea","0");
  //Elevated maze
@@ -64,11 +64,11 @@ macro "Mouse Behavioral Analysis Menu Tool - C000C111D98C111D88C111D89C111D86D99
  	choice = getArgument();
  	
  	if(units == 0 && choice != "Preferences"){
- 			showMessage("It appears this is the first time you run JAMoT.\n Please run Preferences from the menu before starting.");
+ 			showMessage("It appears this is the first time you run JAMoT.\n Please run Preferences from the Toolbox menu before starting.");
  		exit();
  	}else{
 	 	if(choice != "-"){
-	 		if(choice == "Process Video") {ProcessVideo(); }
+	 		if(choice == "Process Video File") {ProcessVideo(); }
 	 		else if(choice == "Batch Process Video Files") {BatchProcessVideoFiles();}
 	 		else if(choice == "Open Field Maze") {MouseCubeTracker(); }
 	 		else if(choice == "Elevated Plus Maze") {MiceElevatedPuzzleTracker(); }
@@ -94,7 +94,7 @@ macro "Mouse Behavioral Analysis Menu Tool - C000C111D98C111D88C111D89C111D86D99
 	pathFFmpeg = getDirectory("macros") + File.separator + "toolsets" + File.separator + "ffmpeg.exe";
 	if(!File.exists(pathFFmpeg)){
 		//Explain the needs of the function
-		showMessage("Video processing tool","<html>"+"<font size=2><center>This step requires <br>"+"<font size=+2><center>ffmpeg.exe<br>"+"<font size=2><center>in the directory of ImageJ/macros/toolset!<br>" + "<font size=2><center>If you do not have ffmpeg installed please download it at<br>" + "<font size=2><font color=blue>https://ffmpeg.org/download.html<br><br>"+"<font size=2><font color=black> Also note that this macro does not support <b>SPACES</b> in the files/directories names!<br>");
+		showMessage("AVI batch processing tool","<html>"+"<font size=2><center>This step requires <br>"+"<font size=+2><center>ffmpeg.exe<br>"+"<font size=2><center>in the directory of ImageJ/macros/toolset!<br>" + "<font size=2><center>If you do not have ffmpeg installed please download it at<br>" + "<font size=2><font color=blue>https://ffmpeg.org/download.html<br><br>"+"<font size=2><font color=black> Also note that this macro does not support <b>SPACES</b> in the files/directories names!<br>");
 		exit(); 
 	}
 	
@@ -199,7 +199,7 @@ function ProcessVideo(){
 	//Trim stack down if necessary
 	waitForUser("Please have a look at the stack to see if you want to trim it down. To select 1st frame press OK.");
 	first = getSliceNumber();
-	waitForUser("And now select the last frame adn press OK.");
+	waitForUser("And now select the last frame and press OK.");
 	last = getSliceNumber();
 	
 	//Get directory to save image to 
@@ -275,7 +275,7 @@ function MouseCubeTracker(){
 	//Draw a rectangle for the user to adujst to the base of the box
 	getDimensions(width, height, channels, slices, frames);
 	makeRectangle(width/5, height/5,width/2,height/2);
-	waitForUser("Please adjust the rectangule to match the bottom of the box");
+	waitForUser("Please adjust the rectangle to match the bottom of the box");
 
 	//Gets the dimensions of the rectangle and prints them to a file
 	getSelectionBounds(rectCoord[0], rectCoord[1], rectCoord[2], rectCoord[3]);
@@ -338,7 +338,7 @@ function MouseCubeTracker(){
 		darkA = removeDarkR(imTitle);
 	
 
-	/*Set autothreshold method with Minum and get the input from the user
+	/*Set autothreshold method with Minimum and get the input from the user
 	regarding it. Also save the threshold to file*/
 	setSlice(round(nSlices/2));
 	setAutoThreshold("Minimum");  
@@ -413,7 +413,7 @@ function getParameters(fps,dir, imTitle, totalSlices){
 	lookup = newArray(roiManager("Count"));
 	inRegion = newArray(roiManager("Count"));
 	headAngle = newArray(roiManager("Count"));
-	
+	local = newArray(roiManager("Count"));
 	/*count and sum variables for the individual parameters*/
 	displa = 0; moving = 0;
 	displaCenter = 0; centerTime=0; entriesCenter = 0; freezeCenter = 0; wallsTime=0;
@@ -444,14 +444,16 @@ function getParameters(fps,dir, imTitle, totalSlices){
 			b = arrayY[i];
 			toUnscaled(a,b);
 			headAngle[i] = calculateAngle(a, b, c[0], d[0]);*/
-			angle = getDirection(dir, imTitle, i, 0, fps, i);	
+			angle = getDirection(dir, imTitle, i, 0, fps, i, 1);
+			local[i] = angle[2];	
 			headAngle[i] = angle[3];
 		}else{
 			roiManager("Select", i);
 			List.setMeasurements();
 			arrayX[i] = List.getValue("X");
 			arrayY[i] = List.getValue("Y");
-			angle = getDirection(dir, imTitle, i, headAngle[i-1], fps, i);
+			angle = getDirection(dir, imTitle, i, headAngle[i-1], fps, i, local[i-1]);
+			local[i] = angle[2];
 			headAngle[i] = angle[3];	
 		}			
 			
@@ -473,7 +475,7 @@ function getParameters(fps,dir, imTitle, totalSlices){
 		else 
 			direction[i] = "Down rigth";
 		
-		//Rearing - attempet
+		//Rearing - attempt
 		if(angle[1])
 			lookup[i] = "Yes";
 		else
@@ -483,11 +485,11 @@ function getParameters(fps,dir, imTitle, totalSlices){
 		if(angle[2] == 1){
 			inRegion[i] = "In";
 			centerTime = centerTime + delay;
-		}else if(angle[2] == 2){
+		}else /*if(angle[2] == 2)*/{
 			inRegion[i] = "Out";
 			wallsTime = wallsTime + delay;
-		}else
-			inRegion[i] = "Border";
+		}/*else
+			inRegion[i] = "Border";*/
 		
 		/*Displacement / Velocity / Entries in center / Stopped*/	
 		if(i==0){
@@ -500,7 +502,7 @@ function getParameters(fps,dir, imTitle, totalSlices){
 			displacement[i] = calculateDistance(arrayX[i-1], arrayY[i-1], arrayX[i], arrayY[i]);
 			velocity[i] = displacement[i]/delay;
 
-			if(angle[2] == 1 && inRegion[i-1] == "Out")
+			if(angle[2] == 1 && (inRegion[i-1] == "Out" /*|| inRegion[i-1] == "Border"*/))
 				entriesCenter++;
 			
 			if(direction[i] == direction[i-1])
@@ -535,6 +537,8 @@ function getParameters(fps,dir, imTitle, totalSlices){
 	for(i=0; i<roiManager("count"); i++){
 		showProgress(i, roiManager("count"));
 		showStatus("Writing results...");
+		roiManager("Select", i);
+		setResult("Frame", i, getSliceNumber());
 		setResult("X Center",i, arrayX[i]);
 		setResult("Y Center",i, arrayY[i]);
 		setResult("Displacement (cm)",i, displacement[i]);
@@ -542,7 +546,7 @@ function getParameters(fps,dir, imTitle, totalSlices){
 		setResult("Direction of head",i, direction[i]);
 		setResult("Changed direction?", i, turndir[i]);
 		setResult("State", i, estado[i]);
-		setResult("Looking up", i, lookup[i]);
+		//setResult("Looking up", i, lookup[i]);
 		setResult("In center", i, inRegion[i]);
 		
 	}
@@ -559,31 +563,28 @@ function getParameters(fps,dir, imTitle, totalSlices){
 	setResult("Label", i, "Displacement in Center"); 
 	setResult("Value", i, displaCenter);
 	i = i + 1;
-	setResult("Label", i, "Displacement Outer+Border Regions"); 
+	setResult("Label", i, "Displacement in Outer Region"); 
 	setResult("Value", i,(displa - displaCenter));
 	i = i + 1;
 	setResult("Label", i,"Total time"); 
 	setResult("Value", i, totalSlices * delay);
 	i = i + 1;
-	setResult("Label", i, "Time in center"); 
+	setResult("Label", i, "Time in Center"); 
 	setResult("Value", i, centerTime);
 	i = i + 1;
-	setResult("Label", i, "N. entries in center"); 
+	setResult("Label", i, "N. entries in Center"); 
 	setResult("Value", i, entriesCenter);
 	i = i + 1;
-	setResult("Label", i, "Time around walls"); 
+	setResult("Label", i, "Time in Outer Region"); 
 	setResult("Value", i, wallsTime);
-	i = i + 1;
-	setResult("Label", i, "Time at borders"); 
-	setResult("Value", i, ((totalSlices * delay) - wallsTime - centerTime));
 	i = i + 1;
 	setResult("Label", i, "Time freezed/not moving"); 
 	setResult("Value", i,((totalSlices * delay) - moving));
 	i = i + 1;
-	setResult("Label", i, "Time freezed/not moving in center"); 
+	setResult("Label", i, "Time freezed/not moving in Center"); 
 	setResult("Value", i,freezeCenter);
 	i = i + 1;
-	setResult("Label", i, "Time freezed/not moving in outer region"); 
+	setResult("Label", i, "Time freezed/not moving in Outer Region"); 
 	setResult("Value", i,((totalSlices * delay) - moving) - freezeCenter);
 	i = i + 1;
 	setResult("Label", i, "Average displacement");
@@ -602,7 +603,7 @@ function getParameters(fps,dir, imTitle, totalSlices){
 }
 
 /*Get individual parameters for the ROI of mice in OpenField*/
-function getDirection(dir, imTitle, time, headAngle, fps, i){
+function getDirection(dir, imTitle, time, headAngle, fps, i, pposition){
 		
 		//Results array
 		angle = newArray(5);
@@ -655,18 +656,11 @@ function getDirection(dir, imTitle, time, headAngle, fps, i){
 		}
 		
 	
-		/*Get the maxs and mins of the length array
-		Max distance should be head (in most cases) minimal distances are curves of behind*/
-		/*nInter = 10;
-		do{
-			maxlengths = Array.findMaxima(length, nInter);
-			//minlengths = Array.findMinima(length, nInter);
-			nInter = round(nInter - (nInter/3));
-		}while(lengthOf(maxlengths)==0)*/
-	
+
+		//Testing the center and head search
 		//Make new point selection with centroid and head
 		/*makeSelection("point",newArray(xc,xp[headPoint]) ,newArray(yc, yp[headPoint]));
-		roiManager("Update")*/;
+		roiManager("Update");*/
 		
 		//Calculate the angle of the center to the head (max length)
 		angle[0] = calculateAngle2(xc, yc, xp[headPoint],yp[headPoint]);
@@ -674,12 +668,10 @@ function getDirection(dir, imTitle, time, headAngle, fps, i){
 		//Calculate the angle of the center to the head (max length)
 		angle[3] = calculateAngle(xc, yc, xp[headPoint],yp[headPoint]);
 
-			
-		
-
+	
 		//Tentative of finding out if the rat is rearing
-		if(List.getValue("Solidity")< solidity && ((xp[headPoint] < tempArray[0] || xp[headPoint] > tempArray[0]+tempArray[2]) && (yp[headPoint] < tempArray[1] || yp[headPoint]> tempArray[1]+tempArray[3])))
-				angle[1] = 1;
+		/*if(List.getValue("Solidity")< solidity && ((xp[headPoint] < tempArray[0] || xp[headPoint] > tempArray[0]+tempArray[2]) && (yp[headPoint] < tempArray[1] || yp[headPoint]> tempArray[1]+tempArray[3])))
+				angle[1] = 1;*/
 		
 		//find out if the rat is in the center or not
 		count = false; in= 0; out = 0;
@@ -697,18 +689,34 @@ function getDirection(dir, imTitle, time, headAngle, fps, i){
 				out++;
 			
 		}
-
 							
 		
 		/*Fill in if the rat is in the center or in the outer regions
 		or at the borders*/
-		if(in >= (lengthOf(xp)*0.8) && count)
-			angle[2] = 1;
-		else if(out >= (lengthOf(xp)*0.8))
+		/*if(pposition == 3){
+			if(in >= (lengthOf(xp)*0.8) && count)
+				angle[2] = 1;
+			else if(out >= (lengthOf(xp)*0.8))	
+				angle[2] = 2;
+			else
+				angle[2] = 3;
+		}else*/ 
+		if(pposition == 1){
+			if(in >= (lengthOf(xp)*0.3) && count)
+				angle[2] = 1;
+			else /*if(out >= (lengthOf(xp)*0.8))*/
+				angle[2] = 2;
+			/*else
+				angle[2] = 3;*/
+		}else if(pposition == 2){
+			if(in >= (lengthOf(xp)*0.7) && count)
+				angle[2] = 1;
+			else /*if(out >= (lengthOf(xp)*0.2))*/	
+				angle[2] = 2;
+			/*else
+				angle[2] = 3;*/
+		}
 		
-			angle[2] = 2;
-		else
-			angle[2] = 3;
 			
 		return angle;
 	 
@@ -766,7 +774,7 @@ function MiceElevatedPuzzleTracker(){
 	//get dimensions of the image in px
 	getDimensions(width, height, channels, slices, frames);
 	makeRectangle(width/2.5, height/2.5,width/10,height/10);
-	waitForUser("Please adjust the rectangule to match the center of the maze.");
+	waitForUser("Please adjust the rectangle to match the center of the maze.");
 	
 	/*get the dimensions of the square in the center of the cross
 	This limits the lower bounds of the cross*/
@@ -778,7 +786,7 @@ function MiceElevatedPuzzleTracker(){
 	getPixelSize(unit, pw, ph);
 	if(pw == 1 && ph == 1){
 		pixx = armsW/rectRegions[2]; pixy = armsW/rectRegions[3];
-		print(f, "Pixel size\t"+pw+"\t"+ph +"\t" + armsL);	
+		print(f, "Pixel size\t"+pixx+"\t"+pixy +"\t" + armsL);	
 		run("Properties...", "channels=1 slices="+nSlices+" frames=1 unit="+units+" pixel_width="+pixx+" pixel_height="+pixy+" voxel_depth=1");
 	}else 
 		print(f, "Pixel size\t"+pw+"\t"+ph +"\t" + armsL);	
@@ -885,6 +893,7 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices, openDir){
 	run("Set Measurements...", "area centroid redirect=None decimal=3");
 	
 	/*Create arrays to hold the individual parameters of each ROI*/
+	slices = newArray(roiManager("Count"));
 	arrayX = newArray(roiManager("Count"));
 	arrayY = newArray(roiManager("Count"));
 	displacement = newArray(roiManager("Count"));
@@ -893,7 +902,7 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices, openDir){
 	openArmsPosition = newArray(roiManager("Count"));
 	mouseArea = newArray(roiManager("Count"));
 	angles = newArray(roiManager("Count"));
-	anglesA = newArray(roiManager("Count"));
+	headAngles = newArray(roiManager("Count"));
 	explo = newArray(roiManager("Count"));
 	
 	/*count and sum variables for the individual parameters*/
@@ -904,11 +913,14 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices, openDir){
 	check=0;
 	roiManager("Deselect");
 	setBatchMode("hide");
+	previousPosition = 0;
+	headAngle = 0;
 	/*Main loop to go trough all the ROIs and get the stats*/
 	for(i=0; i < roiManager("count"); i++){
 		showProgress(i, roiManager("count"));
 		showStatus("Analyzing detections...");
 		roiManager("Select", i);
+		slices[i] = getSliceNumber();
 		//smooth a bit the selection to eliminate tails and small bits on walls
 		//keeping the head - due to problems in the ilumination
 		run("Enlarge...", "enlarge=-"+sElevated+" pixel");
@@ -921,8 +933,13 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices, openDir){
 	
 		/*angle is an array which provides several properties to setup
 		information.*/ 
-		angle = getDirectionET(armsL, openDir);		
+		if(i==0)
+			angle = getDirectionET(armsL, openDir, previousPosition, fps, i, headAngle);
+		else
+			angle = getDirectionET(armsL, openDir, previousPosition, fps, i, headAngles[i-1]);		
+			
 		angles[i] = angle[0];
+		headAngles[i] = angle[2];
 
 		if(angle[0]==0){
 			closeArmsPosition[i] = "Out";
@@ -958,70 +975,71 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices, openDir){
 		}
 		
 		if(angle[1] == 1 && i >= 1)
-			explo[i] = "Yes";
+			explo[i] = 1;
 		else
-			explo[i] = "No";
+			explo[i] = 0;
+		
+		previousPosition = angle[0];
 			
 	}
 	
-	//smoothing the entries in arms by a moving average of window 7
-	r = fps;
-	for(j=r; j<lengthOf(angles)-r;j++){
-		count0 = 0; count1 = 0; count2=0;
-		for(m = j-round(r/2); m <= j+round(r/2); m++){
-			if(angles[m] == 0)
-				count0++;
-			else if(angles[m] == 1)
-				count1++;
-			else 
-				count2++;
+	//smoothing the entries in arms by a moving average of window = fps
+	w = floor(fps/3);
+	if(w%2 == 0)
+		w = w + 1;
+
 	
-		}
-		
-		if(count0 >= count1 && count0 >= count2)
-			anglesA[j]=0;
-		else if(count1 > count0 && count1 > count2)
-			anglesA[j]=1;
-		else
-			anglesA[j]=2;
-	}
+	anglesA = movingAverage(w, angles);
+	exploA = movingAverage(w, explo);
 	
 
-	for(j = r; j<anglesA.length-r;j++){
-		if(anglesA[j] == 1 && anglesA[j-1] != 1)
-			entriesClose++;
-		else if(anglesA[j] == 2 && anglesA[j-1] != 2)
-			entriesOpen++;
-		
-	}
 	
 	setBatchMode("show");
 	run("Select None");
 	closedAreaAve = closedAreaAve/closeAreaCount;
-	nExplo = 0; count = 0;
+	nExplo = 0; count = 0; countC = 0; countO = 0;
 
 	run("Clear Results");
 	/*Write results to tables both to single spots as the summary*/
 	for(i=0; i<roiManager("count"); i++){
 		showProgress(i, roiManager("count"));
 		showStatus("Writing results...");
+		setResult("Slice", i, slices[i]);
 		setResult("X Center",i, arrayX[i]);
 		setResult("Y Center",i, arrayY[i]);
 		setResult("Displacement (cm)",i, displacement[i]);
 		setResult("Velocity (cm/s)",i, velocity[i]);
 		setResult("In Closed region",i, closeArmsPosition[i]);
 		setResult("In Open region", i, openArmsPosition[i]);
-		setResult("Exploring", i, explo[i]);
-		if(explo[i] == "Yes"){
+		if(exploA[i] == 1)
+			setResult("Exploring", i, "Yes");
+		else
+			setResult("Exploring", i, "No");
+		
+		if(exploA[i] == 1){
 			count++;
-			if(count == 3){
+			if(count == floor(fps/3)){
 				nExplo++;
 			}		 
-		}else if(explo[i] == "No" && count > 0)
+		}else if(exploA[i] == 0 && count > 0)
 			count = 0;
-				
-				
+		
+		if(anglesA[i] == 1){
+			countC++;
+			if(countC == floor(fps/3))
+				entriesClose++;
+		}else if(anglesA[i] != 1 && countC > 0)
+			countC = 0;
+		
+		if(anglesA[i] == 2){
+			countO++;
+			if(countO == floor(fps/3))
+				entriesOpen++;
+		}else if(anglesA[i] != 2 && countO > 0)
+			countO = 0;
+					
 	}
+	
 	updateResults();
 
 	selectWindow("Results");
@@ -1030,13 +1048,13 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices, openDir){
 
 	setResult("Label", 0, "Total displacement"); 
 	setResult("Value", 0, displa);
-	setResult("Label", 1, "Time spent in closed region"); 
+	setResult("Label", 1, "Time spent in Closed Region"); 
 	setResult("Value", 1, closedTime);
-	setResult("Label", 2, "N. entries in closed region"); 
+	setResult("Label", 2, "N. entries in Closed Region"); 
 	setResult("Value", 2, entriesClose);
-	setResult("Label", 3, "Time spent in open region"); 
+	setResult("Label", 3, "Time spent in Open Region"); 
 	setResult("Value", 3,  openTime);
-	setResult("Label", 4, "N. entries in open region"); 
+	setResult("Label", 4, "N. entries in Open Region"); 
 	setResult("Value", 4, entriesOpen);
 	setResult("Label", 5, "Average displacement");
 	Array.getStatistics(displacement, min,max,mean,dev);
@@ -1044,7 +1062,7 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices, openDir){
 	setResult("Label", 6, "Average velocity");
 	Array.getStatistics(velocity, min,max,mean,dev);
 	setResult("Value", 6, mean);
-	setResult("Label", 7, "Times of over the edge exploration"); 
+	setResult("Label", 7, "Times of over the Edge Exploration"); 
 	setResult("Value", 7, nExplo);
 	setResult("Label", 8, "Time in central area");
 	setResult("Value", 8, (totalSlices*delay)-closedTime-openTime);
@@ -1058,9 +1076,9 @@ function getParametersET(fps, dir, imTitle, armsL, totalSlices, openDir){
 
 
 /*Get individual parameters for the ROI of mice in EM*/
-function getDirectionET(armsL, openDir){
+function getDirectionET(armsL, openDir, previousPosition,fps, tPos, headAngle){
 	//Results array
-	angle = newArray(2);
+	angle = newArray(3);
 	Array.fill(angle, 0);
 	//Get the coordinates of the selection
 	getSelectionCoordinates(xp, yp);
@@ -1077,13 +1095,14 @@ function getDirectionET(armsL, openDir){
 				
 	//find out if the rat is closed or open arms
 	flag = true; countOpen = 0; countClose= 0;
-	
+	flagClosed = false;
 	//Open arms west - east
 	if(openDir){
 		//Is it in the closed arms completely?
 		if(yc < rectRegions[1] - rectRegions[3] || yc >= rectRegions[1] + (rectRegions[2]*2)){
 			angle[0] = 1;
 			flag = false;
+			flagClosed = true;
 		}//Or is it in the open arms completely?
 		else if(xc < rectRegions[0]-rectRegions[2] || xc >= (rectRegions[0] + (rectRegions[2]*2))){
 			angle[0] = 2;
@@ -1091,13 +1110,14 @@ function getDirectionET(armsL, openDir){
 		}//It is in the borders somewhere...
 		else if(flag){
 			for(i = 0; i < xp.length; i++){
-				if((xp[i] >= rectRegions[0] && xp[i] <= (rectRegions[0] + rectRegions[2])) && ( yp[i] <= rectRegions[1] || yp[i] > (rectRegions[1] + rectRegions[3])))
+				if(( yp[i] <= rectRegions[1] || yp[i] > (rectRegions[1] + rectRegions[3])))
 					countClose++;
 				else if((xp[i] < rectRegions[0] || xp[i] >= (rectRegions[0] + rectRegions[2])))
 					countOpen++;	
 			}
 		}
 		
+	//Open arms North - south	
 	}else{
 		//Is it in the open arms completely?
 		if(yc < rectRegions[1] - rectRegions[3] || yc >= rectRegions[1] + (rectRegions[2]*2)){
@@ -1107,12 +1127,13 @@ function getDirectionET(armsL, openDir){
 		else if(xc < rectRegions[0]-rectRegions[2] || xc >= (rectRegions[0] + (rectRegions[2]*2))){
 			angle[0] = 1;
 			flag = false;
+			flagClosed = true;
 		}//It is in the borders somewhere...
 		else if(flag){
 			for(i = 0; i < xp.length; i++){
 				if((yp[i] < rectRegions[1] || yp[i] >= (rectRegions[1] + rectRegions[3])))
 					countOpen++;
-				else if((xp[i] <= rectRegions[0] || xp[i] >= (rectRegions[0] + rectRegions[2])) && ( yp[i] >= rectRegions[1] && yp[i] < (rectRegions[1] + rectRegions[3])))
+				else if(( xp[i] >= rectRegions[1] && xp[i] < (rectRegions[1] + rectRegions[3])))
 					countClose++;	
 			}
 		}
@@ -1121,30 +1142,71 @@ function getDirectionET(armsL, openDir){
 
 
 	//setup the result to tell where the mouse is...
-	if(flag && countClose >= lengthOf(xp)*0.8)
-		angle[0] = 1;
-	else if(flag && countOpen >= lengthOf(xp)*0.8)
-		angle[0] = 2;
-	else if(flag)
-		angle[0] = 0;
+	if(flag){
+		if(previousPosition == 0 ){
+			if(flag && countClose >= lengthOf(xp)*0.8)
+				angle[0] = 1;
+			else if(flag && countOpen >= lengthOf(xp)*0.8)
+				angle[0] = 2;
+			else if(flag)
+				angle[0] = 0;
+		}else if(previousPosition == 1 ){
+			if(flag && countClose >= lengthOf(xp)*0.4)
+				angle[0] = 1;
+			else if(flag && countOpen >= lengthOf(xp)*0.8)
+				angle[0] = 2;
+			else if(flag)
+				angle[0] = 0;
+		}else if(previousPosition == 2 ){
+			if(flag && countClose >= lengthOf(xp)*0.8)
+				angle[0] = 1;
+			else if(flag && countOpen >= lengthOf(xp)*0.4)
+				angle[0] = 2;
+			else if(flag)
+				angle[0] = 0;
+		}
+	}
+
 		
 		
 	//New array for the lengths of center to the perimeter of the selection
 	length = newArray(xp.length);
-	//Fill the array with the distances
-	for(i = 0; i < xp.length; i++){
-		length[i]= calculateDistance(xc,yc,xp[i],yp[i]);
+	maxlength = 0;
+	headPoint = 0;
+	
+	if(tPos % floor(fps/2) == 0 || tPos == 0){
+		//Fill the array with the distances
+		for(i = 0; i < xp.length; i++){
+			length[i]= calculateDistance(xc,yc,xp[i],yp[i]);
+			if(length[i] > maxlength){
+				maxlength = length[i];
+				headPoint = i;
+			}
+			
+		}
+	}else{
+		//Fill the array with the distances
+		for(i = 0; i < xp.length; i++){
+		//Calculate the angle from the center to the coordinates
+			tempAngle = calculateAngle(xc, yc, xp[i],yp[i]);
+			anglediff = ((tempAngle - headAngle + 180 + 360) % 360) - 180;
+			if(anglediff <= 35 && anglediff >= -35){
+				length[i]= calculateDistance(xc,yc,xp[i],yp[i]);
+				if(length[i] > maxlength){
+					maxlength = length[i];
+					headPoint = i;				
+				}
+			} 				
+		}
 	}
-
-	/*Get the maxs and mins of the length array
-		Max distance should be head (in most cases) minimal distances are curves of behind*/
-	nInter = 10;
-	do{
-		maxlengths = Array.findMaxima(length, nInter);
-		minlengths = Array.findMinima(length, nInter);
-		nInter = round(nInter - (nInter/3));
-	}while(lengthOf(maxlengths)==0)
-
+	
+	
+	makeSelection("Points",newArray(xc, xp[headPoint]), newArray(yc, yp[headPoint]));
+	roiManager("Update"); 
+		
+	headAngle = calculateAngle(xc, yc, xp[headPoint],yp[headPoint]);
+	angle[2] = headAngle;
+	
 	armL = armsL;
 	toUnscaled(armL);
 	
@@ -1152,21 +1214,60 @@ function getDirectionET(armsL, openDir){
 	Check if the head of the mouse is out of the open arms fronteirs*/
 	//West-East direction
 	in= 0;
-	if(openDir){
-		for(i = 0; i < xp.length; i++){
-			if(angle[0] != 1 && (xp[i] <= rectRegions[0] || xp[i] >= (rectRegions[0]+rectRegions[2])) && (yp[i] <= rectRegions[1] || yp[i] >= (rectRegions[1]+rectRegions[3]) || xp[i] <= (rectRegions[0] - armL-1) || xp[i] >= (rectRegions[0] + rectRegions[2] + armL)))
-				in++;
-		}
+	if(openDir && !flagClosed){
+		
+		for(i = 0; i < xp.length; i++){		
+			//Calculate the angle from the center to the coordinates
+			tempAngle = calculateAngle(xc, yc, xp[i],yp[i]);
+			anglediff = ((tempAngle - headAngle + 180 + 360) % 360) - 180;
+			if(anglediff <= 10 && anglediff >= -10){
+				//Its at the edge of the open arms (regions 5 or 6)
+				if(xp[i] <= (rectRegions[0] - armL) || xp[i] >= (rectRegions[0] + rectRegions[2] + armL))
+					in++;
+				//Point is in region 1	
+				else if(xp[i] <= rectRegions[0] && yp[i] <= rectRegions[1])
+					in++;
+				//Point in region 2	
+				else if(xp[i] >= (rectRegions[0] + rectRegions[2]) && yp[i] <= rectRegions[1])					
+						in++;
+				//Point in region 3
+				else if(xp[i] <= rectRegions[0] && yp[i] >= (rectRegions[1] + rectRegions[3]))
+					in++;
+				//Point in regions 4
+				else if(xp[i] >= (rectRegions[0] + rectRegions[2]) && yp[i] >= (rectRegions[1] + rectRegions[3]))
+					in++;
+
+			}			
+		} 
+		
 	}//North-south direction
-	else{
+	else if(!flagClosed){
 		for(i = 0; i < xp.length; i++){
-			if(angle[0] != 1 && (yp[i] <= rectRegions[1] || yp[i] >= (rectRegions[1]+rectRegions[3])) && (xp[i] <= rectRegions[0] || xp[i] >= (rectRegions[0]+rectRegions[2]) || yp[i] <= (rectRegions[1] - armL) || yp[i] >= (rectRegions[1] + rectRegions[3] + armL)))
-				in++;
+			//Calculate the angle from the center to the coordinates
+			tempAngle = calculateAngle(xc, yc, xp[i],yp[i]);
+			anglediff = ((tempAngle - headAngle + 180 + 360) % 360) - 180;
+			if(anglediff <= 10 && anglediff >= -10){
+			//Its at the edge of the open arms (regions 5 or 6) --> Only difference to East-Weast
+				if(yp[i] <= (rectRegions[1] - armL) || yp[i] >= (rectRegions[1] + rectRegions[3] + armL))
+					in++;
+				//Point is in region 1	
+				else if(xp[i] <= rectRegions[0] && yp[i] <= rectRegions[1])
+					in++;
+				//Point in region 2	
+				else if(xp[i] >= (rectRegions[0] + rectRegions[2]) && yp[i] <= rectRegions[1])					
+						in++;
+				//Point in region 3
+				else if(xp[i] <= rectRegions[0] && yp[i] >= (rectRegions[1] + rectRegions[3]))
+					in++;
+				//Point in regions 4
+				else if(xp[i] >= (rectRegions[0] + rectRegions[2]) && yp[i] >= (rectRegions[1] + rectRegions[3]))
+					in++;
+			}
 		}
 	}
 
 	
-	if(in >= 10)
+	if(in >= 5)
 		angle[1] = 1;
 
 	return angle;
@@ -1238,7 +1339,7 @@ function MouseSwimTracker(){
 	/*Draw an oval for the user to adujst to the platform 
 	gets the dimensions and prints then to a file*/
 	makeOval(50, 50,width/10,height/10);
-	waitForUser("Please adjust the oval to match the platform");
+	waitForUser("Please adjust the oval to match the circunference of the platform");
 	getSelectionBounds(platCoord[0], platCoord[1], platCoord[2], platCoord[3]);
 	print(f,"PlatformDimensions\t"+platCoord[0]+"\t"+platCoord[1]+"\t"+ platCoord[2]+"\t"+platCoord[3]);	
 	
@@ -1457,7 +1558,7 @@ function getParametersSM(fps,dir, imTitle, diameter, totalSlices){
 	setResult("Value", 7, qDis4);
 	setResult("Label", 8, "Time (s) in R4"); 
 	setResult("Value", 8, qTime4);
-	setResult("Label", 9, "Time close to poll wall");
+	setResult("Label", 9, "Time at the pool wall");
 	setResult("Value", 9, bTime);
 	setResult("Label", 10, "Average displacement ("+units+")");
 	Array.getStatistics(displacement, min,max,mean,dev);
@@ -1469,7 +1570,7 @@ function getParametersSM(fps,dir, imTitle, diameter, totalSlices){
 	if(t2Plat > 0)
 		setResult("Value",12, t2Plat);
 	else
-		setResult("Value",12, "Did not find Platform");
+		setResult("Value",12, "Did not find platform");
 
 	updateResults();
 	selectWindow("Results");
@@ -1575,7 +1676,7 @@ function MouseRegionsTracker(){
 	//Draw a rectangle for the user to adjust to the base of the box
 	getDimensions(width, height, channels, slices, frames);
 	makeRectangle(width/5, height/5,width/2,height/2);
-	waitForUser("Please adjust the rectangule to match the bottom of the box");
+	waitForUser("Please adjust the rectangle to match the bottom of the box");
 	
 	//Gets the dimensions of the rectangle and prints them to a file
 	getSelectionBounds(rectCoord[0], rectCoord[1], rectCoord[2], rectCoord[3]);
@@ -1968,6 +2069,13 @@ function MiceYTTracker(){
 	print(f, dir + "\t" + getWidth + "\t" + getHeight + "\t" + nSlices + "\t" + gaus);
 	print(f, imTitle);
 	print(f, "FPS\t" + fps);
+	
+	//Run gaussian blur if so selected in Dialog1
+	if(gaus > 0){
+		setBatchMode("hide");
+		run("Gaussian Blur...", "sigma="+gaus+" stack");
+	}
+	setBatchMode("show");
 
 	//Draw a triangle for the user to adujst to the triangle of the TY
 	getDimensions(width, height, channels, slices, frames);
@@ -2100,6 +2208,7 @@ function getParametersTY(fps, dir, imTitle, sStart){
 	armsPosition = newArray(roiManager("Count"));
 	armsPositionA = newArray(roiManager("Count"));
 	slices = newArray(roiManager("Count"));
+
 	
 	/*count and sum variables for the individual parameters*/
 	displa = 0; visit1 = 0; visit2=0; visit3 = 0; 
@@ -2127,8 +2236,12 @@ function getParametersTY(fps, dir, imTitle, sStart){
 
 		//armsPosition is an array which provides several properties to setup
 		//information. 
-		armsPosition[i] = getDirectionTY();			
-		slices[i] = (getSliceNumber() - sStart);
+		if(i==0)
+			armsPosition[i] = getDirectionTY(0);
+		else
+			armsPosition[i] = getDirectionTY(armsPosition[i-1]);	
+					
+		slices[i] = getSliceNumber();
 
 
 				
@@ -2149,9 +2262,20 @@ function getParametersTY(fps, dir, imTitle, sStart){
 	}
 
 	r = 7; //window length
-	for(j=r; j<lengthOf(armsPosition)-r;j++){
+	for(j = 0; j < armsPosition.length; j++){
 		count0 = 0; count1 = 0; count2=0; count3=0;
-		for(m = j - r/2; m <= j + r/2; m++){
+		if(j < floor(r/2)){
+			m = 0;
+			temp = j + round(r/2);
+		}else if(j >= floor(r/2) && j < armsPosition.length - round(r/2)){
+			m = j;
+			temp = j + round(r/2);
+		}else if(j >= armsPosition.length - round(r/2)){
+			m = j - floor(r/2);
+			temp = armsPosition.length;
+		}
+		
+		for(; m < temp; m++){
 			if(armsPosition[m] == 0)
 				count0++;
 			else if(armsPosition[m] == 1)
@@ -2160,8 +2284,8 @@ function getParametersTY(fps, dir, imTitle, sStart){
 				count2++;
 			else
 				count3++;
-	
 		}
+		
 		
 		if(count0 >= count1 && count0 >= count2 && count0 >= count3)
 			armsPositionA[j]=0;
@@ -2170,13 +2294,21 @@ function getParametersTY(fps, dir, imTitle, sStart){
 		else if(count2 > count0 && count2 > count1 && count2 > count3)
 			armsPositionA[j]=2;
 		else 
-			armsPositionA[j]=3;
+			armsPositionA[j]=3;		
+		
+		
+		
 	}
+	
 
 	
 	/*Positions in the arms*/
-	ordem = toString(armsPosition[0]);
+	ordem = toString(armsPositionA[0]);
 	
+	
+	//Setup positions counts and visit times
+	count0 = 0; count1 = 0; count2=0; count3=0;
+	anchor = floor(fps/3);
 	if(armsPosition[0] == 1)
 		visit1++;
 	else if(armsPosition[0] == 2)
@@ -2184,51 +2316,70 @@ function getParametersTY(fps, dir, imTitle, sStart){
 	else if(armsPosition[0] == 3)
 		visit3++;
 	
-	for(i = 1; i< armsPositionA.length; i++){
+	for(i = 1; i < armsPositionA.length; i++){
 		if(armsPositionA[i]==1){
-			time1 = time1 + delay;
-			if(armsPositionA[i-1] != 1){
+			count1++;
+			if(count1 == anchor && armsPositionA[i-anchor] != 1){
+				time1 = time1 + delay*anchor;
 				visit1++;
 				ordem = ordem + ",1";
 				if(order1 == 0){
-					roiManager("Select", i);
+					roiManager("Select", i-anchor);
 					order1 = delay * (getSliceNumber()-sStart);
 				}
 					
 			}
-				
-		}else if(armsPosition[i]==2){
-			time2 = time2 + delay;
-			if(armsPosition[i-1] != 2){
+			if(count1 > anchor)
+				time1 = time1 + delay;
+		
+		}else if(count1 > anchor && armsPositionA[i]!=1){
+			count1=0;
+		}else if(armsPositionA[i]==2){
+			count2++;
+			if(count2 == anchor && armsPositionA[i-anchor] != 2){
+				time2 = time2 + delay*anchor;
 				visit2++;
 				ordem = ordem + ",2";
 				if(order2 == 0){
-					roiManager("Select", i);
+					roiManager("Select", i-anchor);
 					order2 = delay * (getSliceNumber()-sStart);
 				}
 					
 			}
-		}else if(armsPosition[i]==3){
-			time3 = time3 + delay;
-			if(armsPosition[i-1] != 3){
+			if(count2 > anchor)
+				time2 = time2 + delay;
+		
+		}else if(count2 > anchor && armsPositionA[i]!=2){
+			count2=0;		
+		}else if(armsPositionA[i]==3){
+			count3++;
+			
+			
+			if(count3 == anchor && armsPositionA[i-anchor] != 3){
+				time3 = time3 + delay*anchor;
 				visit3++;
 				ordem = ordem + ",3";
 				if(order3 == 0){
-					roiManager("Select", i);
+					roiManager("Select", i-anchor);
 					order3 = delay * (getSliceNumber()-sStart);
 				}
 					
 			}
+			if(count3 > anchor)
+				time3 = time3 + delay;
+				
+		}else if(count3 > anchor && armsPositionA[i]!=3){
+			count3=0;
 		}
 
-	}
+	} 
 
 	
 
 	
 	setBatchMode("show");
 	run("Select None");
-
+ 
 	tripletStory = getTripletStat(ordem);
 
 	run("Clear Results");
@@ -2281,10 +2432,10 @@ function getParametersTY(fps, dir, imTitle, sStart){
 	setResult("Value", 12, ordem);
 	setResult("Label", 13, "Different triplets");
 	setResult("Value", 13, tripletStory[0]);
-	/*TODO remove double comment*/
 	setResult("Label", 14, "Total triplets"); 
 	setResult("Value", 14, tripletStory[1]);
-
+	setResult("Label", 15, "Percentage of alternation"); 
+	setResult("Value", 15, (tripletStory[0]/tripletStory[1])*100);
 	
 	updateResults();
 	selectWindow("Results");
@@ -2295,7 +2446,7 @@ function getParametersTY(fps, dir, imTitle, sStart){
 
 
 /*Get individual parameters for the ROI of mice in OpenField*/
-function getDirectionTY(){
+function getDirectionTY(pposition){
 
 		//Get the coordinates of the selection
 		getSelectionCoordinates(xp, yp);
@@ -2326,14 +2477,44 @@ function getDirectionTY(){
 		}
 		
 		
-		if(center >= lengthOf(xp)*0.9)
-			angle = 1;
-		else if(left >= lengthOf(xp)*0.9)
-			angle = 2;
-		else if(rigth >= lengthOf(xp)*0.9)
-			angle = 3;
-		else
-			angle = 0;
+		if(pposition==0){
+			if(center >= lengthOf(xp)*0.9)
+				angle = 1;
+			else if(left >= lengthOf(xp)*0.9)
+				angle = 2;
+			else if(rigth >= lengthOf(xp)*0.9)
+				angle = 3;
+			else
+				angle = 0;	
+		}else if(pposition==1){
+			if(center >= lengthOf(xp)*0.4)
+				angle = 1;
+			else if(left >= lengthOf(xp)*0.9)
+				angle = 2;
+			else if(rigth >= lengthOf(xp)*0.9)
+				angle = 3;
+			else
+				angle = 0;	
+		}else if(pposition==2){
+			if(center >= lengthOf(xp)*0.9)
+				angle = 1;
+			else if(left >= lengthOf(xp)*0.4)
+				angle = 2;
+			else if(rigth >= lengthOf(xp)*0.9)
+				angle = 3;
+			else
+				angle = 0;	
+		}else if(pposition==3){
+			if(center >= lengthOf(xp)*0.9)
+				angle = 1;
+			else if(left >= lengthOf(xp)*0.9)
+				angle = 2;
+			else if(rigth >= lengthOf(xp)*0.4)
+				angle = 3;
+			else
+				angle = 0;	
+		}
+		
 
 		
 		return angle;
@@ -2390,7 +2571,7 @@ function fearConditioning(){
 	//Asks the user to draw the polygon that the box form, writes it to file and clears outside
 	run("Select None");
 	setTool("polygon");
-	waitForUser("Please make a polygon to match the cage bottom.");
+	waitForUser("Please make a polygon to match the cage base.");
 	getSelectionCoordinates(px, py);
 	stringx = "";
 	stringy = "";
@@ -2576,7 +2757,7 @@ function Preferences(){
 	Dialog.addNumber("Minimum displacement to consider a moving mouse (units)", dispVal);
 	//Cube and Objects mazes
 	Dialog.addMessage("Open Field / NOR Preferences");
-	Dialog.addNumber("Rearing - Solidity (OF only)", solidity);
+	//Dialog.addNumber("Rearing - Solidity (OF only)", solidity);
 	Dialog.addNumber("Default width of box (units)", wCube);
 	Dialog.addNumber("Mouse minimal area (pixels)", mCubeArea);
 	//Elevated maze
@@ -2610,7 +2791,7 @@ function Preferences(){
 	gauValL = Dialog.getNumber();
 	dispValL = Dialog.getNumber();
 	//Cube maze
-	solidityL = Dialog.getNumber();
+	//solidityL = Dialog.getNumber();
 	wCubeL = Dialog.getNumber();
 	mCubeAreaL = Dialog.getNumber();
 	//Elevated maze
@@ -2639,7 +2820,7 @@ function Preferences(){
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.gauval", gauValL);
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.dispVal", dispValL);
 		//Cube maze
-		call("ij.Prefs.set", "JAMoT_Prefs.cube.soli", solidityL);
+		//call("ij.Prefs.set", "JAMoT_Prefs.cube.soli", solidityL);
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.width", wCubeL);
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.marea", mCubeAreaL);
 		//Elevated maze
@@ -2665,7 +2846,7 @@ function Preferences(){
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.gauval", 2);
 		call("ij.Prefs.set", "JAMoT_Prefs.gen.dispVal", 0.1);
 		//Cube maze
-		call("ij.Prefs.set", "JAMoT_Prefs.cube.soli", 0.8);
+		//call("ij.Prefs.set", "JAMoT_Prefs.cube.soli", 0.8);
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.width", 38);
 		call("ij.Prefs.set", "JAMoT_Prefs.cube.marea", 500);
 		//Elevated maze
@@ -2690,7 +2871,7 @@ function Preferences(){
 	exit("Please restart Fiji/ImageJ for changes to take effect.");
 }
 
-/*Fucntion to make checks that images are ni the right format
+/*Function to make checks that images are ni the right format
 and if not make them so*/
 function checkAndSort(){
 	if (nSlices==1) exit("Stack required");
@@ -2804,7 +2985,7 @@ function dialog1(option){
 		if(Dialog.getCheckbox)
 		temp[5] = 1;
 	}	
-	//Gaus blur level
+	//Gaussian blur level
 	temp[6] = Dialog.getNumber();
 	//Define ROI analysis
 	if(Dialog.getCheckbox)
@@ -3389,7 +3570,7 @@ function removeDarkR(imTitle){
 	temp = newArray(2);
 	run("Select None");
 	setBatchMode("show");
-	showMessage("Remove Dark regions","<html>"+"<font size=2><center>Please select the starting and end point<br>"+"<font size=2><center>of the stack to create a shading correction.<br>" + "<font size=2><center>Ideally you want frames where the mouse isn´t present yet (minimum 50 frames)<br>" + "<font size=2><center>If you have to use frames with mice in use as many as possible (>1000)<br><br>");
+	showMessage("Stack shading Processing","<html>"+"<font size=2><center>Please select the starting and end point<br>"+"<font size=2><center>of the stack to create a shading correction.<br>" + "<font size=2><center>Ideally you want frames where the mouse isn´t present yet (minimum 50 frames)<br>" + "<font size=2><center>If you have to use frames with mice in use as many as possible (>1000)<br><br>");
 	waitForUser("Please select the inital frame to start the averaging");
 	temp[0] = getSliceNumber();
 	waitForUser("Please select the final frame to start the averaging");
@@ -3442,14 +3623,18 @@ function calculateAngle2(x1,y1, x2,y2){
 function getTripletStat(ordem){
 	numbers = split(ordem, ",");
 	count = 0;
+	j = 0;
 	temp = newArray(2);
 	for(i=0;i<numbers.length - 2; i++){
-		if(numbers[i] != numbers[i+1] && numbers[i] != numbers[i+2] && numbers[i+1] != numbers[i+2])
+		
+		if(i==0 && numbers[i] == 0)
+			j++;
+		else if(numbers[i] != numbers[i+1] && numbers[i] != numbers[i+2] && numbers[i+1] != numbers[i+2])
 			count++;	
 	}
 	
 	temp[0] = count;
-	temp[1] = numbers.length - 2;
+	temp[1] = numbers.length - 2 - j;
 	
 	return temp;
 	
@@ -3501,7 +3686,7 @@ function openPreviousAnalysis(){
 		}else
 			exit("Could not identify the type of analysis of this trac file");
 	}else
-		print("This file " + file + " does not appear to be a valid JAMoT file.");
+		print("This file " + file + " does not appear to be a valid analysis file.");
 
 }
 
@@ -4100,7 +4285,7 @@ function writePreferences(file){
 	print(file, "Gaussian blur to apply\t"+ gauVal);
 	print(file, "Minimum Displacement value (units)\t"+ dispVal);
 	//Cube and Objects mazes
-	print(file, "Rearing - Solidity (Cube/Region only)\t"+ solidity);
+	//print(file, "Rearing - Solidity (Cube/Region only)\t"+ solidity);
 	print(file, "Default width of box\t"+ wCube);
 	print(file, "Mouse minimal area (pixels)\t"+ mCubeArea);
 	//Elevated maze
@@ -4138,9 +4323,9 @@ function checkPreferences(array){
 	print(array[i] + ": current is "+ dispVal + ". Saved is: " + array[i+1]);
 	if(dispVal!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis.");}
 	//Open/NOR
-	i = i + 2;
+	/*i = i + 2;
 	print(array[i] + ": current is "+ solidity + ". Saved is: " + array[i+1]);
-	if(solidity!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Open Field/Novel Object Recognition.");}
+	if(solidity!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Open Field/Novel Object Recognition.");}*/
 	i = i + 2;
 	print(array[i] + ": current is "+ wCube + ". Saved is: " + array[i+1]);
 	if(wCube!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Open Field/Novel Object Recognition.");}
@@ -4190,5 +4375,31 @@ function checkPreferences(array){
 	i = i + 2;
 	print(array[i] + ": current is "+  tFreeze + ". Saved is: " + array[i+1]);
 	if( tFreeze!=array[i+1]){print("DIFFERENT!!Consider changing settings for reanalysis of Fear Conditioning.");}		
+}
+
+
+function movingAverage(window, array){
+	
+	
+	fData = newArray(array.length);
+	
+	for(i = 0; i < array.length; i++){
+		if(i < round(window/2)-1){
+			temp = Array.slice(array, 0, i + (round(window/2)));
+			Array.getStatistics(temp, min, max, mean, stdDev);
+			fData[i] = round(mean);
+		}else if(i >= round(window/2) && i < array.length - round(window/2)-1){
+			temp = Array.slice(array, i - (round(window/2)-1), i + (round(window/2)));
+			Array.getStatistics(temp, min, max, mean, stdDev);
+			fData[i] = round(mean);
+		}else if(i >= array.length - round(window/2)-1){
+			temp = Array.slice(array, i - (round(window/2)-1), array.length-1);
+			Array.getStatistics(temp, min, max, mean, stdDev);
+			fData[i] = round(mean);
+		}
+	}
+	
+	return fData;
+	
 }
 
