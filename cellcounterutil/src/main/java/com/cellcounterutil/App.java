@@ -11,7 +11,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import ij.*;
 import ij.plugin.PlugIn;
-import ij.process.ImageProcessor;
 import ij.gui.GenericDialog;
 import ij.gui.OvalRoi;
 
