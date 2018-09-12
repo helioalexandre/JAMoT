@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+		http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>12.0.0</version>
+		<relativePath />
+	</parent>
+
+
+	<name>Cell_Counter_Util</name>
+	<inceptionYear>2018</inceptionYear>
+	<organization>
+		<name>CNIC</name>
+		<url>https://www.cnic.es</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>CC0 1.0 Universal License</name>
+			<url>http://creativecommons.org/publicdomain/zero/1.0/</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>26653569</id>
+			<name>Helio Alexandre Duarte Roque</name>
+			<url>https://imagej.net/User:[MY-IMAGEJ-WIKI-ACCOUNT]</url>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>None</name>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>ImageJ Forum</name>
+			<archive>http://forum.imagej.net/</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:git://github.com/helioalexandre/Macros_Plugins</connection>
+		<developerConnection>scm:git:git@github.com:helioalexandre/Macros_Plugins</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/helioalexandre/Macros_Plugins</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>http://github.com/helioalexandre/Macros_Plugins/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>None</system>
+	</ciManagement>
+
+	<properties>
+		<package-name>com.moubeat.mazes</package-name>
+		<license.licenseName>cc0</license.licenseName>
+		<license.projectName>Cell_Counter_Util</license.projectName>
+		<mainClass>cell_counter_util.java</mainClass>
+	</properties>
+
+	<repositories>
+		<!-- NB: for SciJava dependencies -->
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+	</repositories>
+
+<dependencies>
+		<!-- ImageJ dependencies -->
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-ij</artifactId>
+			</dependency>
+</dependencies>
+
+	<artifactId>Cell_Counter_Util</artifactId>
+	<version>_0.1.0-SNAPSHOT</version>
+	<groupId>com.cellcounterutil</groupId>
+</project>
