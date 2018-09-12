@@ -2,4 +2,4 @@ This plugin allows you to read an XML file output by the plugin Cell Counter.
 
 It needs an image to take the width and height dimenions for a new image (ideally the image where the points were created from). It allows you to select which points to draw and in which color.
 
-Just download the .JAR file to the ImagEJ plugins folder and go to Plugins>Analyze>Cell Counter>Cell Counter Utility.
+Just download the .JAR file to the ImageJ plugins folder and go to Plugins>Analyze>Cell Counter>Cell Counter Utility.
