@@ -1,5 +1,6 @@
 This plugin allows you to read an XML file output by the plugin Cell Counter.
 
-It needs takes the dimensions of the open image to make a new one where to draw the points or asks if you want to create a new image. It loads all the points from the XML file and shows which types have and how many points. It also allows to preview the points and change colors individually.
+It needs takes the dimensions of the open image to make a new one where to draw the points or asks if you want to create
+a new image. It loads all the points from the XML file and shows which types have and how many points. It also allows to preview the points and change colors individually.
 
 Just download the .JAR file to the ImageJ plugins folder and go to Plugins>Analyze>Cell Counter>Cell Counter Utility.
