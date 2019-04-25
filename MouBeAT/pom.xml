@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+		http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>12.0.0</version>
+		<relativePath />
+	</parent>
+
+
+	<name>MouBeAT</name>
+	<inceptionYear>2017</inceptionYear>
+	<organization>
+		<name>CNIC</name>
+		<url>https://www.cnic.es</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>CC0 1.0 Universal License</name>
+			<url>http://creativecommons.org/publicdomain/zero/1.0/</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>26653569</id>
+			<name>Helio Alexandre Duarte Roque</name>
+			<url>https://imagej.net/User:[MY-IMAGEJ-WIKI-ACCOUNT]</url>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>None</name>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>ImageJ Forum</name>
+			<archive>http://forum.imagej.net/</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:git://github.com/helioalexandre/JAMoT</connection>
+		<developerConnection>scm:git:git@github.com:helioalexandre/JAMoT</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/helioalexandre/JAMoT</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>http://github.com/helioalexandre/JAMoT/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>None</system>
+	</ciManagement>
+
+	<properties>
+		<package-name>com.moubeat.mazes</package-name>
+		<license.licenseName>cc0</license.licenseName>
+		<license.projectName>MouBeAT - plugin for the tracking of mice in ImageJ.</license.projectName>
+		<mainClass>com.moubeat.mazes.openFieldAnalyser.java</mainClass>
+	</properties>
+
+	<repositories>
+		<!-- NB: for SciJava dependencies -->
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+	</repositories>
+
+<dependencies>
+		<!-- ImageJ dependencies -->
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-ij</artifactId>
+			</dependency>
+</dependencies>
+
+	<artifactId>MouBeAT</artifactId>
+	<version>_0.1.0-SNAPSHOT</version>
+	<description>This is the beginning of a plugin to track mouse in several types of mazes.</description>
+	<groupId>com.moubeat.mazes</groupId>
+</project>
